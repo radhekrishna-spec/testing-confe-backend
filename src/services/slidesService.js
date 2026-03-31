@@ -1,14 +1,14 @@
 const axios = require('axios');
 const { google } = require('googleapis');
-const credentials = require('../../oauth-client.json');
 
-const { client_id, client_secret, redirect_uris } =
-  credentials.installed || credentials.web;
+const client_id = process.env.GOOGLE_CLIENT_ID;
+const client_secret = process.env.GOOGLE_CLIENT_SECRET;
+const redirect_uri = process.env.GOOGLE_REDIRECT_URI;
 
 const oAuth2Client = new google.auth.OAuth2(
   client_id,
   client_secret,
-  redirect_uris[0],
+  redirect_uri,
 );
 
 oAuth2Client.setCredentials({
@@ -56,43 +56,18 @@ async function createSlidePNG(text, confessionNo, partNo) {
             replaceText: text,
           },
         },
-        {
-          replaceAllText: {
-            containsText: {
-              text: '{{FOOTER}}',
-              matchCase: true,
-            },
-            replaceText: `Part ${partNo}`,
-          },
-        },
-        {
-          replaceAllText: {
-            containsText: {
-              text: '{{ID_PLACEHOLDER}}',
-              matchCase: true,
-            },
-            replaceText: `#${confessionNo}`,
-          },
-        },
-        {
-          replaceAllText: {
-            containsText: {
-              text: '{{WATERMARK}}',
-              matchCase: true,
-            },
-            replaceText: '@your_page_name',
-          },
-        },
       ],
     },
   });
+
+  const token = await oAuth2Client.getAccessToken();
 
   const exportUrl = `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=${slideId}`;
 
   const response = await axios.get(exportUrl, {
     responseType: 'arraybuffer',
     headers: {
-      Authorization: `Bearer ${(await oAuth2Client.getAccessToken()).token}`,
+      Authorization: `Bearer ${token.token}`,
     },
   });
 
@@ -104,7 +79,6 @@ async function generateSlidesImages(parts, confessionNo) {
 
   for (let i = 0; i < parts.length; i++) {
     const buffer = await createSlidePNG(parts[i], confessionNo, i + 1);
-
     images.push(buffer);
   }
 
