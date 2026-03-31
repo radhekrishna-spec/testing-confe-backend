@@ -25,6 +25,10 @@ class Store {
     return this.data.has(key);
   }
 
+  getAll() {
+    return Object.fromEntries(this.data.entries());
+  }
+
   // ===== NEW QUEUE HELPERS =====
   setPending(id, value) {
     this.pendingApprovals.set(id, value);
