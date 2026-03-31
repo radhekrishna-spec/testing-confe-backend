@@ -1,9 +1,7 @@
 const axios = require('axios');
 
-const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
-
-async function createConfession(text) {
-  const res = await axios.post(APPS_SCRIPT_URL, {
+async function submitConfession(text) {
+  const res = await axios.post(process.env.APPS_SCRIPT_URL, {
     action: 'submit_confession',
     text,
   });
@@ -11,8 +9,8 @@ async function createConfession(text) {
   return res.data;
 }
 
-async function processEdit(id, text) {
-  const res = await axios.post(APPS_SCRIPT_URL, {
+async function editConfession(id, text) {
+  const res = await axios.post(process.env.APPS_SCRIPT_URL, {
     action: 'edit_confession',
     id,
     text,
@@ -22,6 +20,6 @@ async function processEdit(id, text) {
 }
 
 module.exports = {
-  createConfession,
-  processEdit,
+  submitConfession,
+  editConfession,
 };

@@ -1,19 +1,9 @@
-const connector = require('./appsScriptConnector');
+const appsScriptService = require('./appsScriptService');
 
 async function handleSubmit(text) {
-  if (!text || !text.trim()) {
-    return {
-      success: false,
-      message: 'Text empty',
-    };
-  }
-
-  const result = await connector.sendToAppsScript(text);
-
-  return {
-    success: true,
-    result,
-  };
+  return await appsScriptService.submitConfession(text);
 }
 
-module.exports = { handleSubmit };
+module.exports = {
+  handleSubmit,
+};
