@@ -1,18 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const formService = require('../services/formService');
+const { processFormSubmit } = require('../services/formSubmitService');
 
 router.post('/submit', async (req, res) => {
   try {
-    const { text } = req.body;
+    const result = await processFormSubmit(req.body);
 
-    const result = await formService.handleSubmit(text);
-
-    res.json(result);
+    res.json({
+      success: true,
+      confessionNo: result.confessionNo,
+    });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      error: err.message,
     });
   }
 });
