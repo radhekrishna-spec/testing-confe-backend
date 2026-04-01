@@ -2,12 +2,17 @@ function autoFitTextConfig(textLength) {
   let fontSize;
   let lineSpacing = 110;
 
-  if (textLength <= 40) lineSpacing = 100;
-  if (textLength <= 24) lineSpacing = 95;
+  if (textLength <= 20) lineSpacing = 75;
+  else if (textLength <= 30) lineSpacing = 82;
+  else if (textLength <= 40) lineSpacing = 88;
+  else if (textLength <= 50) lineSpacing = 92;
+  else if (textLength <= 60) lineSpacing = 96;
+  else if (textLength <= 84) lineSpacing = 95;
 
-  if (textLength <= 24) fontSize = 170;
-  else if (textLength <= 40) fontSize = 135;
-  else if (textLength <= 60) fontSize = 115;
+  if (textLength <= 50) fontSize = 115;
+  else if (textLength <= 60) fontSize = 100;
+  //if (textLength <= 60) fontSize = 115;
+  //else if (textLength <= 70) fontSize = 100;
   else if (textLength <= 84) fontSize = 96;
   else if (textLength <= 104) fontSize = 85;
   else if (textLength <= 120) fontSize = 77;
