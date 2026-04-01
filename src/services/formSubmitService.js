@@ -19,7 +19,18 @@ async function processFormSubmit(data) {
   const startTime = Date.now();
 
   try {
-    const settings = getSettings();
+    const rawSettings = getSettings();
+
+    const settings = {
+      duplicateCheck:
+        rawSettings.duplicateCheck ?? rawSettings.isDuplicate ?? true,
+
+      autoSplitParts: rawSettings.autoSplitParts ?? rawSettings.split ?? true,
+
+      telegramPreview:
+        rawSettings.telegramPreview ?? rawSettings.telegram ?? true,
+    };
+
     let raw = data?.confession || '';
 
     // EXACT APP SCRIPT CLEAN FLOW
