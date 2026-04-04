@@ -107,25 +107,42 @@ router.post('/post-now', async (req, res) => {
       });
     }
 
-    const fileIds = store.get(`fileIds_${id}`) || [];
+    const auth = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET
+    );
 
-    if (!fileIds.length) {
+    auth.setCredentials({
+      refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+    });
+
+    const drive = google.drive({
+      version: 'v3',
+      auth,
+    });
+
+    const fileName = `c_${id}.png`;
+
+    const searchRes = await drive.files.list({
+      q: `name='${fileName}' and '${process.env.QUEUE_FOLDER_ID}' in parents and trashed=false`,
+      fields: 'files(id, name)',
+    });
+
+    if (!searchRes.data.files.length) {
       return res.status(404).json({
         success: false,
         error: `No queue image found for confession #${id}`,
       });
     }
 
-    for (const fileId of fileIds) {
-      await moveFileToFolder(fileId, 'posted');
-    }
+    const fileId = searchRes.data.files[0].id;
+
+    await moveFileToFolder(fileId, 'posted');
 
     await Confession.findOneAndUpdate(
       { confessionNo: id },
-      { status: 'posted' },
+      { status: 'posted' }
     );
-
-    store.set(`state_${id}`, 'POSTED');
 
     return res.status(200).json({
       success: true,
