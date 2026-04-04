@@ -190,6 +190,9 @@ function startTelegramPoller() {
       } catch (error) {
         console.error('POLL LOOP ERROR:', error.message);
       }
+
+      // small delay to avoid timeout spam
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
 

@@ -37,6 +37,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
     "p-queue": "^8.1.0",
+    "razorpay": "^2.9.6",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
