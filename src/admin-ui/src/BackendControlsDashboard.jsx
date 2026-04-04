@@ -214,7 +214,6 @@ export default function BackendControlsDashboard() {
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
-          <ConfessionNoControl />
           <div className="lg:col-span-3">
             <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-5 mb-6">
               <div className="flex items-center gap-3 mb-4">
