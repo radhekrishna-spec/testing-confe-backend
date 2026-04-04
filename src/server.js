@@ -10,7 +10,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
-const { startTelegramPoller } = require('./telegramBot');
+
 const submitRoutes = require('./routes/submitRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 
@@ -78,10 +78,7 @@ app.use((err, req, res, next) => {
 // SAFE WORKER STARTUP
 function startWorkersSafely() {
   try {
-    const {
-      startTelegramPoller,
-      startTelegramPoller,
-    } = require('./workers/telegramPoller');
+    const { startTelegramPoller } = require('./workers/telegramPoller');
 
     const { startSchedulerWorker } = require('./workers/schedulerWorker');
 
