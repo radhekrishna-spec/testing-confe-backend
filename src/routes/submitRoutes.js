@@ -6,6 +6,7 @@ const { processFormSubmit } = require('../services/formSubmitService');
 const store = require('../store');
 const { moveFileToFolder } = require('../services/driveService');
 const { google } = require('googleapis');
+const { postCarousel } = require('../services/instagramService');
 
 function getPostTimes(queueCount) {
   if (queueCount <= 3) return [9, 13, 21];
@@ -138,6 +139,20 @@ router.post('/post-now', async (req, res) => {
 
     const fileId = searchRes.data.files[0].id;
 
+    // drive direct image url
+    const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+
+    // caption
+    const confession = await Confession.findOne({
+      confessionNo: id,
+    });
+
+    const caption = confession?.message || `Confession #${id}`;
+
+    // POST TO INSTAGRAM
+    await postCarousel([imageUrl], caption);
+
+    // MOVE TO POSTED AFTER SUCCESS
     await moveFileToFolder(fileId, 'posted');
 
     await Confession.findOneAndUpdate(
@@ -150,11 +165,11 @@ router.post('/post-now', async (req, res) => {
       message: `Confession #${id} posted successfully`,
     });
   } catch (error) {
-    console.error('POST NOW ERROR:', error);
+    console.error('POST NOW ERROR:', error.response?.data || error.message);
 
     return res.status(500).json({
       success: false,
-      error: error.message,
+      error: error.response?.data || error.message,
     });
   }
 });
