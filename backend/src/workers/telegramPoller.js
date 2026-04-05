@@ -176,13 +176,20 @@ async function pollTelegramUpdates() {
       }
     }
   } catch (error) {
-    console.error('POLL ERROR:', error.response?.data || error.message);
-  } finally {
-    isPolling = false;
+    const err = error.response?.data || error.message;
+
+    console.error('POLL ERROR:', err);
+
+    if (error.response?.data?.error_code === 409) {
+      console.log('⚠️ Conflict detected, waiting before retry...');
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+      return;
+    }
   }
 }
 
 let pollerStarted = false;
+let pollLoopCount = 0;
 
 function startTelegramPoller() {
   console.log('🚀 startTelegramPoller called at:', new Date().toISOString());
