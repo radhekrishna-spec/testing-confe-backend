@@ -5,7 +5,7 @@ const {
   generateFallbackQuestion,
   addEmotionEmoji,
   getSmartHashtags,
-} = require('../../services/confession/captionService');
+} = require('../services/captionService');
 
 async function createCaptionFlow(text, confessionNo) {
   let aiQuestion = store.get(`aiq_${confessionNo}`);

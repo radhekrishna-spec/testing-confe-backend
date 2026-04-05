@@ -1,6 +1,6 @@
 const { validateAndPrepareText } = require('./confessionPipelineService');
 const { checkDuplicate } = require('./duplicateService');
-const { createCaptionFlow } = require('./captionBuilderService');
+const { createCaptionFlow } = require('./helpers/captionBuilderService');
 const { processMediaFlow } = require('./confessionPipelineService');
 const { getSettings } = require('./settingsService');
 
