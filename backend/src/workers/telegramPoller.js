@@ -9,7 +9,9 @@ const {
   updateTelegramButtons,
 } = require('../services/telegramUpdateService');
 
-const { processFormSubmit } = require('../modules/confession/formSubmitService');
+const {
+  processFormSubmit,
+} = require('../modules/confession/formSubmitService');
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
@@ -61,9 +63,9 @@ async function pollTelegramUpdates() {
     const res = await axios.get(`${BASE_URL}/getUpdates`, {
       params: {
         offset: lastUpdateId + 1,
-        timeout: 20,
+        timeout: 50,
       },
-      timeout: 30000,
+      timeout: 60000,
     });
 
     const updates = res.data?.result || [];
@@ -180,16 +182,29 @@ async function pollTelegramUpdates() {
   }
 }
 
+let pollerStarted = false;
+
 function startTelegramPoller() {
+  if (pollerStarted) {
+    console.log('⚠️ Poller already started');
+    return;
+  }
+
+  pollerStarted = true;
+
   console.log('Telegram poller started...');
 
-  setInterval(async () => {
+  const pollLoop = async () => {
     try {
       await pollTelegramUpdates();
     } catch (error) {
       console.error('POLL LOOP ERROR:', error.message);
+    } finally {
+      setTimeout(pollLoop, 1000);
     }
-  }, 3000);
+  };
+
+  pollLoop();
 }
 
 module.exports = {
