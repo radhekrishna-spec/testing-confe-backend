@@ -42,7 +42,7 @@ function shouldPostNow() {
   const currentMinute = now.getMinutes();
 
   // only trigger in first 5 mins
-  if (currentMinute > 5) {
+  if (currentMinute > 59) {
     return false;
   }
 
@@ -138,12 +138,14 @@ async function processApprovedQueue() {
 }
 
 // worker
-function startSchedulerWorker() {
+async function startSchedulerWorker() {
   console.log('Scheduler worker started...');
 
   setInterval(async () => {
     try {
-      if (shouldPostNow()) {
+      const next = getNextApprovedConfession();
+
+      if (next) {
         await processApprovedQueue();
       }
     } catch (error) {
