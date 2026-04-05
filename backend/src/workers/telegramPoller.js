@@ -70,15 +70,15 @@ async function pollTelegramUpdates() {
 
     const updates = res.data?.result || [];
 
-    
-    console.log('📩 FULL UPDATE:', JSON.stringify(update, null, 2));
+    for (const update of updates) {
+      console.log('📩 FULL UPDATE:', JSON.stringify(update, null, 2));
 
-if (update.callback_query) {
-  console.log('🟢 CALLBACK RECEIVED');
-  console.log('🟢 DATA:', update.callback_query.data);
-  console.log('🟢 CHAT ID:', update.callback_query.message?.chat?.id);
-  console.log('🟢 MSG ID:', update.callback_query.message?.message_id);
-}
+      if (update.callback_query) {
+        console.log('🟢 CALLBACK RECEIVED');
+        console.log('🟢 DATA:', update.callback_query.data);
+        console.log('🟢 CHAT ID:', update.callback_query.message?.chat?.id);
+        console.log('🟢 MSG ID:', update.callback_query.message?.message_id);
+      }
       lastUpdateId = update.update_id;
 
       // ===============================
