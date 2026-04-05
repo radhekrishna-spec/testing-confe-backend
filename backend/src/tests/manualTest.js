@@ -1,8 +1,8 @@
 require('dotenv').config({ path: '../.env' });
-const connectDB = require('./config/db');
+const connectDB = require('../config/db');
 const {
   createManualConfession,
-} = require('./services/manualConfessionService');
+} = require('../services/manualConfessionService');
 
 async function run() {
   await connectDB();

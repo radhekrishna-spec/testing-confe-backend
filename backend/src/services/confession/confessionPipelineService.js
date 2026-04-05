@@ -3,7 +3,7 @@ const { splitTextSmart } = require('./splitText');
 const { getNextConfessionNo } = require('./confessionCounter');
 const { generateSlidesImages } = require('./slidesService');
 const { uploadImagesToDrive } = require('./driveService');
-const store = require('../store');
+const store = require('../store/store');
 
 function validateAndPrepareText(data) {
   let raw = data?.confession || '';

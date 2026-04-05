@@ -1,5 +1,5 @@
 const axios = require('axios');
-const store = require('../store');
+const store = require('../store/store');
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
