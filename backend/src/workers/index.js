@@ -5,7 +5,6 @@ const {
 } = require('../modules/confession/workers/editQueueWorker');
 
 const { startSchedulerWorker } = require('./schedulerWorker');
-
 const { startRecoveryWorker } = require('./recoveryWorker');
 
 function startWorkers() {
