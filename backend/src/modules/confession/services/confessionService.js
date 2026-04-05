@@ -1,9 +1,11 @@
-const store = require('../store');
-const { processEditQueue } = require("../workers/editQueueWorker");
+const store = require('../../../store/store');
+const { processEditQueue } = require('../workers/editQueueWorker');
+
 
 async function approve(id) {
-  store.props[`state_${id}`] = 'APPROVED';
-  console.log(`Approved #${id}`);
+  store.set(`state_${id}`, 'APPROVED');
+  console.log(`✅ Approved #${id}`);
+  console.log(`📦 state_${id}:`, store.get(`state_${id}`));
 }
 
 async function reject(id) {
@@ -16,8 +18,6 @@ async function startEdit(id) {
   store.props.awaiting_edit_input = true;
   console.log(`Editing started #${id}`);
 }
-
-
 
 async function confirmEdit(id) {
   const text = store.props[`pending_edit_${id}`];

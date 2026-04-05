@@ -27,20 +27,8 @@ exports.submitConfession = async (req, res) => {
 
 exports.postConfessionNow = async (req, res) => {
   try {
-    const queueNumbers = [17, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41];
+    console.log('🚀 Manual post-now request received');
 
-    queueNumbers.forEach((num) => {
-      store.set(`state_${num}`, 'APPROVED');
-      store.set(`caption_${num}`, `Confession #${num}`);
-    });
-
-    console.log('✅ Temporary approved states set for queue images');
-    //console.log('🚀 Manual post-now request received');
-
-    console.log('📦 Checking manually injected approved states...');
-    console.log('state_17 =', store.get('state_17'));
-    console.log('state_21 =', store.get('state_21'));
-    console.log('state_41 =', store.get('state_41'));
     const result = await processApprovedQueue();
 
     console.log('📤 processApprovedQueue result:', result);
