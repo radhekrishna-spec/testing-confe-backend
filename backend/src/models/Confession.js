@@ -34,7 +34,7 @@ const confessionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['PENDING', 'APPROVED', 'POSTING', 'POSTED', 'FAILED', 'REJECTED'],
-      status: 'PENDING',
+      default: 'PENDING',
       index: true,
     },
 

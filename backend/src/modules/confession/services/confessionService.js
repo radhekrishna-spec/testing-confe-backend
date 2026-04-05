@@ -1,11 +1,16 @@
 const store = require('../../../store/store');
 const { processEditQueue } = require('../workers/editQueueWorker');
-
+const Confession = require('../../../models/Confession');
 
 async function approve(id) {
   store.set(`state_${id}`, 'APPROVED');
-  //console.log(`✅ Approved #${id}`);
-  //console.log(`📦 state_${id}:`, store.get(`state_${id}`));
+
+  await Confession.updateOne(
+    { confessionNo: Number(id) },
+    { status: 'APPROVED' },
+  );
+
+  console.log(`✅ DB Approved #${id}`);
 }
 
 async function reject(id) {
