@@ -1,5 +1,6 @@
 require('dotenv').config();
 const path = require('path');
+const Confession = require('../../models/Confession');
 
 require('dotenv').config({
   path: path.resolve(__dirname, '../../../.env'),
@@ -29,7 +30,7 @@ router.post('/create-payment-link', async (req, res) => {
         email: false,
       },
       reminder_enable: false,
-      callback_url: 'http://localhost:5173/payment-success',
+      callback_url: 'https://confession-wallah.vercel.app/success',
       callback_method: 'get',
     });
 
@@ -39,6 +40,32 @@ router.post('/create-payment-link', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+router.post('/verify-payment', async (req, res) => {
+  try {
+    const { confessionNo, paymentId } = req.body;
+
+    await Confession.updateOne(
+      { confessionNo: Number(confessionNo) },
+      {
+        isPaid: true,
+        paymentId,
+      },
+    );
+
+    res.json({
+      success: true,
+      message: 'Payment verified and updated',
+    });
+  } catch (error) {
+    console.error('PAYMENT VERIFY ERROR:', error.message);
+
     res.status(500).json({
       success: false,
       error: error.message,
