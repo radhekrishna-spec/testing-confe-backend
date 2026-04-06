@@ -202,7 +202,7 @@ async function pollTelegramUpdates() {
 let pollerStarted = false;
 
 function startTelegramPoller() {
-  console.trace('📍 POLLER START TRACE');
+  //console.trace('📍 POLLER START TRACE');
 
   if (pollerStarted) {
     return;
