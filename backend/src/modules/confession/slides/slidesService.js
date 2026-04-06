@@ -1,6 +1,8 @@
 const { google } = require('googleapis');
 const { autoFitTextConfig } = require('../helpers/slideTextFit');
-const { getGoogleAuthClient } = require('../../../services/google/googleAuthService');
+const {
+  getGoogleAuthClient,
+} = require('../../../services/google/googleAuthService');
 const { exportSlideAsPNG } = require('../../../services/slideExportService');
 
 async function createSlidePNG(text, confessionNo, partNo, totalParts) {
@@ -111,6 +113,15 @@ function buildSlideRequests(
           matchCase: true,
         },
         replaceText: `Confession #${confessionNo}`,
+      },
+    },
+    {
+      replaceAllText: {
+        containsText: {
+          text: '{{watermark}}',
+          matchCase: false,
+        },
+        replaceText: process.env.PAGE_NAME || '@miet_k_dilwale_confession_wale',
       },
     },
     {
