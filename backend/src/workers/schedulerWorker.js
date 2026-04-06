@@ -53,30 +53,30 @@ async function shouldPostNow() {
   const postTimes = getPostTimes(queueCount);
 
   // current hour allowed hai ya nahi
-  // if (!postTimes.includes(currentHour)) {
-  //   return false;
-  // }
-
-  // const todayKey = now.toDateString();
-  //   const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}`;
-
-  //   // iss hour slot me already post ho chuki
-  //   if (store.get(slotKey)) {
-  //     return false;
-  //   }
-
-  //   // mark slot as used
-  //   store.set(slotKey, '1');
-
-  //   return true;
-  // }
-
-  if (currentMinute % 2 !== 0) {
+  if (!postTimes.includes(currentHour)) {
     return false;
   }
 
+  const todayKey = now.toDateString();
+  const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}`;
+
+  // iss hour slot me already post ho chuki
+  if (store.get(slotKey)) {
+    return false;
+  }
+
+  // mark slot as used
+  store.set(slotKey, '1');
+
   return true;
 }
+
+//   if (currentMinute % 2 !== 0) {
+//     return false;
+//   }
+
+//   return true;
+// }
 
 // FIFO approved confession
 async function getNextApprovedConfession() {
