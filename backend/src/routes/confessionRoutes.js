@@ -54,6 +54,7 @@ router.post('/submit', async (req, res) => {
       status: 'PENDING',
       images: result.images,
       caption: result.caption,
+      isPaid: true,
     });
 
     await newConfession.save();
