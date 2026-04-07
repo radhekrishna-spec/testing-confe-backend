@@ -7,20 +7,12 @@ const { postToInstagram } = require('../modules/social/instagramService');
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 // Dynamic timing based on approved queue count
+
 function getPostTimes(queueCount) {
-  if (queueCount <= 3) {
-    return [9, 13, 21];
-  }
-
-  if (queueCount <= 6) {
-    return [9, 12, 15, 17, 19, 22];
-  }
-
-  if (queueCount <= 10) {
-    return [9, 11, 13, 15, 17, 19, 21, 22];
-  }
-
-  return [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+  return [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23,
+  ];
 }
 
 // count approved queue
@@ -41,6 +33,10 @@ async function shouldPostNow() {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
+  if (currentMinute !== 0 && currentMinute !== 30) {
+    return false;
+  }
+
   console.log('⏰ SCHEDULER CHECK RUNNING');
   console.log('🕒 CURRENT TIME:', now.toLocaleTimeString());
 
@@ -58,7 +54,7 @@ async function shouldPostNow() {
   }
 
   const todayKey = now.toDateString();
-  const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}`;
+  const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}_${currentMinute}`;
 
   // iss hour slot me already post ho chuki
   if (store.get(slotKey)) {
