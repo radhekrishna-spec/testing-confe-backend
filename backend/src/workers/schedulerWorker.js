@@ -33,12 +33,12 @@ async function shouldPostNow() {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  // if (currentMinute !== 0 && currentMinute !== 30) {
-  //   return false;
-  // }
-  if (currentMinute % 2 !== 0) {
+  if (currentMinute !== 0 && currentMinute !== 30) {
     return false;
   }
+  // if (currentMinute % 2 !== 0) {
+  //   return false;
+  // }
 
   console.log('⏰ SCHEDULER CHECK RUNNING');
   console.log('🕒 CURRENT TIME:', now.toLocaleTimeString());
