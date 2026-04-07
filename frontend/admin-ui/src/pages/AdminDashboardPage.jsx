@@ -45,12 +45,21 @@ export default function AdminDashboardPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-violet-700">Admin Dashboard</h1>
 
-        <button
-          onClick={logout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
-        >
-          Logout
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => (window.location.href = '/backend')}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl"
+          >
+            Backend Controls
+          </button>
+
+          <button
+            onClick={logout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
+          >
+            Logout
+          </button>
+        </div>
       </div>
       <SearchBar
         value={search}
