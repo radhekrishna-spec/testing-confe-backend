@@ -31,7 +31,7 @@ function getDriveDirectImageUrl(fileId) {
 async function uploadImagesToDrive(
   imageBuffers,
   confessionNo,
-  folderType = 'queue',
+  folderType = 'root',
 ) {
   const drive = getDriveClient();
 
@@ -43,7 +43,7 @@ async function uploadImagesToDrive(
     edited: EDIT_ARCHIVE_FOLDER_ID,
   };
 
-  const folderId = folderMap[folderType] || QUEUE_FOLDER_ID;
+  const folderId = folderMap[folderType] || ROOT_FOLDER_ID;
 
   let storedImages = [];
   let ids = store.get(`fileIds_${confessionNo}`) || [];

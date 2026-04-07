@@ -1,6 +1,7 @@
 const axios = require('axios');
 const store = require('../store/store');
 const { sendTelegramMessage } = require('../modules/social/telegramService');
+const { moveFileToFolder } = require('./google/driveService');
 //const { addToEditQueue } = require('../modules/confession/workers/editQueueWorker');
 //const { processFormSubmit } = require('./formSubmitService');
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -182,6 +183,12 @@ async function approveConfession(chatId, messageId, confessionNo) {
     { status: 'APPROVED' },
   );
 
+  const fileIds = store.get(`fileIds_${confessionNo}`) || [];
+
+  for (const fileId of fileIds) {
+    await moveFileToFolder(fileId, 'queue');
+  }
+
   await updateTelegramButtons(chatId, messageId, 'approved', confessionNo);
 
   await sendTelegramMessage(chatId, `✅ Confession #${confessionNo} approved`);
@@ -199,9 +206,15 @@ async function rejectConfession(chatId, messageId, confessionNo) {
   store.set(`rejected_time_${confessionNo}`, Date.now());
 
   await Confession.updateOne(
-  { confessionNo: Number(confessionNo) },
-  { status: 'REJECTED' }
-);
+    { confessionNo: Number(confessionNo) },
+    { status: 'REJECTED' },
+  );
+
+  const fileIds = store.get(`fileIds_${confessionNo}`) || [];
+
+  for (const fileId of fileIds) {
+    await moveFileToFolder(fileId, 'rejected');
+  }
 
   await updateTelegramButtons(chatId, messageId, 'rejected', confessionNo);
 
