@@ -33,7 +33,9 @@ async function shouldPostNow() {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  if (currentMinute !== 0 && currentMinute !== 30) {
+  if (currentMinute < 2 || (currentMinute >= 30 && currentMinute < 32)) {
+    // allow
+  } else {
     return false;
   }
   // if (currentMinute % 2 !== 0) {
