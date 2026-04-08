@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const confessionSchema = new mongoose.Schema(
   {
+    collegeId: {
+      type: String,
+      required: true,
+      index: true,
+    },
     confessionNo: {
       type: Number,
       required: true,

@@ -22,6 +22,7 @@ exports.createConfession = async ({
   const confessionNo = result.confessionNo;
 
   const newConfession = await Confession.create({
+    collegeId: req.college.collegeId,
     message,
     confessionNo,
     status: 'PENDING',
@@ -33,7 +34,8 @@ exports.createConfession = async ({
 
   const queueAhead = await Confession.countDocuments({
     status: 'PENDING',
-    confessionNo: { $lt: confessionNo },
+    confessionNo: { $lt: result.confessionNo },
+    collegeId: req.college.collegeId,
   });
 
   const eta = getEstimatedPostTime(queueAhead);

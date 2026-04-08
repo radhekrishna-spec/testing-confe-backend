@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Confession = require('../models/Confession');
+const identifyCollege = require('../middleware/identifyCollege');
 
-router.get('/confessions', async (req, res) => {
+router.get('/confessions', identifyCollege, async (req, res) => {
   try {
-    const data = await Confession.find().sort({ createdAt: -1 });
+    const data = await Confession.find({
+      collegeId: req.college.collegeId,
+    }).sort({ createdAt: -1 });
 
     res.json(data);
   } catch (error) {

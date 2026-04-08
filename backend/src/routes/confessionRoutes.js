@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Confession = require('../models/Confession');
+const identifyCollege = require('../middleware/identifyCollege');
 
 const {
   processFormSubmit,
@@ -40,7 +41,7 @@ function getEstimatedPostTime(queueAhead) {
   return `Around ${hour12}:00 ${suffix}`;
 }
 
-router.post('/submit', async (req, res) => {
+router.post('/submit', identifyCollege, async (req, res) => {
   try {
     const { message } = req.body;
 
@@ -49,6 +50,7 @@ router.post('/submit', async (req, res) => {
     });
 
     const newConfession = new Confession({
+      collegeId: req.college.collegeId,
       message,
       confessionNo: result.confessionNo,
       status: 'PENDING',
@@ -62,6 +64,7 @@ router.post('/submit', async (req, res) => {
     const queueAhead = await Confession.countDocuments({
       status: 'PENDING',
       confessionNo: { $lt: result.confessionNo },
+      collegeId: req.college.collegeId,
     });
 
     const eta = getEstimatedPostTime(queueAhead);

@@ -19,6 +19,7 @@ async function createManualConfession(message) {
 
     // save in mongo
     const newConfession = new Confession({
+      collegeId: req.college.collegeId,
       message: message.trim(),
       confessionNo,
       status: 'PENDING',

@@ -15,6 +15,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const submitRoutes = require('./routes/submitRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const collegeRoutes = require('./routes/collegeRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -58,6 +59,9 @@ app.use('/api/payment', paymentRoutes);
 app.use('/', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', identifyCollege);
+app.use('/api/submit', identifyCollege, submitRoutes);
+app.use('/api/college', collegeRoutes);
 
 async function startServer() {
   await connectDB();
