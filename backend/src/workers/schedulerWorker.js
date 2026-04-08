@@ -9,10 +9,30 @@ const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 // Dynamic timing based on approved queue count
 
 function getPostTimes(queueCount) {
-  return [
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23,
-  ];
+  let baseHours = [];
+
+  if (queueCount <= 3) {
+    baseHours = [9, 15, 21];
+  } else if (queueCount <= 6) {
+    baseHours = [9, 12, 14, 17, 20, 23];
+  } else {
+    baseHours = [7, 9, 11, 13, 15, 17, 19, 21, 23];
+  }
+
+  return baseHours;
+}
+
+function getRandomMinuteForHour(dateKey, hour) {
+  const key = `RANDOM_MINUTE_${dateKey}_${hour}`;
+
+  let minute = store.get(key);
+
+  if (minute === undefined || minute === null) {
+    minute = Math.floor(Math.random() * 12) + 1; // 1 to 12
+    store.set(key, minute);
+  }
+
+  return minute;
 }
 
 // count approved queue
@@ -33,41 +53,37 @@ async function shouldPostNow() {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  if (currentMinute < 2 || (currentMinute >= 30 && currentMinute < 32)) {
-    // allow
-  } else {
-    return false;
-  }
-  // if (currentMinute % 2 !== 0) {
-  //   return false;
-  // }
-
   console.log('⏰ SCHEDULER CHECK RUNNING');
   console.log('🕒 CURRENT TIME:', now.toLocaleTimeString());
 
   const queueCount = await getApprovedQueueCount();
 
-  if (!queueCount) {
-    return false;
-  }
+  if (!queueCount) return false;
 
-  const postTimes = getPostTimes(queueCount);
+  const postHours = getPostTimes(queueCount);
 
-  // current hour allowed hai ya nahi
-  if (!postTimes.includes(currentHour)) {
+  if (!postHours.includes(currentHour)) {
     return false;
   }
 
   const todayKey = now.toDateString();
-  const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}_${currentMinute}`;
 
-  // iss hour slot me already post ho chuki
+  const randomMinute = getRandomMinuteForHour(todayKey, currentHour);
+
+  // allow only 2 min window
+  if (currentMinute < randomMinute || currentMinute > randomMinute + 1) {
+    return false;
+  }
+
+  const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}`;
+
   if (store.get(slotKey)) {
     return false;
   }
 
-  // mark slot as used
   store.set(slotKey, '1');
+
+  console.log(`✅ Slot matched: ${currentHour}:${randomMinute}`);
 
   return true;
 }
