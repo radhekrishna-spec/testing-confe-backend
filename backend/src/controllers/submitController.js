@@ -8,7 +8,10 @@ exports.submitConfession = async (req, res) => {
     // console.log('📝 New confession submit request received');
     // console.log('📦 Request body:', req.body);
 
-    const result = await createConfession(req.body);
+    const result = await createConfession({
+      ...req.body,
+      collegeId: req.college.collegeId,
+    });
 
     // console.log('✅ Confession created successfully:', result);
 
