@@ -59,8 +59,8 @@ app.use('/api/payment', paymentRoutes);
 app.use('/', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api', identifyCollege);
-app.use('/api/submit', identifyCollege, submitRoutes);
+
+
 app.use('/api/college', collegeRoutes);
 
 async function startServer() {
