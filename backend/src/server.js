@@ -73,7 +73,18 @@ app.post('/api/test-submit', (req, res) => {
     route: 'working',
   });
 });
+app.post('/api/confessions/submit', (req, res) => {
+  console.log('✅ DIRECT SUBMIT ROUTE HIT');
+  console.log('BODY:', req.body);
+  console.log('QUERY:', req.query);
 
+  res.json({
+    success: true,
+    route: 'DIRECT SERVER HIT',
+    body: req.body,
+    query: req.query,
+  });
+});
 app.use('/api/confessions', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
@@ -93,7 +104,16 @@ async function startServer() {
   });
 }
 
-startServer();
+app.use('*', (req, res) => {
+  console.log('❌ 404 HIT:', req.method, req.originalUrl);
+
+  res.status(404).json({
+    success: false,
+    error: 'Route not found',
+    method: req.method,
+    url: req.originalUrl,
+  });
+});
 
 // error handler
 app.use((err, req, res, next) => {
@@ -105,6 +125,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+startServer();
 // SAFE WORKER STARTUP
 
 // process level errors
