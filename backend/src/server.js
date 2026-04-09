@@ -56,6 +56,14 @@ app.get('/health', (req, res) => {
 // Routes
 // app.use('/api/confessions', confessionRoutes);
 app.use('/api/payment', paymentRoutes);
+
+app.post('/api/test-submit', (req, res) => {
+  res.status(200).json({
+    success: true,
+    route: 'working',
+  });
+});
+
 app.use('/api/confessions', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
