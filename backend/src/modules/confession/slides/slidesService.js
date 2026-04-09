@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 const { autoFitTextConfig } = require('../helpers/slideTextFit');
 const {
   getGoogleAuthClient,
-} = require('../../../services/google/googleAuthService');
+} = require('../../../services/ai/google/googleAuthService');
 const { exportSlideAsPNG } = require('../../../services/slideExportService');
 
 async function createSlidePNG(text, confessionNo, partNo, totalParts) {
