@@ -32,10 +32,12 @@ const identifyCollege = async (req, res, next) => {
       collegeId = 'miet';
     }
 
+    console.log('🏫 LOOKING FOR COLLEGE:', collegeId);
     const college = await College.findOne({
       $or: [{ collegeId }, { subdomain: collegeId }],
       isActive: true,
     });
+    console.log('🏫 DB RESULT:', college);
 
     if (!college) {
       return res.status(404).json({
