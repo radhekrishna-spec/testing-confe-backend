@@ -4,7 +4,7 @@ const { getNextConfessionNo } = require('./confessionCounter');
 const { generateSlidesImages } = require('../slides/slidesService');
 const {
   uploadImagesToDrive,
-} = require('../../../services/google/driveService');
+} = require('../../../services/ai/google//driveService');
 const store = require('../../../store/store');
 
 function validateAndPrepareText(data) {
