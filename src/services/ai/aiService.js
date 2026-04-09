@@ -1,1 +1,0 @@
-module.exports={ caption:(t)=>`${t}\n#confession`, question:()=>`Agar tum hote to kya karte?` };
