@@ -62,7 +62,38 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+app.get('/api/song-search', async (req, res) => {
+  try {
+    const q = req.query.q;
 
+    if (!q) {
+      return res.json({ data: [] });
+    }
+
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(
+        q,
+      )}&entity=song&limit=5`,
+    );
+
+    const data = await response.json();
+
+    const songs = (data.results || []).map((song) => ({
+      id: song.trackId,
+      title: song.trackName,
+      artist: {
+        name: song.artistName,
+      },
+      previewUrl: song.previewUrl,
+      artwork: song.artworkUrl100,
+    }));
+
+    res.json({ data: songs });
+  } catch (error) {
+    console.error('Song search error:', error);
+    res.status(500).json({ data: [] });
+  }
+});
 // Routes
 // app.use('/api/confessions', confessionRoutes);
 app.use('/api/payment', paymentRoutes);
