@@ -10,7 +10,7 @@ const confessionSchema = new mongoose.Schema(
     confessionNo: {
       type: Number,
       required: true,
-      unique: true,
+
       index: true,
     },
     song: {
@@ -46,6 +46,12 @@ const confessionSchema = new mongoose.Schema(
     },
 
     caption: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    adminComment: {
       type: String,
       default: '',
       trim: true,

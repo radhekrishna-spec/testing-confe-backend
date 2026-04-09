@@ -13,7 +13,7 @@ const { getEstimatedPostTime } = require('../utils/etaHelper');
 exports.createConfession = async ({
   message,
   nickname = '',
-  song = '',
+  song = null,
   collegeId,
   isPaid = false,
   paymentId = null,
@@ -29,7 +29,7 @@ exports.createConfession = async ({
   // SINGLE AI CALL FOR ALL
   const aiAssets = await createCaptionFlow(message, confessionNo, nickname);
 
-  const finalSong = song || aiAssets.song;
+  const finalSong = song ?? aiAssets.song;
 
   const newConfession = await Confession.create({
     collegeId,
