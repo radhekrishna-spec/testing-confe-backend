@@ -1,1 +1,0 @@
-function startCommandPoller(){ setInterval(()=>console.log('command poll'),3000);} module.exports={startCommandPoller};
