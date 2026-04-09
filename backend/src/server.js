@@ -73,18 +73,7 @@ app.post('/api/test-submit', (req, res) => {
     route: 'working',
   });
 });
-app.post('/api/confessions/submit', (req, res) => {
-  console.log('✅ DIRECT SUBMIT ROUTE HIT');
-  console.log('BODY:', req.body);
-  console.log('QUERY:', req.query);
 
-  res.json({
-    success: true,
-    route: 'DIRECT SERVER HIT',
-    body: req.body,
-    query: req.query,
-  });
-});
 app.use('/api/confessions', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
