@@ -1,7 +1,7 @@
 const { google } = require('googleapis');
 const { Readable } = require('stream');
 const store = require('../../../store/store');
-const College = require('../../models/College');
+const College = require('../../../models/College');
 
 function getDriveClient() {
   const auth = new google.auth.OAuth2(
