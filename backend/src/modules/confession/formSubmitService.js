@@ -30,17 +30,26 @@ async function processFormSubmit(data, existingConfessionNo = null) {
     );
     const caption = await createCaptionFlow(text, mediaResult.confessionNo);
 
+    console.log('⚙️ SETTINGS:', settings);
+    console.log('📨 TELEGRAM PREVIEW:', settings.telegramPreview);
+
     if (settings.telegramPreview) {
       const { sendTelegram } = require('../social/telegramService');
 
       try {
+        console.log('📸 TELEGRAM IMAGES:', mediaResult.telegramImages);
+        console.log('📝 CAPTION:', caption);
+        console.log('🔢 CONFESSION NO:', mediaResult.confessionNo);
         await new Promise((resolve) => setTimeout(resolve, 8000));
-        await sendTelegram(
+        console.log('🚀 SENDING TO TELEGRAM...');
+        const tgResult = await sendTelegram(
           mediaResult.telegramImages,
           caption,
           mediaResult.confessionNo,
           !!existingConfessionNo,
         );
+
+        console.log('✅ TELEGRAM SENT SUCCESS:', tgResult);
       } catch (error) {
         console.error(
           '❌ Telegram send failed but confession saved:',
