@@ -1,6 +1,6 @@
 require('dotenv').config();
 const path = require('path');
-const Confession = require('../models/Confession);
+const Confession = require('../models/Confession');
 
 require('dotenv').config({
   path: path.resolve(__dirname, '../../../.env'),
