@@ -20,6 +20,17 @@ const confessionSchema = new mongoose.Schema(
       trim: true,
     },
 
+    nickname: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    extraFields: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+
     images: {
       type: [String],
       default: [],

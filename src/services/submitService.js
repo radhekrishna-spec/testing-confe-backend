@@ -8,8 +8,11 @@ const { getEstimatedPostTime } = require('../utils/etaHelper');
 
 exports.createConfession = async ({
   message,
+  nickname = '',
+  collegeId,
   isPaid = false,
   paymentId = null,
+  ...extraFields
 }) => {
   const result = await processFormSubmit({
     confession: message,
@@ -22,20 +25,22 @@ exports.createConfession = async ({
   const confessionNo = result.confessionNo;
 
   const newConfession = await Confession.create({
-    collegeId: req.college.collegeId,
+    collegeId,
     message,
+    nickname,
     confessionNo,
     status: 'PENDING',
     images: result.images || [],
     caption: result.caption || '',
     isPaid,
     paymentId,
+    extraFields,
   });
 
   const queueAhead = await Confession.countDocuments({
     status: 'PENDING',
     confessionNo: { $lt: result.confessionNo },
-    collegeId: req.college.collegeId,
+    collegeId,
   });
 
   const eta = getEstimatedPostTime(queueAhead);
