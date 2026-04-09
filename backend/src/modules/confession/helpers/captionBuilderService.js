@@ -1,27 +1,24 @@
 const store = require('../../../store/store');
 const {
   buildCaption,
-  generateAIQuestion,
-  generateFallbackQuestion,
   addEmotionEmoji,
   getSmartHashtags,
 } = require('../services/captionService');
 
+const {
+  generateConfessionAIAssets,
+} = require('../services/confessionAIService');
+
 async function createCaptionFlow(text, confessionNo, nickname = '') {
-  let aiQuestion = store.get(`aiq_${confessionNo}`);
+  let aiAssets = store.get(`ai_assets_${confessionNo}`);
 
-  if (!aiQuestion) {
-    try {
-      aiQuestion =
-        (await generateAIQuestion(text)) || generateFallbackQuestion(text);
-    } catch {
-      aiQuestion = generateFallbackQuestion(text);
-    }
+  if (!aiAssets) {
+    aiAssets = await generateConfessionAIAssets(text);
 
-    store.set(`aiq_${confessionNo}`, aiQuestion);
+    store.set(`ai_assets_${confessionNo}`, aiAssets);
   }
 
-  aiQuestion = addEmotionEmoji(aiQuestion);
+  const aiQuestion = addEmotionEmoji(aiAssets.captionQuestion);
 
   const hashtags = getSmartHashtags(text);
   const nicknamePrefix = nickname?.trim() ? `👤 ${nickname}\n\n` : '';
@@ -33,8 +30,14 @@ async function createCaptionFlow(text, confessionNo, nickname = '') {
   )}`;
 
   store.set(`caption_${confessionNo}`, caption);
+  store.set(`song_${confessionNo}`, aiAssets.song);
+  store.set(`comment_${confessionNo}`, aiAssets.adminComment);
 
-  return caption;
+  return {
+    caption,
+    song: aiAssets.song,
+    adminComment: aiAssets.adminComment,
+  };
 }
 
 module.exports = {

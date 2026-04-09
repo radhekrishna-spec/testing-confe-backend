@@ -1,9 +1,12 @@
 const Confession = require('../models/Confession');
-const getAISongRecommendation = require('../services/aiSongRecommendation');
 
 const {
   processFormSubmit,
 } = require('../modules/confession/formSubmitService');
+
+const {
+  createCaptionFlow,
+} = require('../modules/confession/helpers/captionBuilderService');
 
 const { getEstimatedPostTime } = require('../utils/etaHelper');
 
@@ -21,21 +24,23 @@ exports.createConfession = async ({
     collegeId,
   });
 
-  console.log('🧪 SUBMIT RESULT:', result);
-  console.log('🖼️ IMAGES:', result.images);
-  console.log('📏 COUNT:', result.images?.length);
-
   const confessionNo = result.confessionNo;
+
+  // SINGLE AI CALL FOR ALL
+  const aiAssets = await createCaptionFlow(message, confessionNo, nickname);
+
+  const finalSong = song || aiAssets.song;
 
   const newConfession = await Confession.create({
     collegeId,
     message,
     nickname,
-    song,
+    song: finalSong,
     confessionNo,
     status: 'PENDING',
     images: result.images || [],
-    caption: result.caption || '',
+    caption: aiAssets.caption || result.caption || '',
+    adminComment: aiAssets.adminComment || '',
     isPaid,
     paymentId,
     extraFields,
