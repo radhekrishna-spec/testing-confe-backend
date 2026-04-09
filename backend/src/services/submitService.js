@@ -29,7 +29,10 @@ exports.createConfession = async ({
   // SINGLE AI CALL FOR ALL
   const aiAssets = await createCaptionFlow(message, confessionNo, nickname);
 
-  const finalSong = song ?? aiAssets.song;
+  const finalSong =
+    song && typeof song === 'object' && (song.title || song.artist)
+      ? song
+      : aiAssets.song;
 
   const newConfession = await Confession.create({
     collegeId,
