@@ -43,7 +43,7 @@ function getEstimatedPostTime(queueAhead) {
 
 router.post('/submit', identifyCollege, async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, nickname = '', song = '' } = req.body;
 
     const result = await processFormSubmit({
       confession: message,
@@ -52,6 +52,8 @@ router.post('/submit', identifyCollege, async (req, res) => {
     const newConfession = new Confession({
       collegeId: req.college.collegeId,
       message,
+      nickname,
+      song,
       confessionNo: result.confessionNo,
       status: 'PENDING',
       images: result.images,

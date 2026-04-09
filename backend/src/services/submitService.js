@@ -9,6 +9,7 @@ const { getEstimatedPostTime } = require('../utils/etaHelper');
 exports.createConfession = async ({
   message,
   nickname = '',
+  song = '',
   collegeId,
   isPaid = false,
   paymentId = null,
@@ -29,6 +30,7 @@ exports.createConfession = async ({
     collegeId,
     message,
     nickname,
+    song,
     confessionNo,
     status: 'PENDING',
     images: result.images || [],

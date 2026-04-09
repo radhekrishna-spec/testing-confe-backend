@@ -13,6 +13,10 @@ const confessionSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+    song: {
+      type: String,
+      default: '',
+    },
 
     message: {
       type: String,
