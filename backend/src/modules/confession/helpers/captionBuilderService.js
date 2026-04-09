@@ -7,7 +7,7 @@ const {
   getSmartHashtags,
 } = require('../services/captionService');
 
-async function createCaptionFlow(text, confessionNo) {
+async function createCaptionFlow(text, confessionNo, nickname = '') {
   let aiQuestion = store.get(`aiq_${confessionNo}`);
 
   if (!aiQuestion) {
@@ -24,7 +24,13 @@ async function createCaptionFlow(text, confessionNo) {
   aiQuestion = addEmotionEmoji(aiQuestion);
 
   const hashtags = getSmartHashtags(text);
-  const caption = buildCaption(aiQuestion, confessionNo, hashtags);
+  const nicknamePrefix = nickname?.trim() ? `👤 ${nickname}\n\n` : '';
+
+  const caption = `${nicknamePrefix}${buildCaption(
+    aiQuestion,
+    confessionNo,
+    hashtags,
+  )}`;
 
   store.set(`caption_${confessionNo}`, caption);
 

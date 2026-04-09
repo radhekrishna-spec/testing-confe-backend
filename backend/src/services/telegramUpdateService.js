@@ -2,13 +2,11 @@ const axios = require('axios');
 const store = require('../store/store');
 const { sendTelegramMessage } = require('../modules/social/telegramService');
 const { moveFileToFolder } = require('./google/driveService');
+const College = require('../models/College');
 //const { addToEditQueue } = require('../modules/confession/workers/editQueueWorker');
 //const { processFormSubmit } = require('./formSubmitService');
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-const Confession = require('../models/Confession');
 
-const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const Confession = require('../models/Confession');
 
 // EXACT SAME BUTTON UPDATE FLOW + SAFE
 
@@ -18,8 +16,23 @@ const {
 } = require('../modules/confession/slides/slidesService');
 const { uploadImagesToDrive } = require('./google/driveService');
 
-async function confirmEdit(chatId, confessionNo, text) {
+async function getTelegramBaseUrl(collegeId) {
+  const college = await College.findOne({
+    collegeId,
+    isActive: true,
+  });
+
+  if (!college?.telegram?.botToken) {
+    throw new Error('Telegram bot token not found');
+  }
+
+  return `https://api.telegram.org/bot${college.telegram.botToken}`;
+}
+
+async function confirmEdit(chatId, confessionNo, text, collegeId) {
   try {
+    const BASE_URL = await getTelegramBaseUrl(collegeId);
+
     await sendTelegramMessage(
       chatId,
       `🛠 Creating preview for #${confessionNo}...`,
@@ -31,7 +44,11 @@ async function confirmEdit(chatId, confessionNo, text) {
 
     const imageBuffers = await generateSlidesImages(parts, confessionNo);
 
-    const driveUrls = await uploadImagesToDrive(imageBuffers, confessionNo);
+    const driveUrls = await uploadImagesToDrive(
+      imageBuffers,
+      confessionNo,
+      collegeId,
+    );
 
     store.set(`preview_images_${confessionNo}`, driveUrls);
 
@@ -64,7 +81,14 @@ async function confirmEdit(chatId, confessionNo, text) {
     console.error('CONFIRM EDIT ERROR:', error.message);
   }
 }
-async function updateTelegramButtons(chatId, messageId, status, confessionNo) {
+async function updateTelegramButtons(
+  chatId,
+  messageId,
+  status,
+  confessionNo,
+  collegeId,
+) {
+  const BASE_URL = await getTelegramBaseUrl(collegeId);
   if (!messageId) return;
 
   let keyboard;
@@ -168,7 +192,7 @@ async function updateTelegramButtons(chatId, messageId, status, confessionNo) {
 }
 
 // EXACT SAME APPROVE FLOW + DUP SAFE
-async function approveConfession(chatId, messageId, confessionNo) {
+async function approveConfession(chatId, messageId, confessionNo, collegeId) {
   if (store.get(`state_${confessionNo}`) === 'APPROVED') {
     await sendTelegramMessage(chatId, '⚠️ Already approved');
     return;
@@ -186,16 +210,22 @@ async function approveConfession(chatId, messageId, confessionNo) {
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
   for (const fileId of fileIds) {
-    await moveFileToFolder(fileId, 'queue');
+    await moveFileToFolder(fileId, 'queue', collegeId);
   }
 
-  await updateTelegramButtons(chatId, messageId, 'approved', confessionNo);
+  await updateTelegramButtons(
+    chatId,
+    messageId,
+    'approved',
+    confessionNo,
+    collegeId,
+  );
 
   await sendTelegramMessage(chatId, `✅ Confession #${confessionNo} approved`);
 }
 
 // EXACT SAME REJECT FLOW + SAFE
-async function rejectConfession(chatId, messageId, confessionNo) {
+async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
   if (store.get(`state_${confessionNo}`) === 'REJECTED') {
     await sendTelegramMessage(chatId, '⚠️ Already rejected');
     return;
@@ -213,16 +243,22 @@ async function rejectConfession(chatId, messageId, confessionNo) {
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
   for (const fileId of fileIds) {
-    await moveFileToFolder(fileId, 'rejected');
+    await moveFileToFolder(fileId, 'rejected', collegeId);
   }
 
-  await updateTelegramButtons(chatId, messageId, 'rejected', confessionNo);
+  await updateTelegramButtons(
+    chatId,
+    messageId,
+    'rejected',
+    confessionNo,
+    collegeId,
+  );
 
   await sendTelegramMessage(chatId, `❌ Confession #${confessionNo} rejected`);
 }
 
 // EXACT SAME EDIT START FLOW + TIMEOUT
-async function startEditMode(chatId, messageId, confessionNo) {
+async function startEditMode(chatId, messageId, confessionNo, collegeId) {
   const oldText = store.get(`text_${confessionNo}`);
 
   if (!oldText) {
@@ -238,7 +274,13 @@ async function startEditMode(chatId, messageId, confessionNo) {
   store.set('editing_time', Date.now());
   store.set('awaiting_edit_input', '1');
 
-  await updateTelegramButtons(chatId, messageId, 'editing', confessionNo);
+  await updateTelegramButtons(
+    chatId,
+    messageId,
+    'editing',
+    confessionNo,
+    collegeId,
+  );
 
   await sendTelegramMessage(
     chatId,

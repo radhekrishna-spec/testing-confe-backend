@@ -1,0 +1,52 @@
+```gitignore
+# Dependencies
+node_modules/
+.env
+.env.*
+service-account.json
+oauth-client.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build / production
+dist/
+build/
+out/
+.next/
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# Uploads / generated files (optional)
+uploads/
+generated/
+public/temp/
+
+# Package manager locks (keep ONLY one)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+```
