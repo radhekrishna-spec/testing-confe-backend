@@ -1,12 +1,7 @@
 const { google } = require('googleapis');
 const { Readable } = require('stream');
 const store = require('../../store/store');
-
-const ROOT_FOLDER_ID = process.env.ROOT_FOLDER_ID;
-const QUEUE_FOLDER_ID = process.env.QUEUE_FOLDER_ID;
-const POSTED_FOLDER_ID = process.env.POSTED_FOLDER_ID;
-const REJECTED_FOLDER_ID = process.env.REJECTED_FOLDER_ID;
-const EDIT_ARCHIVE_FOLDER_ID = process.env.EDIT_ARCHIVE_FOLDER_ID;
+const College = require('../../models/College');
 
 function getDriveClient() {
   const auth = new google.auth.OAuth2(
@@ -28,22 +23,36 @@ function getDriveDirectImageUrl(fileId) {
   return `https://lh3.googleusercontent.com/d/${fileId}=s0`;
 }
 
+async function getCollegeFolders(collegeId) {
+  const college = await College.findOne({
+    collegeId,
+    isActive: true,
+  });
+
+  if (!college) {
+    throw new Error('College not found for drive config');
+  }
+
+  return {
+    root: college?.drive?.rootFolderId,
+    queue: college?.drive?.queueFolderId,
+    posted: college?.drive?.postedFolderId,
+    rejected: college?.drive?.rejectedFolderId,
+    edited: college?.drive?.editArchiveFolderId,
+  };
+}
+
 async function uploadImagesToDrive(
   imageBuffers,
   confessionNo,
+  collegeId,
   folderType = 'root',
 ) {
   const drive = getDriveClient();
 
-  const folderMap = {
-    root: ROOT_FOLDER_ID,
-    queue: QUEUE_FOLDER_ID,
-    posted: POSTED_FOLDER_ID,
-    rejected: REJECTED_FOLDER_ID,
-    edited: EDIT_ARCHIVE_FOLDER_ID,
-  };
+  const folderMap = await getCollegeFolders(collegeId);
 
-  const folderId = folderMap[folderType] || ROOT_FOLDER_ID;
+  const folderId = folderMap[folderType] || folderMap.root;
 
   let storedImages = [];
   let ids = store.get(`fileIds_${confessionNo}`) || [];
@@ -87,16 +96,10 @@ async function uploadImagesToDrive(
   return storedImages;
 }
 
-async function moveFileToFolder(fileId, folderType) {
+async function moveFileToFolder(fileId, folderType, collegeId) {
   const drive = getDriveClient();
 
-  const folderMap = {
-    root: ROOT_FOLDER_ID,
-    queue: QUEUE_FOLDER_ID,
-    posted: POSTED_FOLDER_ID,
-    rejected: REJECTED_FOLDER_ID,
-    edited: EDIT_ARCHIVE_FOLDER_ID,
-  };
+  const folderMap = await getCollegeFolders(collegeId);
 
   const targetFolderId = folderMap[folderType];
 
@@ -113,8 +116,6 @@ async function moveFileToFolder(fileId, folderType) {
     removeParents: previousParents,
     fields: 'id, parents',
   });
-
-  //console.log(`✅ File moved to ${folderType}`);
 }
 
 module.exports = {

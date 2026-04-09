@@ -22,7 +22,12 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
     const confessionNo = existingConfessionNo || (await getNextConfessionNo());
 
-    const mediaResult = await processMediaFlow(text, confessionNo, settings);
+    const mediaResult = await processMediaFlow(
+      text,
+      confessionNo,
+      settings,
+      data.collegeId,
+    );
     const caption = await createCaptionFlow(text, mediaResult.confessionNo);
 
     if (settings.telegramPreview) {

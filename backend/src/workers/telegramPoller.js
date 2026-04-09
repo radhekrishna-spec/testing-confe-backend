@@ -128,7 +128,7 @@ async function pollTelegramUpdates() {
         if (data.startsWith('approve_')) {
           const id = data.replace('approve_', '');
 
-          await approveConfession(chatId, messageId, Number(id));
+          await approveConfession(chatId, messageId, Number(id), 'miet');
 
           await answerCallback(cbId, 'Approved ✅');
         } else if (data.startsWith('stopedit_')) {

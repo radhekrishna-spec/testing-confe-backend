@@ -18,7 +18,12 @@ function validateAndPrepareText(data) {
   return text;
 }
 
-async function processMediaFlow(text, existingConfessionNo, settings) {
+async function processMediaFlow(
+  text,
+  existingConfessionNo,
+  settings,
+  collegeId,
+) {
   if (!existingConfessionNo) {
     throw new Error('confessionNo is required in processMediaFlow');
   }
@@ -29,7 +34,11 @@ async function processMediaFlow(text, existingConfessionNo, settings) {
 
   const imageBuffers = await generateSlidesImages(parts, confessionNo);
 
-  const driveUrls = await uploadImagesToDrive(imageBuffers, confessionNo);
+  const driveUrls = await uploadImagesToDrive(
+    imageBuffers,
+    confessionNo,
+    collegeId,
+  );
 
   store.set(`images_${confessionNo}`, driveUrls);
   store.set(`text_${confessionNo}`, text);

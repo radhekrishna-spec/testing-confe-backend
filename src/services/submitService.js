@@ -16,6 +16,7 @@ exports.createConfession = async ({
 }) => {
   const result = await processFormSubmit({
     confession: message,
+    collegeId,
   });
 
   console.log('🧪 SUBMIT RESULT:', result);
