@@ -1,4 +1,5 @@
 const Confession = require('../models/Confession');
+const getAISongRecommendation = require('../services/aiSongRecommendation');
 
 const {
   processFormSubmit,

@@ -14,8 +14,13 @@ const confessionSchema = new mongoose.Schema(
       index: true,
     },
     song: {
-      type: String,
-      default: '',
+      title: String,
+      artist: String,
+      source: {
+        type: String,
+        enum: ['manual', 'ai'],
+        default: 'manual',
+      },
     },
 
     message: {
