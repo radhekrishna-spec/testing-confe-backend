@@ -31,6 +31,8 @@ const identifyCollege = async (req, res, next) => {
     if (!collegeId) {
       collegeId = 'miet';
     }
+    console.log('🏫 MODEL COLLECTION:', College.collection.name);
+    console.log('🏫 MODEL DB NAME:', College.db.name);
 
     console.log('🏫 LOOKING FOR COLLEGE:', collegeId);
     const college = await College.findOne({
