@@ -54,11 +54,12 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
-// app.use('/api/confessions', confessionRoutes);
+app.use('/api/confessions', confessionRoutes);
 app.use('/api/payment', paymentRoutes);
-app.use('/api/confessions', submitRoutes);
+app.use('/', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
+
 
 app.use('/api/college', collegeRoutes);
 

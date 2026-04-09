@@ -2,25 +2,38 @@ const College = require('../models/College');
 
 const identifyCollege = async (req, res, next) => {
   try {
-    const host = req.headers.host || '';
+    let collegeId = '';
 
-    // localhost ya direct testing ke liye fallback
-    if (
-      host.includes('localhost') ||
-      host.includes('127.0.0.1') ||
-      !host.includes('.')
-    ) {
-      req.college = {
-        collegeId: 'miet',
-        name: 'MIET Meerut',
-      };
-      return next();
+    // 1) route param se
+    if (req.params?.collegeId) {
+      collegeId = req.params.collegeId;
     }
 
-    const subdomain = host.split('.')[0];
+    // 2) query se fallback
+    if (!collegeId && req.query?.collegeId) {
+      collegeId = req.query.collegeId;
+    }
+
+    // 3) host based subdomain
+    if (!collegeId) {
+      const host = req.headers.host || '';
+
+      if (
+        !host.includes('localhost') &&
+        !host.includes('127.0.0.1') &&
+        host.includes('.')
+      ) {
+        collegeId = host.split('.')[0];
+      }
+    }
+
+    // 4) localhost default fallback
+    if (!collegeId) {
+      collegeId = 'miet';
+    }
 
     const college = await College.findOne({
-      subdomain,
+      $or: [{ collegeId }, { subdomain: collegeId }],
       isActive: true,
     });
 
@@ -36,6 +49,7 @@ const identifyCollege = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('identifyCollege error:', error);
+
     return res.status(500).json({
       success: false,
       message: 'College identification failed',
