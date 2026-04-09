@@ -1,6 +1,6 @@
 const store = require('../store/store');
 const Confession = require('../models/Confession');
-const { moveFileToFolder } = require('../services/google/driveService');
+const { moveFileToFolder } = require('../services/ai/google/driveService');
 const { updateTelegramButtons } = require('../services/telegramUpdateService');
 const { postToInstagram } = require('../modules/social/instagramService');
 
