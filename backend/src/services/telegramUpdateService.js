@@ -1,7 +1,7 @@
 const axios = require('axios');
 const store = require('../store/store');
 const { sendTelegramMessage } = require('../modules/social/telegramService');
-const { moveFileToFolder } = require('./google/driveService');
+const { moveFileToFolder } = require('./ai/google/driveService');
 const College = require('../models/College');
 //const { addToEditQueue } = require('../modules/confession/workers/editQueueWorker');
 //const { processFormSubmit } = require('./formSubmitService');
@@ -14,7 +14,7 @@ const { splitTextSmart } = require('../modules/confession/helpers/splitText');
 const {
   generateSlidesImages,
 } = require('../modules/confession/slides/slidesService');
-const { uploadImagesToDrive } = require('./google/driveService');
+const { uploadImagesToDrive } = require('./ai/google/driveService');
 
 async function getTelegramBaseUrl(collegeId) {
   const college = await College.findOne({

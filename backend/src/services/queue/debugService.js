@@ -1,17 +1,17 @@
-const store = require('../store');
-function healthCheck(){
+const store = require('../../store/store');
+function healthCheck() {
   return {
-    ok:true,
+    ok: true,
     queue: store.editQueue.length,
     activeEdit: store.props.editing_active || null,
-    totalKeys: Object.keys(store.props).length
+    totalKeys: Object.keys(store.props).length,
   };
 }
-function apocalypseReset(){
+function apocalypseReset() {
   store.props = {};
   store.editQueue = [];
   store.postQueue = [];
   store.history = {};
-  return { reset:true };
+  return { reset: true };
 }
-module.exports={ healthCheck, apocalypseReset };
+module.exports = { healthCheck, apocalypseReset };

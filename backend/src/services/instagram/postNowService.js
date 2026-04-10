@@ -1,5 +1,5 @@
 const Confession = require('../../models/Confession');
-const { moveFileToFolder } = require('../google/driveService');
+const { moveFileToFolder } = require('../ai/google/driveService');
 const { postToInstagram } = require('../../modules/social/instagramService');
 const { google } = require('googleapis');
 
