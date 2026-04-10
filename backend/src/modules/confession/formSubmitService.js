@@ -9,6 +9,7 @@ const { createCaptionFlow } = require('./helpers/captionBuilderService');
 const { getSettings } = require('../../services/settingsService');
 
 async function processFormSubmit(data, existingConfessionNo = null) {
+  const { fromAdminUI = false } = data;
   const startTime = Date.now();
 
   try {
@@ -28,7 +29,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       telegramImages: [],
     };
 
-    if (!data.fromAdminUI) {
+    if (!fromAdminUI) {
       mediaResult = await processMediaFlow(
         text,
         confessionNo,
@@ -58,7 +59,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
         );
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
-          caption,
+          caption.caption || caption,
           mediaResult.confessionNo,
           !!existingConfessionNo,
         );
