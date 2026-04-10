@@ -40,8 +40,14 @@ async function processFormSubmit(data, existingConfessionNo = null) {
         console.log('📸 TELEGRAM IMAGES:', mediaResult.telegramImages);
         console.log('📝 CAPTION:', caption);
         console.log('🔢 CONFESSION NO:', mediaResult.confessionNo);
-        await new Promise((resolve) => setTimeout(resolve, 8000));
-        console.log('🚀 SENDING TO TELEGRAM...');
+        const delay = fromAdminUI ? 2000 : 8000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
+        console.log(
+          fromAdminUI
+            ? '⚡ ADMIN AUTO FLOW → TELEGRAM in 2s'
+            : '🚀 NORMAL FLOW → TELEGRAM in 8s',
+        );
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
           caption,
@@ -50,6 +56,24 @@ async function processFormSubmit(data, existingConfessionNo = null) {
         );
 
         console.log('✅ TELEGRAM SENT SUCCESS:', tgResult);
+
+        if (fromAdminUI) {
+          setTimeout(async () => {
+            try {
+              const {
+                autoApproveConfession,
+              } = require('./services/adminAutoApproveService');
+
+              await autoApproveConfession(mediaResult.confessionNo);
+
+              console.log(
+                `⚡ AUTO APPROVED FROM ADMIN UI: #${mediaResult.confessionNo}`,
+              );
+            } catch (error) {
+              console.error('❌ AUTO APPROVE FAILED:', error.message);
+            }
+          }, 3000);
+        }
       } catch (error) {
         console.error(
           '❌ Telegram send failed but confession saved:',

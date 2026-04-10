@@ -17,11 +17,13 @@ exports.createConfession = async ({
   collegeId,
   isPaid = false,
   paymentId = null,
+  fromAdminUI = false,
   ...extraFields
 }) => {
   const result = await processFormSubmit({
     confession: message,
     collegeId,
+    fromAdminUI,
   });
 
   const confessionNo = result.confessionNo;

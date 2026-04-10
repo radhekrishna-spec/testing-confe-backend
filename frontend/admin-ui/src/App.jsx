@@ -1,7 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AdminLoginPage from './admin/pages/AdminLoginPage';
+import CollegeWorkspace from './admin/pages/CollegeWorkspace';
+import Dashboard from './admin/pages/Dashboard';
 import BackendControlsDashboard from './BackendControlsDashboard';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminLoginPage from './pages/AdminLoginPage';
 
 function ProtectedRoute({ children }) {
   const isAuth = localStorage.getItem('adminAuth');
@@ -15,10 +16,15 @@ export default function App() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
 
         <Route
+          path="/admin/college/:collegeId"
+          element={<CollegeWorkspace />}
+        />
+
+        <Route
           path="/admin"
           element={
             <ProtectedRoute>
-              <AdminDashboardPage />
+              <Dashboard />
             </ProtectedRoute>
           }
         />

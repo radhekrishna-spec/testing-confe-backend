@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Confession = require('../models/Confession');
 const identifyCollege = require('../middleware/identifyCollege');
+const {
+  broadcastConfession,
+  getAllColleges,
+} = require('../controllers/adminController');
 
 router.get('/confessions', identifyCollege, async (req, res) => {
   try {
@@ -17,5 +21,8 @@ router.get('/confessions', identifyCollege, async (req, res) => {
     });
   }
 });
+router.post('/broadcast', broadcastConfession);
+
+router.get('/colleges', getAllColleges);
 
 module.exports = router;

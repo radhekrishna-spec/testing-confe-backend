@@ -22,7 +22,10 @@ export default function SubmitConfession() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          fromAdminUI: true,
+        }),
       });
 
       const data = await res.json();
