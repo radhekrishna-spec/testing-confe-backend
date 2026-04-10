@@ -13,7 +13,7 @@ export default function AdminDashboardPage({ collegeId }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://m-backend-4t8v.onrender.com/api/admin/confessions')
+    fetch('https://testing-confe-backend.onrender.com/api/admin/confessions')
       .then((res) => res.json())
       .then((data) => setConfessions(data))
       .catch((err) => console.error(err));
