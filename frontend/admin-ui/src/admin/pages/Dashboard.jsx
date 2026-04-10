@@ -80,7 +80,7 @@ export default function Dashboard() {
       setProgressText(`Sending to ${selectedColleges.length} colleges...`);
 
       const res = await fetch(
-        'https://m-backend-4t8v.onrender.com/api/admin/broadcast',
+        'https://testing-confe-backend.onrender.com/api/admin/broadcast',
         {
           method: 'POST',
           headers: {

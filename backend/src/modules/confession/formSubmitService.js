@@ -22,12 +22,20 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
     const confessionNo = existingConfessionNo || (await getNextConfessionNo());
 
-    const mediaResult = await processMediaFlow(
-      text,
+    let mediaResult = {
       confessionNo,
-      settings,
-      data.collegeId,
-    );
+      images: [],
+      telegramImages: [],
+    };
+
+    if (!data.fromAdminUI) {
+      mediaResult = await processMediaFlow(
+        text,
+        confessionNo,
+        settings,
+        data.collegeId,
+      );
+    }
     const caption = await createCaptionFlow(text, mediaResult.confessionNo);
 
     console.log('⚙️ SETTINGS:', settings);
