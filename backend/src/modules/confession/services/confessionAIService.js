@@ -1,9 +1,9 @@
 const Groq = require('groq-sdk');
 const { getCollegeMemory } = require('../../../ai//memoryService');
-const { detectTopTopics } = require('./topicAnalyzer');
-const { getTopWeightedTopics } = require('./topicTrainer');
+const { detectTopTopics } = require('../../../ai/topicAnalyzer');
+const { getTopWeightedTopics } = require('../../../ai/topicTrainer');
 const Confession = require('../models/Confession');
-const { scoreConfessionQuality } = require('./qualityScorer');
+// const { scoreConfessionQuality } = require('./qualityScorer');
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
