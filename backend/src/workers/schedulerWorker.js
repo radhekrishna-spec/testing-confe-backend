@@ -255,14 +255,26 @@ async function processApprovedQueue() {
 
 // worker
 async function startSchedulerWorker() {
-  //console.log('Scheduler worker started...');
+  console.log('🚀 Scheduler worker started');
+
+  // server start hote hi ek baar run
+  (async () => {
+    try {
+      console.log('🚀 Initial queue warmup');
+      await refillLowQueues();
+    } catch (error) {
+      console.error('INITIAL REFILL ERROR:', error.message);
+    }
+  })();
 
   setInterval(async () => {
     console.log('🔁 Scheduler interval tick');
 
     try {
       const next = await getNextApprovedConfession();
+
       console.log('📦 NEXT APPROVED:', next?.confessionNo);
+
       if (next && (await shouldPostNow())) {
         await processApprovedQueue();
       }
@@ -270,6 +282,7 @@ async function startSchedulerWorker() {
       console.error('SCHEDULER ERROR:', error.message);
     }
   }, 60000);
+
   setInterval(
     async () => {
       console.log('⏰ 8hr AI fallback check');

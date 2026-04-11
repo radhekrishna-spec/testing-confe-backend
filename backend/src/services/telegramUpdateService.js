@@ -192,7 +192,20 @@ async function updateTelegramButtons(
     console.error('BUTTON UPDATE ERROR:', err || error.message);
   }
 }
+async function promoteNextQueuedAI(collegeId) {
+  const nextAi = await Confession.findOne({
+    collegeId,
+    source: 'AI',
+    status: 'QUEUED',
+  }).sort({ confessionNo: 1 });
 
+  if (!nextAi) {
+    await checkQueueAndGenerate(collegeId, 'ai');
+    return;
+  }
+
+  await Confession.updateOne({ _id: nextAi._id }, { status: 'PENDING' });
+}
 // EXACT SAME APPROVE FLOW + DUP SAFE
 async function approveConfession(chatId, messageId, confessionNo, collegeId) {
   if (store.get(`state_${confessionNo}`) === 'APPROVED') {
@@ -221,7 +234,7 @@ async function approveConfession(chatId, messageId, confessionNo, collegeId) {
     });
   }
   if (confession?.isAIGenerated) {
-    await checkQueueAndGenerate(confession.collegeId, 'ai');
+    await promoteNextQueuedAI(confession.collegeId);
   }
 
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
@@ -271,7 +284,7 @@ async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
   }
 
   if (confession?.isAIGenerated) {
-    await checkQueueAndGenerate(confession.collegeId, 'ai');
+    await promoteNextQueuedAI(confession.collegeId);
   }
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
