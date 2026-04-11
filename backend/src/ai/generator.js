@@ -49,13 +49,22 @@ Rules:
 
 Only return confession text.
 `;
-
+    console.log('🤖 GEMINI MODEL INIT:', {
+      file: 'ai/generator.js',
+      time: new Date().toISOString(),
+    });
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
     });
+    console.log('📤 GEMINI REQUEST SENT', {
+      file: 'ai/generator.js',
+      promptLength: prompt.length,
+      time: new Date().toISOString(),
+    });
 
     const result = await model.generateContent(prompt);
-
+    console.log('📥 GEMINI RESPONSE RECEIVED');
+    console.log(result.response?.usageMetadata);
     const text = result.response.text().trim();
     let finalText = text;
 

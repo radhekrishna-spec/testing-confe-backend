@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 async function generateConfessionAIAssets(text) {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-2.0-flash',
     });
 
     const prompt = `
@@ -30,7 +30,11 @@ Rules:
 Confession:
 ${text.slice(0, 1200)}
 `;
-
+    console.log('📤 GEMINI REQUEST SENT', {
+      file: 'confessionAIService.js',
+      promptLength: prompt.length,
+      time: new Date().toISOString(),
+    });
     const result = await model.generateContent(prompt);
     const raw = result.response.text();
 
