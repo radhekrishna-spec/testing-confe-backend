@@ -2,7 +2,7 @@ const Groq = require('groq-sdk');
 const { getCollegeMemory } = require('../../../ai//memoryService');
 const { detectTopTopics } = require('../../../ai/topicAnalyzer');
 const { getTopWeightedTopics } = require('../../../ai/topicTrainer');
-const Confession = require('../models/Confession');
+const Confession = require('../../../models/Confession');
 // const { scoreConfessionQuality } = require('./qualityScorer');
 
 const groq = new Groq({
