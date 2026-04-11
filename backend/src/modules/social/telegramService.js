@@ -1,7 +1,7 @@
 const axios = require('axios');
 const store = require('../../store/store');
 const FormData = require('form-data');
-const College = require('../models/College');
+const College = require('../../models/College');
 
 // reusable safe delay
 function sleep(ms) {
