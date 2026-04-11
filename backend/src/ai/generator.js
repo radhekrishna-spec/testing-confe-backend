@@ -4,6 +4,9 @@ const { detectTopTopics } = require('./topicAnalyzer');
 const { getTopWeightedTopics } = require('./topicTrainer');
 const Confession = require('../models/Confession');
 const { scoreConfessionQuality } = require('./qualityScorer');
+const {
+  getNextConfessionNo,
+} = require('../modules/confession/services/confessionCounter');
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -123,8 +126,10 @@ confession 3
         finalText =
           retryResult?.choices?.[0]?.message?.content?.trim() || finalText;
       }
+      const confessionNo = await getNextConfessionNo();
 
       const confession = await Confession.create({
+        confessionNo,
         collegeId,
         message: finalText,
         status: i === 0 ? status : 'QUEUED',
