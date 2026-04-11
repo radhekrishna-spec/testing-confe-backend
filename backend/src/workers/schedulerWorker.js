@@ -46,25 +46,42 @@ async function getApprovedQueueCount() {
 async function refillLowQueues() {
   const colleges = await College.find({
     isActive: true,
-  }).limit(2); // start with 2 colleges only
+  }).sort({ collegeId: 1 });
 
-  for (const college of colleges) {
-    const approvedCount = await Confession.countDocuments({
-      collegeId: college.collegeId,
-      status: 'APPROVED',
-    });
+  if (!colleges.length) return;
 
-    if (approvedCount < 3) {
-      console.log(
-        `⚠️ Low posting queue for ${college.collegeId}: ${approvedCount}`,
-      );
+  const pointerKey = 'AI_COLLEGE_POINTER';
 
-      await checkQueueAndGenerate(college.collegeId, 'scheduler');
+  let pointer = Number(store.get(pointerKey)) || 0;
 
-      // wait before next request
-      await new Promise((resolve) => setTimeout(resolve, 25000));
-    }
+  if (pointer >= colleges.length) {
+    pointer = 0;
   }
+
+  const college = colleges[pointer];
+
+  const approvedCount = await Confession.countDocuments({
+    collegeId: college.collegeId,
+    status: {
+      $in: ['APPROVED', 'PENDING', 'QUEUED'],
+    },
+    source: 'AI',
+  });
+
+  console.log(`📦 AI queue for ${college.collegeId}: ${approvedCount}`);
+
+  if (approvedCount < 3) {
+    console.log(
+      `⚠️ Low posting queue for ${college.collegeId}: ${approvedCount}`,
+    );
+
+    await checkQueueAndGenerate(college.collegeId, 'scheduler');
+  } else {
+    console.log(`✅ Queue healthy for ${college.collegeId}`);
+  }
+
+  // move pointer to next college
+  store.set(pointerKey, pointer + 1);
 }
 
 // new time based posting logic

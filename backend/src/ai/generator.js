@@ -27,7 +27,7 @@ async function generateAIConfession(collegeId, status = 'QUEUED') {
       : topTopics;
 
     const prompt = `
-You are writing an anonymous college confession.
+You are writing anonymous college confessions.
 
 College: ${collegeId}
 
@@ -39,23 +39,30 @@ Use the tone and style from these real examples:
 ${sampleText}
 
 Rules:
-- sound like a real student
+- sound like real students
 - natural Hinglish
 - highly relatable
-- should match trending college topics
 - emotional / funny / viral
 - no names
-- max 60-80 words
+- each confession 60-80 words
+- generate EXACTLY 3 unique confessions
+- return ONLY 3 confessions separated by ###
 
-Only return confession text.
+Example format:
+confession 1 ###
+confession 2 ###
+confession 3
 `;
+
     console.log('🤖 GEMINI MODEL INIT:', {
       file: 'ai/generator.js',
       time: new Date().toISOString(),
     });
+
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
     });
+
     console.log('📤 GEMINI REQUEST SENT', {
       file: 'ai/generator.js',
       promptLength: prompt.length,
@@ -63,30 +70,58 @@ Only return confession text.
     });
 
     const result = await model.generateContent(prompt);
+
     console.log('📥 GEMINI RESPONSE RECEIVED');
+
     console.log(result.response?.usageMetadata);
-    const text = result.response.text().trim();
-    let finalText = text;
 
-    let qualityScore = scoreConfessionQuality(text);
+    let text = result.response.text().trim();
 
-    if (qualityScore < 3) {
-      console.log('Low quality AI output, retrying...');
+    let confessionTexts = text
+      .split('###')
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 3);
 
-      const retryResult = await model.generateContent(prompt);
-
-      finalText = retryResult.response.text().trim();
+    // fallback if AI returns less than 3
+    while (confessionTexts.length < 3) {
+      confessionTexts.push(
+        confessionTexts[0] ||
+          'Koi mujhe canteen wali chai se zyada pasand karta hai kya? 😭',
+      );
     }
 
-    const confession = await Confession.create({
-      collegeId,
-      message: finalText,
-      status,
-      source: 'AI',
-      isAIGenerated: true,
-    });
+    const savedConfessions = [];
 
-    return confession;
+    for (let i = 0; i < 3; i++) {
+      let finalText = confessionTexts[i];
+
+      let qualityScore = scoreConfessionQuality(finalText);
+
+      if (qualityScore < 3) {
+        console.log(
+          `Low quality AI output for confession ${i + 1}, retrying...`,
+        );
+
+        const retryResult = await model.generateContent(
+          `Generate one better Hinglish college confession for ${collegeId}`,
+        );
+
+        finalText = retryResult.response.text().trim();
+      }
+
+      const confession = await Confession.create({
+        collegeId,
+        message: finalText,
+        status: i === 0 ? status : 'QUEUED',
+        source: 'AI',
+        isAIGenerated: true,
+      });
+
+      savedConfessions.push(confession);
+    }
+
+    return savedConfessions;
   } catch (error) {
     console.error('AI GENERATION ERROR:', error.message);
     throw error;

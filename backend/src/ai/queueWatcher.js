@@ -11,16 +11,13 @@ function getStartOfToday() {
 }
 
 async function checkQueueAndGenerate(collegeId, source = 'user') {
-  // agar AI se hi aaya hai to recursion avoid
-  if (source === 'user') {
-    // user submit pe sirf check
-  }
-
   // total pending + queued AI confessions
   const queueCount = await Confession.countDocuments({
     collegeId,
     source: 'AI',
-    status: { $in: ['PENDING', 'QUEUED'] },
+    status: {
+      $in: ['PENDING', 'QUEUED'],
+    },
   });
 
   console.log(`📦 Queue for ${collegeId}: ${queueCount}`);
@@ -29,7 +26,9 @@ async function checkQueueAndGenerate(collegeId, source = 'user') {
   const todayAiCount = await Confession.countDocuments({
     collegeId,
     source: 'AI',
-    createdAt: { $gte: getStartOfToday() },
+    createdAt: {
+      $gte: getStartOfToday(),
+    },
   });
 
   console.log(`🤖 Today's AI count for ${collegeId}: ${todayAiCount}`);
@@ -48,15 +47,19 @@ async function checkQueueAndGenerate(collegeId, source = 'user') {
     return;
   }
 
-  console.log(`🚀 Generating ${needed} AI confessions for ${collegeId}`);
+  console.log(`🚀 Generating batch of 3 AI confessions for ${collegeId}`);
 
-  for (let i = 0; i < needed; i++) {
-    const status = i === 0 ? 'PENDING' : 'QUEUED';
-    try {
-      await generateAIConfession(collegeId, status);
-    } catch (error) {
-      console.error(`❌ AI generation failed for ${collegeId}:`, error.message);
-      break;
+  try {
+    // ✅ one API request -> 3 confessions
+    await generateAIConfession(collegeId, 'PENDING');
+
+    console.log(`✅ AI batch generated successfully for ${collegeId}`);
+  } catch (error) {
+    console.error(`❌ AI generation failed for ${collegeId}:`, error.message);
+
+    // quota safe log
+    if (error.message.includes('429') || error.message.includes('quota')) {
+      console.log(`⛔ Gemini quota exceeded for ${collegeId}`);
     }
   }
 }
