@@ -55,11 +55,11 @@ async function setupCollegeFolders(collegeId, collegeName) {
     auth,
   });
 
+  const mainRootFolderId = process.env.GOOGLE_COLLEGES_ROOT_FOLDER_ID;
+
   if (!mainRootFolderId) {
     throw new Error('GOOGLE_COLLEGES_ROOT_FOLDER_ID is missing in .env');
   }
-
-  const mainRootFolderId = process.env.GOOGLE_COLLEGES_ROOT_FOLDER_ID;
 
   const rootFolderId = await createFolder(drive, collegeName, mainRootFolderId);
 
