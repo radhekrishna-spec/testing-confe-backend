@@ -132,7 +132,7 @@ confession 3
         confessionNo,
         collegeId,
         message: finalText,
-        status: i === 0 ? status : 'QUEUED',
+        status: i === 0 ? status : 'PENDING',
         source: 'AI',
         isAIGenerated: true,
       });
