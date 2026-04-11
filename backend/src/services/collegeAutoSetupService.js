@@ -32,10 +32,32 @@ async function givePublicPermission(drive, folderId) {
 }
 
 async function setupCollegeFolders(collegeId, collegeName) {
+  const existingCollege = await College.findOne({ collegeId });
+
+  if (!existingCollege) {
+    throw new Error(`College not found: ${collegeId}`);
+  }
+
+  if (
+    existingCollege?.drive?.rootFolderId &&
+    existingCollege?.drive?.queueFolderId
+  ) {
+    return {
+      success: true,
+      skipped: true,
+      message: `${collegeId} already configured`,
+      drive: existingCollege.drive,
+    };
+  }
+
   const drive = google.drive({
     version: 'v3',
     auth,
   });
+
+  if (!mainRootFolderId) {
+    throw new Error('GOOGLE_COLLEGES_ROOT_FOLDER_ID is missing in .env');
+  }
 
   const mainRootFolderId = process.env.GOOGLE_COLLEGES_ROOT_FOLDER_ID;
 
