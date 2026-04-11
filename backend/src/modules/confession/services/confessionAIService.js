@@ -1,5 +1,5 @@
 const Groq = require('groq-sdk');
-const { getCollegeMemory } = require('./memoryService');
+const { getCollegeMemory } = require('../../../ai//memoryService');
 const { detectTopTopics } = require('./topicAnalyzer');
 const { getTopWeightedTopics } = require('./topicTrainer');
 const Confession = require('../models/Confession');
