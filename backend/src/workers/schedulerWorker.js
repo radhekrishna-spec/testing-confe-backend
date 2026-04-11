@@ -46,7 +46,7 @@ async function getApprovedQueueCount() {
 async function refillLowQueues() {
   const colleges = await College.find({
     isActive: true,
-  });
+  }).limit(2); // start with 2 colleges only
 
   for (const college of colleges) {
     const approvedCount = await Confession.countDocuments({
@@ -60,6 +60,9 @@ async function refillLowQueues() {
       );
 
       await checkQueueAndGenerate(college.collegeId, 'scheduler');
+
+      // wait before next request
+      await new Promise((resolve) => setTimeout(resolve, 25000));
     }
   }
 }
