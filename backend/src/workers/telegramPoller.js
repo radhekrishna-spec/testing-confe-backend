@@ -9,18 +9,20 @@ const {
   updateTelegramButtons,
 } = require('../services/telegramUpdateService');
 
+const College = require('../models/College');
+const getTelegramConfig = require('../utils/getTelegramConfig');
+
 const {
   processFormSubmit,
 } = require('../modules/confession/formSubmitService');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+function getLastUpdateId(collegeId) {
+  return Number(store.get(`last_update_id_${collegeId}`)) || 0;
+}
 
-let lastUpdateId = Number(store.get('last_update_id')) || 0;
-let isPolling = false;
+const pollingState = new Map();
 const processedCallbacks = new Map();
 
-// cleanup old callback ids
 function cleanupProcessedCallbacks() {
   const now = Date.now();
 
@@ -31,10 +33,12 @@ function cleanupProcessedCallbacks() {
   }
 }
 
-async function answerCallback(cbId, text = 'Done ✅') {
+async function answerCallback(cbId, text = 'Done ✅', collegeId) {
+  const { baseUrl } = await getTelegramConfig(collegeId);
+
   try {
     await axios.post(
-      `${BASE_URL}/answerCallbackQuery`,
+      `${baseUrl}/answerCallbackQuery`,
       {
         callback_query_id: cbId,
         text,
@@ -52,16 +56,19 @@ async function answerCallback(cbId, text = 'Done ✅') {
   }
 }
 
-async function pollTelegramUpdates() {
-  //console.log('📡 polling with offset:', lastUpdateId + 1);
-  if (isPolling) return;
+async function pollTelegramUpdates(collegeId) {
+  if (pollingState.get(collegeId)) return;
 
-  isPolling = true;
+  pollingState.set(collegeId, true);
 
   try {
     cleanupProcessedCallbacks();
 
-    const res = await axios.get(`${BASE_URL}/getUpdates`, {
+    const { baseUrl } = await getTelegramConfig(collegeId);
+
+    let lastUpdateId = getLastUpdateId(collegeId);
+
+    const res = await axios.get(`${baseUrl}/getUpdates`, {
       params: {
         offset: lastUpdateId + 1,
         timeout: 50,
@@ -72,48 +79,39 @@ async function pollTelegramUpdates() {
     const updates = res.data?.result || [];
 
     for (const update of updates) {
-      // console.log('📩 FULL UPDATE:', JSON.stringify(update, null, 2));
-
-      if (update.callback_query) {
-        // console.log('🟢 CALLBACK RECEIVED');
-        // console.log('🟢 DATA:', update.callback_query.data);
-        // console.log('🟢 CHAT ID:', update.callback_query.message?.chat?.id);
-        //console.log('🟢 MSG ID:', update.callback_query.message?.message_id);
-      }
       lastUpdateId = update.update_id;
-      store.set('last_update_id', lastUpdateId);
 
-      // ===============================
-      // HANDLE NORMAL TEXT FOR EDIT FLOW
-      // ===============================
+      store.set(`last_update_id_${collegeId}`, lastUpdateId);
+
+      // ==========================
+      // HANDLE TEXT EDIT INPUT
+      // ==========================
       if (update.message?.text) {
         const text = update.message.text.trim();
         const chatId = update.message.chat.id;
 
-        const activeEditId = store.get('editing_active');
-        const awaitingEdit = store.get('awaiting_edit_input');
-        const editingChat = store.get('editing_chat');
+        const activeEditId = store.get(`editing_active_${collegeId}`);
+
+        const awaitingEdit = store.get(`awaiting_edit_input_${collegeId}`);
+
+        const editingChat = store.get(`editing_chat_${collegeId}`);
 
         if (
           awaitingEdit === '1' &&
           activeEditId &&
           String(editingChat) === String(chatId)
         ) {
-          //console.log(`✏️ Edit text received for #${activeEditId}`);
-
-          await confirmEdit(chatId, activeEditId, text);
+          await confirmEdit(chatId, activeEditId, text, collegeId);
 
           continue;
         }
       }
 
-      // only callback after text check
       if (!update.callback_query) continue;
 
       const cb = update.callback_query;
       const cbId = cb.id;
 
-      // duplicate callback protection
       if (processedCallbacks.has(cbId)) {
         continue;
       }
@@ -126,63 +124,97 @@ async function pollTelegramUpdates() {
 
       try {
         if (data.startsWith('approve_')) {
-          const id = data.replace('approve_', '');
+          const [, callbackCollegeId, id] = data.split('_');
 
-          await approveConfession(chatId, messageId, Number(id), 'miet');
+          await approveConfession(
+            chatId,
+            messageId,
+            Number(id),
+            callbackCollegeId,
+          );
 
-          await answerCallback(cbId, 'Approved ✅');
-        } else if (data.startsWith('stopedit_')) {
-          const id = data.replace('stopedit_', '');
-
-          store.delete('awaiting_edit_input');
-          store.delete('editing_active');
-          store.delete('editing_chat');
-          store.delete('editing_time');
-
-          const tgMsgId = store.get(`telegram_msg_${id}`);
-
-          await updateTelegramButtons(chatId, tgMsgId, 'default', id);
-
-          await answerCallback(cbId, 'Editing stopped ❌');
-        } else if (data.startsWith('reedit_')) {
-          const id = data.replace('reedit_', '');
-
-          store.set('editing_active', id);
-          store.set('editing_chat', chatId);
-          store.set('awaiting_edit_input', '1');
-
-          await answerCallback(cbId, 'Edit again ✏️');
-        } else if (data.startsWith('confirmpreview_')) {
-          const id = data.replace('confirmpreview_', '');
-
-          const text = store.get(`pending_edit_text_${id}`);
-
-          await processFormSubmit({ confession: text }, Number(id));
-
-          const tgMsgId = store.get(`telegram_msg_${id}`);
-
-          await updateTelegramButtons(chatId, tgMsgId, 'default', id);
-
-          await answerCallback(cbId, 'Confirmed ✅');
+          await answerCallback(cbId, 'Approved ✅', callbackCollegeId);
         } else if (data.startsWith('reject_')) {
-          const id = data.replace('reject_', '');
+          const [, callbackCollegeId, id] = data.split('_');
 
-          await rejectConfession(chatId, messageId, Number(id));
+          await rejectConfession(
+            chatId,
+            messageId,
+            Number(id),
+            callbackCollegeId,
+          );
 
-          await answerCallback(cbId, 'Rejected ❌');
+          await answerCallback(cbId, 'Rejected ❌', callbackCollegeId);
         } else if (data.startsWith('edit_')) {
-          const id = data.replace('edit_', '');
+          const [, callbackCollegeId, id] = data.split('_');
 
-          await startEditMode(chatId, messageId, Number(id));
+          await startEditMode(chatId, messageId, Number(id), callbackCollegeId);
 
-          await answerCallback(cbId, 'Edit mode ✏️');
+          await answerCallback(cbId, 'Edit mode ✏️', callbackCollegeId);
+        } else if (data.startsWith('stopedit_')) {
+          const [, callbackCollegeId, id] = data.split('_');
+
+          store.delete(`awaiting_edit_input_${callbackCollegeId}`);
+          store.delete(`editing_active_${callbackCollegeId}`);
+          store.delete(`editing_chat_${callbackCollegeId}`);
+          store.delete(`editing_time_${callbackCollegeId}`);
+
+          const tgMsgId = store.get(`telegram_msg_${callbackCollegeId}_${id}`);
+
+          await updateTelegramButtons(
+            chatId,
+            tgMsgId,
+            'default',
+            id,
+            callbackCollegeId,
+          );
+
+          await answerCallback(cbId, 'Editing stopped ❌', callbackCollegeId);
+        } else if (data.startsWith('reedit_')) {
+          const [, callbackCollegeId, id] = data.split('_');
+
+          store.set(`editing_active_${callbackCollegeId}`, id);
+
+          store.set(`editing_chat_${callbackCollegeId}`, chatId);
+
+          store.set(`awaiting_edit_input_${callbackCollegeId}`, '1');
+
+          await answerCallback(cbId, 'Edit again ✏️', callbackCollegeId);
+        } else if (data.startsWith('confirmpreview_')) {
+          const [, callbackCollegeId, id] = data.split('_');
+
+          const text = store.get(
+            `pending_edit_text_${callbackCollegeId}_${id}`,
+          );
+
+          await processFormSubmit(
+            {
+              confession: text,
+              collegeId: callbackCollegeId,
+            },
+            Number(id),
+          );
+
+          const tgMsgId = store.get(`telegram_msg_${callbackCollegeId}_${id}`);
+
+          await updateTelegramButtons(
+            chatId,
+            tgMsgId,
+            'default',
+            id,
+            callbackCollegeId,
+          );
+
+          await answerCallback(cbId, 'Confirmed ✅', callbackCollegeId);
         } else if (data.startsWith('more_')) {
-          await answerCallback(cbId, 'More options ⚙️');
+          const [, callbackCollegeId] = data.split('_');
+
+          await answerCallback(cbId, 'More options ⚙️', callbackCollegeId);
         }
       } catch (callbackError) {
         console.error('CALLBACK PROCESS ERROR:', callbackError.message);
 
-        await answerCallback(cbId, 'Failed ❌');
+        await answerCallback(cbId, 'Failed ❌', collegeId);
       }
     }
   } catch (error) {
@@ -195,25 +227,27 @@ async function pollTelegramUpdates() {
       return;
     }
   } finally {
-    isPolling = false;
+    pollingState.set(collegeId, false);
   }
 }
 
 let pollerStarted = false;
 
 function startTelegramPoller() {
-  //console.trace('📍 POLLER START TRACE');
-
-  if (pollerStarted) {
-    return;
-  }
+  if (pollerStarted) return;
 
   pollerStarted = true;
 
   async function pollLoop() {
     while (true) {
       try {
-        await pollTelegramUpdates();
+        const colleges = await College.find({
+          isActive: true,
+        });
+
+        for (const college of colleges) {
+          await pollTelegramUpdates(college.collegeId);
+        }
       } catch (error) {
         console.error('POLL LOOP ERROR:', error.message);
       }

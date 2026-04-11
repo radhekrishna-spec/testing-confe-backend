@@ -3,13 +3,8 @@ const store = require('../store/store');
 const { sendTelegramMessage } = require('../modules/social/telegramService');
 const { moveFileToFolder } = require('./ai/google/driveService');
 const College = require('../models/College');
-//const { addToEditQueue } = require('../modules/confession/workers/editQueueWorker');
-//const { processFormSubmit } = require('./formSubmitService');
-
 const Confession = require('../models/Confession');
 const { saveFeedback } = require('../ai/feedbackTrainer');
-
-// EXACT SAME BUTTON UPDATE FLOW + SAFE
 
 const { splitTextSmart } = require('../modules/confession/helpers/splitText');
 const {
@@ -25,7 +20,7 @@ async function getTelegramBaseUrl(collegeId) {
   });
 
   if (!college?.telegram?.botToken) {
-    throw new Error('Telegram bot token not found');
+    throw new Error(`Telegram bot token not found for ${collegeId}`);
   }
 
   return `https://api.telegram.org/bot${college.telegram.botToken}`;
@@ -38,12 +33,12 @@ async function confirmEdit(chatId, confessionNo, text, collegeId) {
     await sendTelegramMessage(
       chatId,
       `🛠 Creating preview for #${confessionNo}...`,
+      collegeId,
     );
 
-    store.set(`pending_edit_text_${confessionNo}`, text);
+    store.set(`pending_edit_text_${collegeId}_${confessionNo}`, text);
 
     const parts = splitTextSmart(text, 665);
-
     const imageBuffers = await generateSlidesImages(parts, confessionNo);
 
     const driveUrls = await uploadImagesToDrive(
@@ -52,9 +47,8 @@ async function confirmEdit(chatId, confessionNo, text, collegeId) {
       collegeId,
     );
 
-    store.set(`preview_images_${confessionNo}`, driveUrls);
+    store.set(`preview_images_${collegeId}_${confessionNo}`, driveUrls);
 
-    // send preview image only
     await axios.post(`${BASE_URL}/sendPhoto`, {
       chat_id: chatId,
       photo: driveUrls[0],
@@ -64,25 +58,26 @@ async function confirmEdit(chatId, confessionNo, text, collegeId) {
           [
             {
               text: 'CONFIRM ✅',
-              callback_data: `confirmpreview_${confessionNo}`,
+              callback_data: `confirmpreview_${collegeId}_${confessionNo}`,
             },
             {
               text: 'RE-EDIT ✏️',
-              callback_data: `reedit_${confessionNo}`,
+              callback_data: `reedit_${collegeId}_${confessionNo}`,
             },
           ],
         ],
       },
     });
 
-    store.delete('awaiting_edit_input');
-    store.delete('editing_active');
-    store.delete('editing_chat');
-    store.delete('editing_time');
+    store.delete(`awaiting_edit_input_${collegeId}`);
+    store.delete(`editing_active_${collegeId}`);
+    store.delete(`editing_chat_${collegeId}`);
+    store.delete(`editing_time_${collegeId}`);
   } catch (error) {
     console.error('CONFIRM EDIT ERROR:', error.message);
   }
 }
+
 async function updateTelegramButtons(
   chatId,
   messageId,
@@ -101,17 +96,17 @@ async function updateTelegramButtons(
         [
           {
             text: 'EDIT ✏️',
-            callback_data: `edit_${confessionNo}`,
+            callback_data: `edit_${collegeId}_${confessionNo}`,
           },
           {
             text: 'REJECT ❌',
-            callback_data: `reject_${confessionNo}`,
+            callback_data: `reject_${collegeId}_${confessionNo}`,
           },
         ],
         [
           {
             text: 'SEE MORE ⚙️',
-            callback_data: `more_${confessionNo}`,
+            callback_data: `more_${collegeId}_${confessionNo}`,
           },
         ],
       ],
@@ -122,17 +117,11 @@ async function updateTelegramButtons(
         [
           {
             text: 'APPROVE ✅',
-            callback_data: `approve_${confessionNo}`,
+            callback_data: `approve_${collegeId}_${confessionNo}`,
           },
           {
             text: 'EDIT ✏️',
-            callback_data: `edit_${confessionNo}`,
-          },
-        ],
-        [
-          {
-            text: 'SEE MORE ⚙️',
-            callback_data: `more_${confessionNo}`,
+            callback_data: `edit_${collegeId}_${confessionNo}`,
           },
         ],
       ],
@@ -143,7 +132,7 @@ async function updateTelegramButtons(
         [
           {
             text: 'STOP EDITING ❌',
-            callback_data: `stopedit_${confessionNo}`,
+            callback_data: `stopedit_${collegeId}_${confessionNo}`,
           },
         ],
       ],
@@ -154,15 +143,15 @@ async function updateTelegramButtons(
         [
           {
             text: 'APPROVE ✅',
-            callback_data: `approve_${confessionNo}`,
+            callback_data: `approve_${collegeId}_${confessionNo}`,
           },
           {
             text: 'REJECT ❌',
-            callback_data: `reject_${confessionNo}`,
+            callback_data: `reject_${collegeId}_${confessionNo}`,
           },
           {
             text: 'SEE MORE ⚙️',
-            callback_data: `more_${confessionNo}`,
+            callback_data: `more_${collegeId}_${confessionNo}`,
           },
         ],
       ],
@@ -177,21 +166,15 @@ async function updateTelegramButtons(
         message_id: Number(messageId),
         reply_markup: keyboard,
       },
-      {
-        timeout: 10000,
-      },
+      { timeout: 10000 },
     );
   } catch (error) {
     const err = error.response?.data;
-
-    if (err?.description?.includes('message is not modified')) {
-      console.log('⚠️ Same buttons already applied');
-      return;
-    }
-
+    if (err?.description?.includes('message is not modified')) return;
     console.error('BUTTON UPDATE ERROR:', err || error.message);
   }
 }
+
 async function promoteNextQueuedAI(collegeId) {
   const nextAi = await Confession.findOne({
     collegeId,
@@ -206,38 +189,44 @@ async function promoteNextQueuedAI(collegeId) {
 
   await Confession.updateOne({ _id: nextAi._id }, { status: 'PENDING' });
 }
-// EXACT SAME APPROVE FLOW + DUP SAFE
+
 async function approveConfession(chatId, messageId, confessionNo, collegeId) {
-  if (store.get(`state_${confessionNo}`) === 'APPROVED') {
-    await sendTelegramMessage(chatId, '⚠️ Already approved');
+  if (store.get(`state_${collegeId}_${confessionNo}`) === 'APPROVED') {
+    await sendTelegramMessage(chatId, '⚠️ Already approved', collegeId);
     return;
   }
 
-  store.set(`status_${confessionNo}`, 'approved');
-  store.set(`state_${confessionNo}`, 'APPROVED');
-  store.set(`approved_time_${confessionNo}`, Date.now());
+  store.set(`status_${collegeId}_${confessionNo}`, 'approved');
+  store.set(`state_${collegeId}_${confessionNo}`, 'APPROVED');
+  store.set(`approved_time_${collegeId}_${confessionNo}`, Date.now());
 
   await Confession.updateOne(
-    { confessionNo: Number(confessionNo) },
+    {
+      confessionNo: Number(confessionNo),
+      collegeId,
+    },
     { status: 'APPROVED' },
   );
+
   const confession = await Confession.findOne({
     confessionNo: Number(confessionNo),
+    collegeId,
   });
 
   if (confession) {
     await saveFeedback({
-      collegeId: confession.collegeId,
+      collegeId,
       confessionId: confession._id,
       message: confession.message,
       feedback: 'APPROVED',
     });
   }
+
   if (confession?.isAIGenerated) {
-    await promoteNextQueuedAI(confession.collegeId);
+    await promoteNextQueuedAI(collegeId);
   }
 
-  const fileIds = store.get(`fileIds_${confessionNo}`) || [];
+  const fileIds = store.get(`fileIds_${collegeId}_${confessionNo}`) || [];
 
   for (const fileId of fileIds) {
     await moveFileToFolder(fileId, 'queue', collegeId);
@@ -251,31 +240,39 @@ async function approveConfession(chatId, messageId, confessionNo, collegeId) {
     collegeId,
   );
 
-  await sendTelegramMessage(chatId, `✅ Confession #${confessionNo} approved`);
+  await sendTelegramMessage(
+    chatId,
+    `✅ Confession #${confessionNo} approved`,
+    collegeId,
+  );
 }
 
-// EXACT SAME REJECT FLOW + SAFE
 async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
-  if (store.get(`state_${confessionNo}`) === 'REJECTED') {
-    await sendTelegramMessage(chatId, '⚠️ Already rejected');
+  if (store.get(`state_${collegeId}_${confessionNo}`) === 'REJECTED') {
+    await sendTelegramMessage(chatId, '⚠️ Already rejected', collegeId);
     return;
   }
 
-  store.set(`status_${confessionNo}`, 'rejected');
-  store.set(`state_${confessionNo}`, 'REJECTED');
-  store.set(`rejected_time_${confessionNo}`, Date.now());
+  store.set(`status_${collegeId}_${confessionNo}`, 'rejected');
+  store.set(`state_${collegeId}_${confessionNo}`, 'REJECTED');
+  store.set(`rejected_time_${collegeId}_${confessionNo}`, Date.now());
 
   await Confession.updateOne(
-    { confessionNo: Number(confessionNo) },
+    {
+      confessionNo: Number(confessionNo),
+      collegeId,
+    },
     { status: 'REJECTED' },
   );
+
   const confession = await Confession.findOne({
     confessionNo: Number(confessionNo),
+    collegeId,
   });
 
   if (confession) {
     await saveFeedback({
-      collegeId: confession.collegeId,
+      collegeId,
       confessionId: confession._id,
       message: confession.message,
       feedback: 'REJECTED',
@@ -284,9 +281,10 @@ async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
   }
 
   if (confession?.isAIGenerated) {
-    await promoteNextQueuedAI(confession.collegeId);
+    await promoteNextQueuedAI(collegeId);
   }
-  const fileIds = store.get(`fileIds_${confessionNo}`) || [];
+
+  const fileIds = store.get(`fileIds_${collegeId}_${confessionNo}`) || [];
 
   for (const fileId of fileIds) {
     await moveFileToFolder(fileId, 'rejected', collegeId);
@@ -300,25 +298,29 @@ async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
     collegeId,
   );
 
-  await sendTelegramMessage(chatId, `❌ Confession #${confessionNo} rejected`);
+  await sendTelegramMessage(
+    chatId,
+    `❌ Confession #${confessionNo} rejected`,
+    collegeId,
+  );
 }
 
-// EXACT SAME EDIT START FLOW + TIMEOUT
 async function startEditMode(chatId, messageId, confessionNo, collegeId) {
-  const oldText = store.get(`text_${confessionNo}`);
+  const oldText = store.get(`text_${collegeId}_${confessionNo}`);
 
   if (!oldText) {
     await sendTelegramMessage(
       chatId,
       `❌ Original text not found for #${confessionNo}`,
+      collegeId,
     );
     return;
   }
 
-  store.set('editing_active', confessionNo);
-  store.set('editing_chat', chatId);
-  store.set('editing_time', Date.now());
-  store.set('awaiting_edit_input', '1');
+  store.set(`editing_active_${collegeId}`, confessionNo);
+  store.set(`editing_chat_${collegeId}`, chatId);
+  store.set(`editing_time_${collegeId}`, Date.now());
+  store.set(`awaiting_edit_input_${collegeId}`, '1');
 
   await updateTelegramButtons(
     chatId,
@@ -331,6 +333,7 @@ async function startEditMode(chatId, messageId, confessionNo, collegeId) {
   await sendTelegramMessage(
     chatId,
     `✏️ Editing #${confessionNo}\n\n📌 Current text:\n${oldText}\n\nSend new edited text now.`,
+    collegeId,
   );
 }
 

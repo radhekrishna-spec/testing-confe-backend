@@ -2,10 +2,13 @@ const {
   validateAndPrepareText,
   processMediaFlow,
 } = require('./services/confessionPipelineService');
+
 const { getNextConfessionNo } = require('./services/confessionCounter');
 
 const { checkDuplicate } = require('./services/duplicateService');
+
 const { createCaptionFlow } = require('./helpers/captionBuilderService');
+
 const { getSettings } = require('../../services/settingsService');
 
 async function processFormSubmit(data, existingConfessionNo = null) {
@@ -21,6 +24,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       checkDuplicate(text);
     }
 
+    // optional: make college-wise if needed later
     const confessionNo = existingConfessionNo || (await getNextConfessionNo());
 
     let mediaResult = {
@@ -37,9 +41,11 @@ async function processFormSubmit(data, existingConfessionNo = null) {
         data.collegeId,
       );
     }
+
     const caption = await createCaptionFlow(text, mediaResult.confessionNo);
 
     console.log('⚙️ SETTINGS:', settings);
+
     console.log('📨 TELEGRAM PREVIEW:', settings.telegramPreview);
 
     if (settings.telegramPreview) {
@@ -47,9 +53,15 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
       try {
         console.log('📸 TELEGRAM IMAGES:', mediaResult.telegramImages);
+
         console.log('📝 CAPTION:', caption);
+
         console.log('🔢 CONFESSION NO:', mediaResult.confessionNo);
+
+        console.log('🏫 COLLEGE ID:', data.collegeId);
+
         const delay = fromAdminUI ? 2000 : 8000;
+
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         console.log(
@@ -57,10 +69,12 @@ async function processFormSubmit(data, existingConfessionNo = null) {
             ? '⚡ ADMIN AUTO FLOW → TELEGRAM in 2s'
             : '🚀 NORMAL FLOW → TELEGRAM in 8s',
         );
+
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
           caption.caption || caption,
           mediaResult.confessionNo,
+          data.collegeId,
           !!existingConfessionNo,
         );
 
@@ -73,10 +87,13 @@ async function processFormSubmit(data, existingConfessionNo = null) {
                 autoApproveConfession,
               } = require('./services/adminAutoApproveService');
 
-              await autoApproveConfession(mediaResult.confessionNo);
+              await autoApproveConfession(
+                mediaResult.confessionNo,
+                data.collegeId,
+              );
 
               console.log(
-                `⚡ AUTO APPROVED FROM ADMIN UI: #${mediaResult.confessionNo}`,
+                `⚡ AUTO APPROVED FROM ADMIN UI: #${mediaResult.confessionNo} (${data.collegeId})`,
               );
             } catch (error) {
               console.error('❌ AUTO APPROVE FAILED:', error.message);
@@ -94,6 +111,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
     return {
       success: true,
       confessionNo: mediaResult.confessionNo,
+      collegeId: data.collegeId,
       text,
       images: mediaResult.images,
       caption,
@@ -110,7 +128,9 @@ function normalizeSettings(rawSettings) {
   return {
     duplicateCheck:
       rawSettings.duplicateCheck ?? rawSettings.isDuplicate ?? true,
+
     autoSplitParts: rawSettings.autoSplitParts ?? rawSettings.split ?? true,
+
     telegramPreview:
       rawSettings.telegramPreview ?? rawSettings.telegram ?? true,
   };

@@ -1,11 +1,7 @@
 const axios = require('axios');
 const store = require('../../store/store');
 const FormData = require('form-data');
-
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const College = require('../models/College');
 
 // reusable safe delay
 function sleep(ms) {
@@ -13,10 +9,21 @@ function sleep(ms) {
 }
 
 // EXACT SAME AS APPSCRIPT + UPGRADED
-async function sendTelegram(images, caption, confessionNo, isEdit = false) {
-  if (store.get(`telegram_sending_${confessionNo}`)) return;
+async function sendTelegram(
+  images,
+  caption,
+  confessionNo,
+  collegeId,
+  isEdit = false,
+) {
+  const college = await College.findOne({ collegeId });
 
-  store.set(`telegram_sending_${confessionNo}`, '1');
+  const BOT_TOKEN = college.telegram.botToken;
+  const CHAT_ID = college.telegram.chatId;
+  const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+  if (store.get(`telegram_sending_${collegeId}_${confessionNo}`)) return;
+
+  store.set(`telegram_sending_${collegeId}_${confessionNo}`, '1');
 
   try {
     const chunkSize = 10;
@@ -84,15 +91,15 @@ async function sendTelegram(images, caption, confessionNo, isEdit = false) {
             [
               {
                 text: 'APPROVE ✅',
-                callback_data: `approve_${confessionNo}`,
+                callback_data: `approve_${collegeId}_${confessionNo}`,
               },
               {
                 text: 'REJECT ❌',
-                callback_data: `reject_${confessionNo}`,
+                callback_data: `reject_${collegeId}_${confessionNo}`,
               },
               {
                 text: 'SEE MORE ⚙️',
-                callback_data: `more_${confessionNo}`,
+                callback_data: `more_${collegeId}_${confessionNo}`,
               },
             ],
           ],
@@ -108,20 +115,35 @@ async function sendTelegram(images, caption, confessionNo, isEdit = false) {
     const Confession = require('../../models/Confession');
 
     await Confession.updateOne(
-      { confessionNo },
-      { telegramMessageId: messageId },
+      {
+        confessionNo,
+        collegeId,
+      },
+      {
+        telegramMessageId: messageId,
+      },
     );
-    store.set(`telegram_media_msgs_${confessionNo}`, sentMessageIds);
-    store.set(`telegram_sent_${confessionNo}`, 'yes');
+    store.set(
+      `telegram_media_msgs_${collegeId}_${confessionNo}`,
+      sentMessageIds,
+    );
+    store.set(`telegram_sent_${collegeId}_${confessionNo}`, 'yes');
 
     //console.log(`✅ Telegram sent for #${confessionNo}`);
   } finally {
-    store.delete(`telegram_sending_${confessionNo}`);
+    store.delete(`telegram_sending_${collegeId}_${confessionNo}`);
   }
 }
 
 // SAME SIMPLE TEXT MESSAGE
-async function sendTelegramMessage(chatId, text) {
+async function sendTelegramMessage(chatId, text, collegeId) {
+  const college = await College.findOne({ collegeId });
+  if (!college?.telegram?.botToken) {
+    throw new Error(`Telegram config missing for ${collegeId}`);
+  }
+
+  const BOT_TOKEN = college.telegram.botToken;
+  const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
   try {
     return await axios.post(
       `${BASE_URL}/sendMessage`,
