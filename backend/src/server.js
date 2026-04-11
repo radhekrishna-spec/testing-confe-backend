@@ -16,6 +16,7 @@ const submitRoutes = require('./routes/submitRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const collegeRoutes = require('./routes/collegeRoutes');
+const adminSetupRoutes = require('./src/routes/adminSetupRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -108,6 +109,7 @@ app.post('/api/test-submit', (req, res) => {
 app.use('/api/confessions', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminSetupRoutes);
 
 app.use('/api/college', collegeRoutes);
 
