@@ -9,11 +9,9 @@ const {
 
 const College = require('../models/College');
 const Confession = require('../models/Confession');
-
 const { saveFeedback } = require('../ai/feedbackTrainer');
 
 const { splitTextSmart } = require('../modules/confession/helpers/splitText');
-
 const {
   generateSlidesImages,
 } = require('../modules/confession/slides/slidesService');
@@ -47,7 +45,6 @@ async function confirmEdit(chatId, confessionNo, text, collegeId) {
 
     const parts = splitTextSmart(text, 665);
 
-    // ✅ FIXED
     const imageBuffers = await generateSlidesImages(
       parts,
       confessionNo,
@@ -99,10 +96,26 @@ async function updateTelegramButtons(
   collegeId,
 ) {
   const BASE_URL = await getTelegramBaseUrl(collegeId);
-
   if (!messageId) return;
 
-  let keyboard;
+  let keyboard = {
+    inline_keyboard: [
+      [
+        {
+          text: 'APPROVE ✅',
+          callback_data: `approve_${collegeId}_${confessionNo}`,
+        },
+        {
+          text: 'REJECT ❌',
+          callback_data: `reject_${collegeId}_${confessionNo}`,
+        },
+        {
+          text: 'SEE MORE ⚙️',
+          callback_data: `more_${collegeId}_${confessionNo}`,
+        },
+      ],
+    ],
+  };
 
   if (status === 'approved') {
     keyboard = {
@@ -117,15 +130,11 @@ async function updateTelegramButtons(
             callback_data: `reject_${collegeId}_${confessionNo}`,
           },
         ],
-        [
-          {
-            text: 'SEE MORE ⚙️',
-            callback_data: `more_${collegeId}_${confessionNo}`,
-          },
-        ],
       ],
     };
-  } else if (status === 'rejected') {
+  }
+
+  if (status === 'rejected') {
     keyboard = {
       inline_keyboard: [
         [
@@ -140,32 +149,15 @@ async function updateTelegramButtons(
         ],
       ],
     };
-  } else if (status === 'editing') {
+  }
+
+  if (status === 'editing') {
     keyboard = {
       inline_keyboard: [
         [
           {
             text: 'STOP EDITING ❌',
             callback_data: `stopedit_${collegeId}_${confessionNo}`,
-          },
-        ],
-      ],
-    };
-  } else {
-    keyboard = {
-      inline_keyboard: [
-        [
-          {
-            text: 'APPROVE ✅',
-            callback_data: `approve_${collegeId}_${confessionNo}`,
-          },
-          {
-            text: 'REJECT ❌',
-            callback_data: `reject_${collegeId}_${confessionNo}`,
-          },
-          {
-            text: 'SEE MORE ⚙️',
-            callback_data: `more_${collegeId}_${confessionNo}`,
           },
         ],
       ],
@@ -180,20 +172,95 @@ async function updateTelegramButtons(
         message_id: Number(messageId),
         reply_markup: keyboard,
       },
-      {
-        timeout: 10000,
-      },
+      { timeout: 10000 },
     );
   } catch (error) {
-    const err = error.response?.data;
-
-    if (err?.description?.includes('message is not modified')) return;
-
-    console.error('BUTTON UPDATE ERROR:', err || error.message);
+    console.error(
+      'BUTTON UPDATE ERROR:',
+      error.response?.data || error.message,
+    );
   }
 }
 
-// बाकी approve/reject/edit functions same rahenge
+async function approveConfession(chatId, messageId, confessionNo, collegeId) {
+  await Confession.updateOne(
+    {
+      confessionNo: Number(confessionNo),
+      collegeId,
+    },
+    { status: 'APPROVED' },
+  );
+
+  await updateTelegramButtons(
+    chatId,
+    messageId,
+    'approved',
+    confessionNo,
+    collegeId,
+  );
+
+  await sendTelegramMessage(
+    chatId,
+    `✅ Confession #${confessionNo} approved`,
+    collegeId,
+  );
+}
+
+async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
+  await Confession.updateOne(
+    {
+      confessionNo: Number(confessionNo),
+      collegeId,
+    },
+    { status: 'REJECTED' },
+  );
+
+  await updateTelegramButtons(
+    chatId,
+    messageId,
+    'rejected',
+    confessionNo,
+    collegeId,
+  );
+
+  await sendTelegramMessage(
+    chatId,
+    `❌ Confession #${confessionNo} rejected`,
+    collegeId,
+  );
+}
+
+async function startEditMode(chatId, messageId, confessionNo, collegeId) {
+  const oldText = store.get(`text_${collegeId}_${confessionNo}`);
+
+  if (!oldText) {
+    await sendTelegramMessage(
+      chatId,
+      `❌ Original text not found for #${confessionNo}`,
+      collegeId,
+    );
+    return;
+  }
+
+  store.set(`editing_active_${collegeId}`, confessionNo);
+  store.set(`editing_chat_${collegeId}`, chatId);
+  store.set(`awaiting_edit_input_${collegeId}`, '1');
+
+  await updateTelegramButtons(
+    chatId,
+    messageId,
+    'editing',
+    confessionNo,
+    collegeId,
+  );
+
+  await sendTelegramMessage(
+    chatId,
+    `✏️ Send new edited text for #${confessionNo}`,
+    collegeId,
+  );
+}
+
 module.exports = {
   approveConfession,
   rejectConfession,
