@@ -10,12 +10,25 @@ const { exportSlideAsPNG } = require('../../../services/slideExportService');
 const College = require('../../../models/College');
 
 async function getTemplateId(collegeId) {
+  if (!collegeId) {
+    throw new Error('collegeId is required in getTemplateId');
+  }
+
   const college = await College.findOne({
     collegeId,
     isActive: true,
   });
 
+  if (!college) {
+    throw new Error(`College not found: ${collegeId}`);
+  }
+
   const templateId = college?.posting?.templateId;
+
+  console.log('🎞️ TEMPLATE FETCH:', {
+    collegeId,
+    templateId,
+  });
 
   if (!templateId) {
     throw new Error(`Missing templateId for ${collegeId}`);
@@ -31,6 +44,10 @@ async function createSlidePNG(
   totalParts,
   collegeId,
 ) {
+  if (!collegeId) {
+    throw new Error('collegeId missing in createSlidePNG');
+  }
+
   const auth = getGoogleAuthClient();
 
   const drive = google.drive({
@@ -47,6 +64,13 @@ async function createSlidePNG(
 
   const { fontSize, lineSpacing } = autoFitTextConfig(text.length);
 
+  console.log('📄 COPYING TEMPLATE:', {
+    collegeId,
+    templateId,
+    confessionNo,
+    partNo,
+  });
+
   const copyRes = await drive.files.copy({
     fileId: templateId,
     requestBody: {
@@ -56,16 +80,24 @@ async function createSlidePNG(
 
   const presentationId = copyRes.data.id;
 
+  if (!presentationId) {
+    throw new Error('Failed to create copied presentation');
+  }
+
   try {
     const pres = await slides.presentations.get({
       presentationId,
     });
 
-    const slide = pres.data.slides[0];
+    const slide = pres.data.slides?.[0];
+
+    if (!slide) {
+      throw new Error('Slide not found in presentation');
+    }
 
     const slideId = slide.objectId;
 
-    const confessionShape = slide.pageElements.find(
+    const confessionShape = slide.pageElements?.find(
       (el) =>
         el.shape &&
         el.shape.text &&
@@ -98,9 +130,13 @@ async function createSlidePNG(
 
     return await exportSlideAsPNG(auth, presentationId, slideId);
   } finally {
-    await drive.files.delete({
-      fileId: presentationId,
-    });
+    try {
+      await drive.files.delete({
+        fileId: presentationId,
+      });
+    } catch (cleanupError) {
+      console.error('🧹 SLIDE CLEANUP ERROR:', cleanupError.message);
+    }
   }
 }
 
@@ -184,6 +220,10 @@ function buildSlideRequests(
 }
 
 async function generateSlidesImages(parts, confessionNo, collegeId) {
+  if (!collegeId) {
+    throw new Error('collegeId missing in generateSlidesImages');
+  }
+
   return Promise.all(
     parts.map((part, index) =>
       createSlidePNG(part, confessionNo, index + 1, parts.length, collegeId),
