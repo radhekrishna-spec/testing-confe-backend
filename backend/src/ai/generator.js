@@ -19,7 +19,6 @@ async function generateAIConfession(collegeId, status = 'QUEUED') {
       .join('\n');
 
     const topTopics = detectTopTopics(samples).join(', ');
-
     const weightedTopics = await getTopWeightedTopics(collegeId);
 
     const smartTopics = weightedTopics.length
@@ -31,24 +30,21 @@ You are writing anonymous college confessions.
 
 College: ${collegeId}
 
-Trending themes in this college:
+Trending themes:
 ${smartTopics}
 
-Use the tone and style from these real examples:
-
+Examples:
 ${sampleText}
 
 Rules:
-- sound like real students
 - natural Hinglish
-- highly relatable
 - emotional / funny / viral
+- relatable
 - no names
-- each confession 60-80 words
 - generate EXACTLY 3 unique confessions
-- return ONLY 3 confessions separated by ###
+- separate by ###
 
-Example format:
+Example:
 confession 1 ###
 confession 2 ###
 confession 3
@@ -64,18 +60,22 @@ confession 3
     });
 
     console.log('📤 GEMINI REQUEST SENT', {
-      file: 'ai/generator.js',
       promptLength: prompt.length,
-      time: new Date().toISOString(),
+      collegeId,
     });
 
     const result = await model.generateContent(prompt);
 
     console.log('📥 GEMINI RESPONSE RECEIVED');
+    console.log('📊 USAGE:', result.response?.usageMetadata);
 
-    console.log(result.response?.usageMetadata);
+    const text = result.response.text()?.trim() || '';
 
-    let text = result.response.text().trim();
+    console.log('🧠 RAW AI TEXT:', text);
+
+    if (!text) {
+      throw new Error('Empty AI response');
+    }
 
     let confessionTexts = text
       .split('###')
@@ -83,7 +83,8 @@ confession 3
       .filter(Boolean)
       .slice(0, 3);
 
-    // fallback if AI returns less than 3
+    console.log('✂️ SPLIT CONFESSIONS:', confessionTexts);
+
     while (confessionTexts.length < 3) {
       confessionTexts.push(
         confessionTexts[0] ||
@@ -96,18 +97,18 @@ confession 3
     for (let i = 0; i < 3; i++) {
       let finalText = confessionTexts[i];
 
-      let qualityScore = scoreConfessionQuality(finalText);
+      console.log(`📝 SAVING CONFESSION ${i + 1}:`, finalText);
+
+      const qualityScore = scoreConfessionQuality(finalText);
 
       if (qualityScore < 3) {
-        console.log(
-          `Low quality AI output for confession ${i + 1}, retrying...`,
-        );
+        console.log(`⚠️ Low quality confession ${i + 1}, retrying...`);
 
         const retryResult = await model.generateContent(
           `Generate one better Hinglish college confession for ${collegeId}`,
         );
 
-        finalText = retryResult.response.text().trim();
+        finalText = retryResult.response.text()?.trim() || finalText;
       }
 
       const confession = await Confession.create({
@@ -118,12 +119,16 @@ confession 3
         isAIGenerated: true,
       });
 
+      console.log(`✅ SAVED TO DB: ${confession._id}`);
+
       savedConfessions.push(confession);
     }
 
+    console.log(`🎉 TOTAL SAVED: ${savedConfessions.length}`);
+
     return savedConfessions;
   } catch (error) {
-    console.error('AI GENERATION ERROR:', error.message);
+    console.error('❌ AI GENERATION ERROR FULL:', error);
     throw error;
   }
 }
