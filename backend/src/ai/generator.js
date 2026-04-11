@@ -60,7 +60,7 @@ confession 3
     });
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.0-flash-lite',
     });
 
     console.log('📤 GEMINI REQUEST SENT', {
