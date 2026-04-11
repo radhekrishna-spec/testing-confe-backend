@@ -1,63 +1,100 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
+const { getCollegeMemory } = require('./memoryService');
+const { detectTopTopics } = require('./topicAnalyzer');
+const { getTopWeightedTopics } = require('./topicTrainer');
+const Confession = require('../models/Confession');
+const { scoreConfessionQuality } = require('./qualityScorer');
 
-console.log('🔑 GEMINI KEY:', !!process.env.GEMINI_API_KEY);
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-async function generateConfessionAIAssets(text) {
+async function generateAIConfession(collegeId, status = 'QUEUED') {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
-    });
+    const samples = await getCollegeMemory(collegeId);
+
+    console.log(`AI memory samples for ${collegeId}:`, samples.length);
+
+    const sampleText = samples
+      .slice(0, 20)
+      .map((x, i) => `${i + 1}. ${x.message}`)
+      .join('\n');
+
+    const topTopics = detectTopTopics(samples).join(', ');
+
+    const weightedTopics = await getTopWeightedTopics(collegeId);
+
+    const smartTopics = weightedTopics.length
+      ? weightedTopics.join(', ')
+      : topTopics;
 
     const prompt = `
-Read this anonymous confession and return ONLY valid JSON.
+You are writing anonymous college confessions.
 
-{
-  "song": {
-    "title": "",
-    "artist": ""
-  },
-  "captionQuestion": "",
-  "adminComment": ""
-}
+College: ${collegeId}
+
+Trending themes:
+${smartTopics}
+
+Examples:
+${sampleText}
 
 Rules:
-- suggest one best matching Hindi/English song
-- captionQuestion should be emotional and short
-- adminComment should be moderation friendly
+- natural Hinglish
+- emotional / funny / viral
+- highly relatable
+- no names
+- 60-80 words each
+- generate EXACTLY 3 unique confessions
+- separate each confession with ###
 
-Confession:
-${text.slice(0, 1200)}
+Return only confession text.
 `;
-    console.log('📤 GEMINI REQUEST SENT', {
-      file: 'confessionAIService.js',
-      promptLength: prompt.length,
-      time: new Date().toISOString(),
+
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.9,
     });
-    const result = await model.generateContent(prompt);
-    const raw = result.response.text();
 
-    const cleaned = raw
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
+    let text = response.choices[0].message.content.trim();
 
-    return JSON.parse(cleaned);
+    let confessionTexts = text
+      .split('###')
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    while (confessionTexts.length < 3) {
+      confessionTexts.push(confessionTexts[0]);
+    }
+
+    const savedConfessions = [];
+
+    for (let i = 0; i < 3; i++) {
+      const confession = await Confession.create({
+        collegeId,
+        message: confessionTexts[i],
+        status: i === 0 ? status : 'QUEUED',
+        source: 'AI',
+        isAIGenerated: true,
+      });
+
+      savedConfessions.push(confession);
+    }
+
+    return savedConfessions;
   } catch (error) {
-    console.error('AI master service error:', error);
-
-    return {
-      song: {
-        title: 'Kesariya',
-        artist: 'Arijit Singh',
-      },
-      captionQuestion: 'Some feelings are never spoken 💜',
-      adminComment: 'Normal confession',
-    };
+    console.error('AI GENERATION ERROR:', error.message);
+    throw error;
   }
 }
 
 module.exports = {
-  generateConfessionAIAssets,
+  generateAIConfession,
 };
