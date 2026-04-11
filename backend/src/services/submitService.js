@@ -8,6 +8,8 @@ const {
   createCaptionFlow,
 } = require('../modules/confession/helpers/captionBuilderService');
 
+const { checkQueueAndGenerate } = require('../ai/queueWatcher');
+
 const { getEstimatedPostTime } = require('../utils/etaHelper');
 
 exports.createConfession = async ({
@@ -58,6 +60,7 @@ exports.createConfession = async ({
   });
 
   const eta = getEstimatedPostTime(queueAhead);
+  await checkQueueAndGenerate(collegeId, 'user');
 
   return {
     confessionNo,

@@ -14,7 +14,7 @@ export default function AdminDashboardPage({ collegeId }) {
 
   useEffect(() => {
     fetch(
-      `https://testing-confe-backend.onrender.com/admin/confessions/${collegeId}`,
+      `https://testing-confe-backend.onrender.com/api/admin/confessions/${collegeId}`,
     )
       .then((res) => res.json())
       .then((data) => {
@@ -54,6 +54,14 @@ export default function AdminDashboardPage({ collegeId }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50 p-6">
+      {collegeId && (
+        <button
+          onClick={() => navigate('/admin')}
+          className="mb-4 px-4 py-2 rounded-xl border border-violet-200"
+        >
+          ← Back
+        </button>
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-violet-700">
           {collegeId?.toUpperCase()} Admin Dashboard

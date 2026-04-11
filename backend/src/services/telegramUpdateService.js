@@ -7,6 +7,7 @@ const College = require('../models/College');
 //const { processFormSubmit } = require('./formSubmitService');
 
 const Confession = require('../models/Confession');
+const { saveFeedback } = require('../ai/feedbackTrainer');
 
 // EXACT SAME BUTTON UPDATE FLOW + SAFE
 
@@ -206,6 +207,18 @@ async function approveConfession(chatId, messageId, confessionNo, collegeId) {
     { confessionNo: Number(confessionNo) },
     { status: 'APPROVED' },
   );
+  const confession = await Confession.findOne({
+    confessionNo: Number(confessionNo),
+  });
+
+  if (confession) {
+    await saveFeedback({
+      collegeId: confession.collegeId,
+      confessionId: confession._id,
+      message: confession.message,
+      feedback: 'APPROVED',
+    });
+  }
 
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
@@ -239,7 +252,19 @@ async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
     { confessionNo: Number(confessionNo) },
     { status: 'REJECTED' },
   );
+  const confession = await Confession.findOne({
+    confessionNo: Number(confessionNo),
+  });
 
+  if (confession) {
+    await saveFeedback({
+      collegeId: confession.collegeId,
+      confessionId: confession._id,
+      message: confession.message,
+      feedback: 'REJECTED',
+      reason: 'Rejected by admin from Telegram',
+    });
+  }
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
   for (const fileId of fileIds) {
