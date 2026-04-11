@@ -1,11 +1,13 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 const { getCollegeMemory } = require('./memoryService');
 const { detectTopTopics } = require('./topicAnalyzer');
 const { getTopWeightedTopics } = require('./topicTrainer');
 const Confession = require('../models/Confession');
 const { scoreConfessionQuality } = require('./qualityScorer');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 async function generateAIConfession(collegeId, status = 'QUEUED') {
   try {
@@ -50,31 +52,34 @@ confession 2 ###
 confession 3
 `;
 
-    console.log('🤖 GEMINI MODEL INIT:', {
+    console.log('🤖 GROQ MODEL INIT:', {
       file: 'ai/generator.js',
       time: new Date().toISOString(),
+      model: 'llama-3.3-70b-versatile',
     });
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
-    });
-
-    console.log('📤 GEMINI REQUEST SENT', {
+    console.log('📤 GROQ REQUEST SENT', {
       promptLength: prompt.length,
       collegeId,
     });
 
-    const result = await model.generateContent(prompt);
+    const result = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.9,
+    });
 
-    console.log('📥 GEMINI RESPONSE RECEIVED');
-    console.log('📊 USAGE:', result.response?.usageMetadata);
-
-    const text = result.response.text()?.trim() || '';
+    const text = result?.choices?.[0]?.message?.content?.trim() || '';
 
     console.log('🧠 RAW AI TEXT:', text);
 
     if (!text) {
-      throw new Error('Empty AI response');
+      throw new Error('Empty AI response from Groq');
     }
 
     let confessionTexts = text
@@ -104,11 +109,19 @@ confession 3
       if (qualityScore < 3) {
         console.log(`⚠️ Low quality confession ${i + 1}, retrying...`);
 
-        const retryResult = await model.generateContent(
-          `Generate one better Hinglish college confession for ${collegeId}`,
-        );
+        const retryResult = await groq.chat.completions.create({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'user',
+              content: `Generate one better Hinglish college confession for ${collegeId}`,
+            },
+          ],
+          temperature: 1,
+        });
 
-        finalText = retryResult.response.text()?.trim() || finalText;
+        finalText =
+          retryResult?.choices?.[0]?.message?.content?.trim() || finalText;
       }
 
       const confession = await Confession.create({
@@ -128,7 +141,7 @@ confession 3
 
     return savedConfessions;
   } catch (error) {
-    console.error('❌ AI GENERATION ERROR FULL:', error);
+    console.error('❌ GROQ AI GENERATION ERROR:', error);
     throw error;
   }
 }
