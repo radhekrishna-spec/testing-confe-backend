@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 const College = require('../models/College');
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH || 'service-account.json',
+  keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_FILE || 'service-account.json',
   scopes: ['https://www.googleapis.com/auth/drive'],
 });
 
