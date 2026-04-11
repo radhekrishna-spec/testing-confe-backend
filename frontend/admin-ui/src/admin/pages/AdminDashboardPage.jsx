@@ -14,7 +14,7 @@ export default function AdminDashboardPage({ collegeId }) {
 
   useEffect(() => {
     fetch(
-      `https://testing-confe-backend.onrender.com/api/admin/confessions/${collegeId}`,
+      `https://testing-confe-backend.onrender.com/admin/confessions/${collegeId}`,
     )
       .then((res) => res.json())
       .then((data) => {

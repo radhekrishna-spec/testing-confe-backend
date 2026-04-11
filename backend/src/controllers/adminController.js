@@ -2,8 +2,6 @@ const { createConfession } = require('../services/submitService');
 const College = require('../models/College');
 const Confession = require('../models/Confession');
 
-
-
 exports.getAllColleges = async (req, res) => {
   try {
     const colleges = await College.find({ isActive: true });
@@ -19,9 +17,7 @@ exports.getAllColleges = async (req, res) => {
           collegeId: college.collegeId,
           status: 'APPROVED',
           createdAt: {
-            $gte: new Date(
-              new Date().setHours(0, 0, 0, 0)
-            ),
+            $gte: new Date(new Date().setHours(0, 0, 0, 0)),
           },
         });
 
@@ -31,7 +27,7 @@ exports.getAllColleges = async (req, res) => {
           pending,
           postedToday,
         };
-      })
+      }),
     );
 
     res.status(200).json({
@@ -90,6 +86,28 @@ exports.broadcastConfession = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getCollegeConfessions = async (req, res) => {
+  try {
+    const { collegeId } = req.params;
+
+    const confessions = await Confession.find({
+      collegeId: collegeId.toLowerCase(),
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: confessions,
+    });
+  } catch (error) {
+    console.error('GET COLLEGE CONFESSIONS ERROR:', error);
 
     res.status(500).json({
       success: false,

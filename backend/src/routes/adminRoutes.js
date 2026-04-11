@@ -5,6 +5,7 @@ const identifyCollege = require('../middleware/identifyCollege');
 const {
   broadcastConfession,
   getAllColleges,
+  getCollegeConfessions,
 } = require('../controllers/adminController');
 
 router.get('/confessions', identifyCollege, async (req, res) => {
@@ -24,5 +25,7 @@ router.get('/confessions', identifyCollege, async (req, res) => {
 router.post('/broadcast', broadcastConfession);
 
 router.get('/colleges', getAllColleges);
+
+router.get('/confessions/:collegeId', getCollegeConfessions);
 
 module.exports = router;
