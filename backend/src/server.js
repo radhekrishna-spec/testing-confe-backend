@@ -16,7 +16,7 @@ const submitRoutes = require('./routes/submitRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const collegeRoutes = require('./routes/collegeRoutes');
-const adminSetupRoutes = require('./src/routes/adminSetupRoutes');
+const adminSetupRoutes = require('./routes/adminSetupRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
