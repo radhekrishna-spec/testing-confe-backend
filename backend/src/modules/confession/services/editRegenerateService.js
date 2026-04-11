@@ -1,24 +1,48 @@
 const store = require('../../../store/store');
+
 const { splitTextSmart } = require('../helpers/splitText');
+
 const { generateSlidesImages } = require('../slides/slidesService');
+
 const {
   uploadImagesToDrive,
 } = require('../../../services/ai/google/driveService');
 
-async function regenerateEditedConfession(confessionNo, text) {
+async function regenerateEditedConfession(confessionNo, text, collegeId) {
+  if (!collegeId) {
+    throw new Error('collegeId is required in regenerateEditedConfession');
+  }
+
   const parts = splitTextSmart(text, 665);
 
-  const imageBuffers = await generateSlidesImages(parts, confessionNo);
+  // ✅ fixed: pass collegeId
+  const imageBuffers = await generateSlidesImages(
+    parts,
+    confessionNo,
+    collegeId,
+  );
 
-  const driveUrls = await uploadImagesToDrive(imageBuffers, confessionNo);
+  // ✅ fixed: pass collegeId
+  const driveUrls = await uploadImagesToDrive(
+    imageBuffers,
+    confessionNo,
+    collegeId,
+  );
 
-  store.set(`text_${confessionNo}`, text);
-  store.set(`images_${confessionNo}`, driveUrls);
+  // ✅ fixed: store keys
+  store.set(`text_${collegeId}_${confessionNo}`, text);
+
+  store.set(`images_${collegeId}_${confessionNo}`, driveUrls);
 
   // restore original state
-  store.set(`state_${confessionNo}`, 'APPROVED');
+  store.set(`state_${collegeId}_${confessionNo}`, 'APPROVED');
 
-  return true;
+  return {
+    success: true,
+    confessionNo,
+    collegeId,
+    images: driveUrls,
+  };
 }
 
 module.exports = {

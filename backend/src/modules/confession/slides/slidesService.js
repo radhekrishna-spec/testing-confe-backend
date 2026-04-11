@@ -1,11 +1,36 @@
 const { google } = require('googleapis');
 const { autoFitTextConfig } = require('../helpers/slideTextFit');
+
 const {
   getGoogleAuthClient,
 } = require('../../../services/ai/google/googleAuthService');
+
 const { exportSlideAsPNG } = require('../../../services/slideExportService');
 
-async function createSlidePNG(text, confessionNo, partNo, totalParts) {
+const College = require('../../../models/College');
+
+async function getTemplateId(collegeId) {
+  const college = await College.findOne({
+    collegeId,
+    isActive: true,
+  });
+
+  const templateId = college?.posting?.templateId;
+
+  if (!templateId) {
+    throw new Error(`Missing templateId for ${collegeId}`);
+  }
+
+  return templateId;
+}
+
+async function createSlidePNG(
+  text,
+  confessionNo,
+  partNo,
+  totalParts,
+  collegeId,
+) {
   const auth = getGoogleAuthClient();
 
   const drive = google.drive({
@@ -18,12 +43,14 @@ async function createSlidePNG(text, confessionNo, partNo, totalParts) {
     auth,
   });
 
+  const templateId = await getTemplateId(collegeId);
+
   const { fontSize, lineSpacing } = autoFitTextConfig(text.length);
 
   const copyRes = await drive.files.copy({
-    fileId: process.env.TEMPLATE_ID,
+    fileId: templateId,
     requestBody: {
-      name: `confession_${confessionNo}_part_${partNo}`,
+      name: `${collegeId}_confession_${confessionNo}_part_${partNo}`,
     },
   });
 
@@ -35,6 +62,7 @@ async function createSlidePNG(text, confessionNo, partNo, totalParts) {
     });
 
     const slide = pres.data.slides[0];
+
     const slideId = slide.objectId;
 
     const confessionShape = slide.pageElements.find(
@@ -63,13 +91,13 @@ async function createSlidePNG(text, confessionNo, partNo, totalParts) {
           confessionBoxId,
           fontSize,
           lineSpacing,
+          collegeId,
         ),
       },
     });
 
     return await exportSlideAsPNG(auth, presentationId, slideId);
   } finally {
-    // IMPORTANT CLEANUP
     await drive.files.delete({
       fileId: presentationId,
     });
@@ -84,6 +112,7 @@ function buildSlideRequests(
   confessionBoxId,
   fontSize,
   lineSpacing,
+  collegeId,
 ) {
   const footerText = totalParts > 1 ? `Part ${partNo}/${totalParts}` : '';
 
@@ -121,13 +150,15 @@ function buildSlideRequests(
           text: '{{watermark}}',
           matchCase: false,
         },
-        replaceText: process.env.PAGE_NAME || '@miet_k_dilwale_confession_wale',
+        replaceText: `@${collegeId}_confession`,
       },
     },
     {
       updateTextStyle: {
         objectId: confessionBoxId,
-        textRange: { type: 'ALL' },
+        textRange: {
+          type: 'ALL',
+        },
         style: {
           fontSize: {
             magnitude: fontSize,
@@ -140,20 +171,26 @@ function buildSlideRequests(
     {
       updateParagraphStyle: {
         objectId: confessionBoxId,
-        textRange: { type: 'ALL' },
-        style: { lineSpacing },
+        textRange: {
+          type: 'ALL',
+        },
+        style: {
+          lineSpacing,
+        },
         fields: 'lineSpacing',
       },
     },
   ];
 }
 
-async function generateSlidesImages(parts, confessionNo) {
+async function generateSlidesImages(parts, confessionNo, collegeId) {
   return Promise.all(
     parts.map((part, index) =>
-      createSlidePNG(part, confessionNo, index + 1, parts.length),
+      createSlidePNG(part, confessionNo, index + 1, parts.length, collegeId),
     ),
   );
 }
 
-module.exports = { generateSlidesImages };
+module.exports = {
+  generateSlidesImages,
+};
