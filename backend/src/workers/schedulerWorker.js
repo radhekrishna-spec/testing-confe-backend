@@ -3,6 +3,8 @@ const Confession = require('../models/Confession');
 const { moveFileToFolder } = require('../services/ai/google/driveService');
 const { updateTelegramButtons } = require('../services/telegramUpdateService');
 const { postToInstagram } = require('../modules/social/instagramService');
+const { checkQueueAndGenerate } = require('../ai/queueWatcher');
+const College = require('../models/College');
 
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
@@ -40,6 +42,26 @@ async function getApprovedQueueCount() {
   return await Confession.countDocuments({
     status: 'APPROVED',
   });
+}
+async function refillLowQueues() {
+  const colleges = await College.find({
+    isActive: true,
+  });
+
+  for (const college of colleges) {
+    const approvedCount = await Confession.countDocuments({
+      collegeId: college.collegeId,
+      status: 'APPROVED',
+    });
+
+    if (approvedCount < 3) {
+      console.log(
+        `⚠️ Low posting queue for ${college.collegeId}: ${approvedCount}`,
+      );
+
+      await checkQueueAndGenerate(college.collegeId, 'scheduler');
+    }
+  }
 }
 
 // new time based posting logic
@@ -248,6 +270,18 @@ async function startSchedulerWorker() {
       console.error('SCHEDULER ERROR:', error.message);
     }
   }, 60000);
+  setInterval(
+    async () => {
+      console.log('⏰ 8hr AI fallback check');
+
+      try {
+        await refillLowQueues();
+      } catch (error) {
+        console.error('8HR FALLBACK ERROR:', error.message);
+      }
+    },
+    8 * 60 * 60 * 1000,
+  );
 }
 
 module.exports = {

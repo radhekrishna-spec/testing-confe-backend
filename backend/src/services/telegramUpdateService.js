@@ -16,6 +16,7 @@ const {
   generateSlidesImages,
 } = require('../modules/confession/slides/slidesService');
 const { uploadImagesToDrive } = require('./ai/google/driveService');
+const { checkQueueAndGenerate } = require('../ai/queueWatcher');
 
 async function getTelegramBaseUrl(collegeId) {
   const college = await College.findOne({
@@ -219,6 +220,9 @@ async function approveConfession(chatId, messageId, confessionNo, collegeId) {
       feedback: 'APPROVED',
     });
   }
+  if (confession?.isAIGenerated) {
+    await checkQueueAndGenerate(confession.collegeId, 'ai');
+  }
 
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
@@ -264,6 +268,10 @@ async function rejectConfession(chatId, messageId, confessionNo, collegeId) {
       feedback: 'REJECTED',
       reason: 'Rejected by admin from Telegram',
     });
+  }
+
+  if (confession?.isAIGenerated) {
+    await checkQueueAndGenerate(confession.collegeId, 'ai');
   }
   const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 

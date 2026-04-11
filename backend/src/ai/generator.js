@@ -7,7 +7,7 @@ const { scoreConfessionQuality } = require('./qualityScorer');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-async function generateAIConfession(collegeId) {
+async function generateAIConfession(collegeId, status = 'QUEUED') {
   try {
     const samples = await getCollegeMemory(collegeId);
 
@@ -51,7 +51,7 @@ Only return confession text.
 `;
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
     });
 
     const result = await model.generateContent(prompt);
@@ -72,7 +72,8 @@ Only return confession text.
     const confession = await Confession.create({
       collegeId,
       message: finalText,
-      status: 'PENDING',
+      status,
+      source: 'AI',
       isAIGenerated: true,
     });
 
