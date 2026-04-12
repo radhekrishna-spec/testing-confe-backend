@@ -4,15 +4,22 @@ const { detectTopTopics } = require('./topicAnalyzer');
 const { getTopWeightedTopics } = require('./topicTrainer');
 const Confession = require('../models/Confession');
 const { scoreConfessionQuality } = require('./qualityScorer');
+
 const {
   getNextConfessionNo,
 } = require('../modules/confession/services/confessionCounter');
+
+const { sendTelegram } = require('../modules/social/telegramService');
+
+const {
+  generateSlidesImages,
+} = require('../modules/confession/slides/slidesService');
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-async function generateAIConfession(collegeId, status = 'QUEUED') {
+async function generateAIConfession(collegeId, status = 'PENDING') {
   try {
     const samples = await getCollegeMemory(collegeId);
 
@@ -24,6 +31,7 @@ async function generateAIConfession(collegeId, status = 'QUEUED') {
       .join('\n');
 
     const topTopics = detectTopTopics(samples).join(', ');
+
     const weightedTopics = await getTopWeightedTopics(collegeId);
 
     const smartTopics = weightedTopics.length
@@ -126,18 +134,37 @@ confession 3
         finalText =
           retryResult?.choices?.[0]?.message?.content?.trim() || finalText;
       }
+
       const confessionNo = await getNextConfessionNo();
 
       const confession = await Confession.create({
         confessionNo,
         collegeId,
         message: finalText,
-        status: i === 0 ? status : 'PENDING',
+        status: 'PENDING',
         source: 'AI',
         isAIGenerated: true,
       });
 
       console.log(`✅ SAVED TO DB: ${confession._id}`);
+
+      // 🔥 send directly to telegram admin approval
+      try {
+        const imageBuffers = await generateSlidesImages(
+          [finalText],
+          confessionNo,
+          collegeId,
+        );
+
+        await sendTelegram(imageBuffers, finalText, confessionNo, collegeId);
+
+        console.log(`📨 TELEGRAM PREVIEW SENT: #${confessionNo}`);
+      } catch (tgError) {
+        console.error(
+          `❌ TELEGRAM SEND FAILED: #${confessionNo}`,
+          tgError.message,
+        );
+      }
 
       savedConfessions.push(confession);
     }

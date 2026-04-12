@@ -60,27 +60,24 @@ async function refillLowQueues() {
 
   const college = colleges[pointer];
 
-  const approvedCount = await Confession.countDocuments({
-    collegeId: college.collegeId,
-    status: {
-      $in: ['APPROVED', 'PENDING', 'QUEUED'],
-    },
-    source: 'AI',
-  });
+  const visibleKey = `AI_VISIBLE_COUNT_${college.collegeId}`;
 
-  console.log(`📦 AI queue for ${college.collegeId}: ${approvedCount}`);
+  let visibleCount = Number(store.get(visibleKey)) || 0;
 
-  if (approvedCount < 3) {
+  console.log(`📦 Visible AI queue for ${college.collegeId}: ${visibleCount}`);
+
+  if (visibleCount < 3) {
     console.log(
-      `⚠️ Low posting queue for ${college.collegeId}: ${approvedCount}`,
+      `⚠️ Low AI visible queue for ${college.collegeId}: ${visibleCount}`,
     );
 
     await checkQueueAndGenerate(college.collegeId, 'scheduler');
+
+    store.set(visibleKey, 3);
   } else {
     console.log(`✅ Queue healthy for ${college.collegeId}`);
   }
 
-  // move pointer to next college
   store.set(pointerKey, pointer + 1);
 }
 
@@ -272,7 +269,33 @@ async function processApprovedQueue() {
     store.delete(`posting_${confessionNo}`);
   }
 }
+async function decayOldAIQueues() {
+  const colleges = await College.find({
+    isActive: true,
+  }).sort({ collegeId: 1 });
 
+  for (const college of colleges) {
+    const visibleKey = `AI_VISIBLE_COUNT_${college.collegeId}`;
+
+    let visibleCount = Number(store.get(visibleKey)) || 0;
+
+    if (visibleCount <= 0) {
+      continue;
+    }
+
+    visibleCount = Math.max(0, visibleCount - 1);
+
+    store.set(visibleKey, visibleCount);
+
+    console.log(`📉 ${college.collegeId}: visible ${visibleCount}`);
+
+    if (visibleCount === 0) {
+      console.log(
+        `🔄 ${college.collegeId} queue empty, refilling next rotation`,
+      );
+    }
+  }
+}
 // worker
 async function startSchedulerWorker() {
   console.log('🚀 Scheduler worker started');
@@ -305,12 +328,26 @@ async function startSchedulerWorker() {
 
   setInterval(
     async () => {
-      console.log('⏰ 8hr AI fallback check');
+      console.log('⏰ 30min college rotation check');
 
       try {
         await refillLowQueues();
       } catch (error) {
-        console.error('8HR FALLBACK ERROR:', error.message);
+        console.error('30MIN ROTATION ERROR:', error.message);
+      }
+    },
+    30 * 60 * 1000,
+  );
+
+  // 🔥 every 8 hours reduce stale AI queue
+  setInterval(
+    async () => {
+      console.log('⏰ 8hr AI decay check');
+
+      try {
+        await decayOldAIQueues();
+      } catch (error) {
+        console.error('8HR DECAY ERROR:', error.message);
       }
     },
     8 * 60 * 60 * 1000,
