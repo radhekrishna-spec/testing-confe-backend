@@ -42,7 +42,11 @@ function generateFallbackQuestion(text) {
 
 // EXACT SAME EMOJI LOGIC
 function addEmotionEmoji(question) {
-  const q = question.toLowerCase();
+  if (!question) {
+    question = 'Agar tum hote to kya karte?';
+  }
+
+  const q = String(question).toLowerCase();
 
   const love = ['🥺', '❤️', '💞', '💗'];
   const sad = ['💔', '😞', '😢', '🥀'];

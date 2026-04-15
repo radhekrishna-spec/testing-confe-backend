@@ -1,8 +1,11 @@
 const store = require('../../../store/store');
+
 const {
   buildCaption,
   addEmotionEmoji,
   getSmartHashtags,
+  generateAIQuestion,
+  generateFallbackQuestion,
 } = require('../services/captionService');
 
 const { generateAIConfession } = require('../services/confessionAIService');
@@ -16,25 +19,30 @@ async function createCaptionFlow(text, confessionNo, nickname = '') {
     store.set(`ai_assets_${confessionNo}`, aiAssets);
   }
 
-  const aiQuestion = addEmotionEmoji(aiAssets.captionQuestion);
+  const aiQuestion = await generateAIQuestion(text);
+
+  const question = aiQuestion || generateFallbackQuestion(text);
+
+  const finalQuestion = addEmotionEmoji(question);
 
   const hashtags = getSmartHashtags(text);
+
   const nicknamePrefix = nickname?.trim() ? `👤 ${nickname}\n\n` : '';
 
   const caption = `${nicknamePrefix}${buildCaption(
-    aiQuestion,
+    finalQuestion,
     confessionNo,
     hashtags,
   )}`;
 
   store.set(`caption_${confessionNo}`, caption);
-  store.set(`song_${confessionNo}`, aiAssets.song);
-  store.set(`comment_${confessionNo}`, aiAssets.adminComment);
+  store.set(`song_${confessionNo}`, aiAssets?.song || '');
+  store.set(`comment_${confessionNo}`, aiAssets?.adminComment || '');
 
   return {
     caption,
-    song: aiAssets.song,
-    adminComment: aiAssets.adminComment,
+    song: aiAssets?.song || '',
+    adminComment: aiAssets?.adminComment || '',
   };
 }
 
