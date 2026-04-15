@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
+import AITrainingPage from './admin/pages/AITrainingPage';
 import CollegeWorkspace from './admin/pages/CollegeWorkspace';
 import Dashboard from './admin/pages/Dashboard';
 import BackendControlsDashboard from './BackendControlsDashboard';
@@ -38,8 +39,16 @@ export default function App() {
           }
         />
 
+        <Route
+          path="/ai-training"
+          element={
+            <ProtectedRoute>
+              <AITrainingPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
-        <Route path="/ai-training" element={<AITrainingPage />} />
       </Routes>
     </BrowserRouter>
   );
