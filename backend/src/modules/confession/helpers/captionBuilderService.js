@@ -5,15 +5,13 @@ const {
   getSmartHashtags,
 } = require('../services/captionService');
 
-const {
-  generateConfessionAIAssets,
-} = require('../services/confessionAIService');
+const { generateAIConfession } = require('../services/confessionAIService');
 
 async function createCaptionFlow(text, confessionNo, nickname = '') {
   let aiAssets = store.get(`ai_assets_${confessionNo}`);
 
   if (!aiAssets) {
-    aiAssets = await generateConfessionAIAssets(text);
+    aiAssets = await generateAIConfession(text);
 
     store.set(`ai_assets_${confessionNo}`, aiAssets);
   }
