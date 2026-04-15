@@ -1,4 +1,4 @@
-const AITrainingConfession = require('../../models/AITrainingConfession');
+const AITrainingConfession = require('../models/AITrainingConfession');
 const mongoose = require('mongoose');
 
 async function getTrainingData(collegeCode) {
