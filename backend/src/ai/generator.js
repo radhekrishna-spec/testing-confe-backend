@@ -20,8 +20,21 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+const AITrainingConfession = require('../models/AITrainingConfession');
+
 async function generateAIConfession(collegeId, status = 'PENDING') {
   try {
+    const trainingCount = await AITrainingConfession.countDocuments({
+      collegeCode: collegeId,
+      isApprovedForTraining: true,
+      isRejected: false,
+    });
+
+    if (trainingCount < 100) {
+      console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
+      return [];
+    }
+
     let samples = await getTrainingData(collegeId);
 
     // fallback safety

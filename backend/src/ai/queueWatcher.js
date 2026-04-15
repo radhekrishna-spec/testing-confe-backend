@@ -1,5 +1,6 @@
 const Confession = require('../models/Confession');
 const { generateAIConfession } = require('./generator');
+const AITrainingConfession = require('../models/AITrainingConfession');
 
 const TARGET_QUEUE = 3;
 const DAILY_AI_LIMIT = 3;
@@ -11,6 +12,18 @@ function getStartOfToday() {
 }
 
 async function checkQueueAndGenerate(collegeId, source = 'user') {
+  const trainingCount = await AITrainingConfession.countDocuments({
+    collegeCode: collegeId,
+    isApprovedForTraining: true,
+    isRejected: false,
+  });
+
+  console.log(`📚 Training count for ${collegeId}: ${trainingCount}`);
+
+  if (trainingCount < 100) {
+    console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
+    return;
+  }
   // total pending + queued AI confessions
   const queueCount = await Confession.countDocuments({
     collegeId,

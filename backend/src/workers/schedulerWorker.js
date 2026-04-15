@@ -5,6 +5,7 @@ const { updateTelegramButtons } = require('../services/telegramUpdateService');
 const { postToInstagram } = require('../modules/social/instagramService');
 const { checkQueueAndGenerate } = require('../ai/queueWatcher');
 const College = require('../models/College');
+const AITrainingConfession = require('../models/AITrainingConfession');
 
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
@@ -71,7 +72,23 @@ async function refillLowQueues() {
       `⚠️ Low AI visible queue for ${college.collegeId}: ${visibleCount}`,
     );
 
-    await checkQueueAndGenerate(college.collegeId, 'scheduler');
+    const trainingCount = await AITrainingConfession.countDocuments({
+      collegeCode: college.collegeId,
+      isApprovedForTraining: true,
+      isRejected: false,
+    });
+
+    console.log(`📚 ${college.collegeId} training count: ${trainingCount}`);
+
+    if (trainingCount < 100) {
+      console.log(
+        `⏳ AI blocked for ${college.collegeId}: ${trainingCount}/100`,
+      );
+    } else {
+      await checkQueueAndGenerate(college.collegeId, 'scheduler');
+
+      store.set(visibleKey, 3);
+    }
 
     store.set(visibleKey, 3);
   } else {
