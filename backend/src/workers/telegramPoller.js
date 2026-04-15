@@ -143,6 +143,20 @@ async function pollTelegramUpdates(collegeId) {
             Number(id),
             callbackCollegeId,
           );
+          const Confession = require('../models/Confession');
+          const AIRejectionLog = require('../models/AIRejectionLog');
+
+          const confession = await Confession.findOne({
+            collegeId: callbackCollegeId,
+            confessionNo: Number(id),
+          });
+
+          await AIRejectionLog.create({
+            collegeCode: callbackCollegeId,
+            confessionNo: Number(id),
+            source: confession?.isAIGenerated ? 'ai' : 'user',
+            reason: 'manual_reject',
+          });
 
           await answerCallback(cbId, 'Rejected ❌', callbackCollegeId);
         } else if (data.startsWith('edit_')) {
@@ -206,6 +220,52 @@ async function pollTelegramUpdates(collegeId) {
           );
 
           await answerCallback(cbId, 'Confirmed ✅', callbackCollegeId);
+        } else if (data.startsWith('addai_')) {
+          const [, callbackCollegeId, id] = data.split('_');
+
+          const Confession = require('../models/Confession');
+          const AITrainingConfession = require('../models/AITrainingConfession');
+
+          const confession = await Confession.findOne({
+            collegeId: callbackCollegeId,
+            confessionNo: Number(id),
+          });
+
+          if (confession) {
+            const alreadyExists = await AITrainingConfession.findOne({
+              collegeCode: callbackCollegeId,
+              text: confession.message,
+            });
+
+            if (alreadyExists) {
+              await answerCallback(
+                cbId,
+                'Already in AI training ⚠️',
+                callbackCollegeId,
+              );
+              continue;
+            }
+
+            await AITrainingConfession.create({
+              collegeCode: callbackCollegeId,
+              text: confession.message,
+              source: confession.isAIGenerated ? 'ai' : 'user',
+              isApprovedForTraining: true,
+              isRejected: false,
+            });
+
+            await answerCallback(
+              cbId,
+              'Saved to AI training ✅',
+              callbackCollegeId,
+            );
+          } else {
+            await answerCallback(
+              cbId,
+              'Confession not found ❌',
+              callbackCollegeId,
+            );
+          }
         } else if (data.startsWith('more_')) {
           const [, callbackCollegeId] = data.split('_');
 

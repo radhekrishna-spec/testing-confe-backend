@@ -4,6 +4,7 @@ const { detectTopTopics } = require('./topicAnalyzer');
 const { getTopWeightedTopics } = require('./topicTrainer');
 const Confession = require('../models/Confession');
 const { scoreConfessionQuality } = require('./qualityScorer');
+const { getTrainingData } = require('../services/ai/trainingDataService');
 
 const {
   getNextConfessionNo,
@@ -21,16 +22,24 @@ const groq = new Groq({
 
 async function generateAIConfession(collegeId, status = 'PENDING') {
   try {
-    const samples = await getCollegeMemory(collegeId);
+    let samples = await getTrainingData(collegeId);
+
+    // fallback safety
+    if (!samples || samples.length === 0) {
+      samples = await getCollegeMemory(collegeId);
+    }
 
     console.log(`AI memory samples for ${collegeId}:`, samples.length);
 
     const sampleText = samples
       .slice(0, 20)
-      .map((x, i) => `${i + 1}. ${x.message}`)
+      .map((x, i) => `${i + 1}. ${x.text || x.message}`)
       .join('\n');
+    const normalizedSamples = samples.map((x) => ({
+      message: x.text || x.message,
+    }));
 
-    const topTopics = detectTopTopics(samples).join(', ');
+    const topTopics = detectTopTopics(normalizedSamples).join(', ');
 
     const weightedTopics = await getTopWeightedTopics(collegeId);
 

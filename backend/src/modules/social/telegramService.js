@@ -98,6 +98,10 @@ async function sendTelegram(
                 callback_data: `reject_${collegeId}_${confessionNo}`,
               },
               {
+                text: '➕ ADD TO AI',
+                callback_data: `addai_${collegeId}_${confessionNo}`,
+              },
+              {
                 text: 'SEE MORE ⚙️',
                 callback_data: `more_${collegeId}_${confessionNo}`,
               },
