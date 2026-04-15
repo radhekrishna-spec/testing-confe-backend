@@ -20,7 +20,6 @@ export default function App() {
           path="/admin/college/:collegeId"
           element={<CollegeWorkspace />}
         />
-
         <Route
           path="/admin"
           element={
