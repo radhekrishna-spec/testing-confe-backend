@@ -4,7 +4,7 @@ const { detectTopTopics } = require('./topicAnalyzer');
 const { getTopWeightedTopics } = require('./topicTrainer');
 const Confession = require('../models/Confession');
 const { scoreConfessionQuality } = require('./qualityScorer');
-const { getTrainingData } = require('../services/ai/trainingDataService');
+const { getTrainingData } = require('./trainingDataService');
 
 const {
   getNextConfessionNo,
