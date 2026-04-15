@@ -39,6 +39,7 @@ export default function App() {
         />
 
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
+        <Route path="/ai-training" element={<AITrainingPage />} />
       </Routes>
     </BrowserRouter>
   );
