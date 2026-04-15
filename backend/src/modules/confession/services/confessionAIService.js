@@ -3,6 +3,7 @@ const { getCollegeMemory } = require('../../../ai/memoryService');
 const { detectTopTopics } = require('../../../ai/topicAnalyzer');
 const { getTopWeightedTopics } = require('../../../ai/topicTrainer');
 const Confession = require('../../../models/Confession');
+const Counter = require('../../../models/Counter');
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
