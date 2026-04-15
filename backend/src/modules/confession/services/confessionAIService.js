@@ -1,15 +1,22 @@
 const Groq = require('groq-sdk');
-const { getCollegeMemory } = require('../../../ai//memoryService');
+const { getCollegeMemory } = require('../../../ai/memoryService');
 const { detectTopTopics } = require('../../../ai/topicAnalyzer');
 const { getTopWeightedTopics } = require('../../../ai/topicTrainer');
 const Confession = require('../../../models/Confession');
-// const { scoreConfessionQuality } = require('./qualityScorer');
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-async function generateAIConfession(collegeId, status = 'QUEUED') {
+async function getNextConfessionNo(collegeId) {
+  const last = await Confession.findOne({ collegeId })
+    .sort({ confessionNo: -1 })
+    .select('confessionNo');
+
+  return last ? last.confessionNo + 1 : 1;
+}
+
+async function generateAIConfession(collegeId, status = 'PENDING') {
   try {
     const samples = await getCollegeMemory(collegeId);
 
@@ -21,7 +28,6 @@ async function generateAIConfession(collegeId, status = 'QUEUED') {
       .join('\n');
 
     const topTopics = detectTopTopics(samples).join(', ');
-
     const weightedTopics = await getTopWeightedTopics(collegeId);
 
     const smartTopics = weightedTopics.length
@@ -74,13 +80,16 @@ Return only confession text.
       confessionTexts.push(confessionTexts[0]);
     }
 
+    let nextConfessionNo = await getNextConfessionNo(collegeId);
+
     const savedConfessions = [];
 
     for (let i = 0; i < 3; i++) {
       const confession = await Confession.create({
+        confessionNo: nextConfessionNo++,
         collegeId,
         message: confessionTexts[i],
-        status: i === 0 ? status : 'QUEUED',
+        status: i === 0 ? status : 'PENDING',
         source: 'AI',
         isAIGenerated: true,
       });
