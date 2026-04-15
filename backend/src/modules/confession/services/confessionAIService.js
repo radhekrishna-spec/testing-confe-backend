@@ -9,11 +9,13 @@ const groq = new Groq({
 });
 
 async function getNextConfessionNo(collegeId) {
-  const last = await Confession.findOne({ collegeId })
-    .sort({ confessionNo: -1 })
-    .select('confessionNo');
+  const counter = await Counter.findOneAndUpdate(
+    { key: `confession_${collegeId}` },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true },
+  );
 
-  return last ? last.confessionNo + 1 : 1;
+  return counter.seq;
 }
 
 async function generateAIConfession(collegeId, status = 'PENDING') {
@@ -85,8 +87,11 @@ Return only confession text.
     const savedConfessions = [];
 
     for (let i = 0; i < 3; i++) {
+      const confessionNo =
+        i === 0 ? nextConfessionNo : await getNextConfessionNo(collegeId);
+
       const confession = await Confession.create({
-        confessionNo: nextConfessionNo++,
+        confessionNo,
         collegeId,
         message: confessionTexts[i],
         status: i === 0 ? status : 'PENDING',
