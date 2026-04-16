@@ -2,7 +2,9 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AITrainingPage from './admin/pages/AITrainingPage';
 import CollegeWorkspace from './admin/pages/CollegeWorkspace';
+import CreateCollegePage from './admin/pages/CreateCollegePage';
 import Dashboard from './admin/pages/Dashboard';
+import EditCollegeSettingsPage from './admin/pages/EditCollegeSettingsPage';
 import BackendControlsDashboard from './BackendControlsDashboard';
 
 function ProtectedRoute({ children }) {
@@ -45,6 +47,11 @@ export default function App() {
               <AITrainingPage />
             </ProtectedRoute>
           }
+        />
+        <Route path="/admin/create-college" element={<CreateCollegePage />} />
+        <Route
+          path="/admin/college/:collegeId/settings"
+          element={<EditCollegeSettingsPage />}
         />
 
         <Route path="*" element={<Navigate to="/admin/login" replace />} />

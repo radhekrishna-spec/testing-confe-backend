@@ -162,7 +162,45 @@ router.delete('/ai-training/delete/:id', async (req, res) => {
     });
   }
 });
+router.post('/college/create', async (req, res) => {
+  try {
+    const College = require('../models/College');
 
+    const college = await College.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: college,
+    });
+  } catch (error) {
+    console.error('CREATE COLLEGE ERROR:', error.message);
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+router.patch('/college/:collegeId/update', async (req, res) => {
+  try {
+    const updated = await College.findOneAndUpdate(
+      { collegeId: req.params.collegeId },
+      { $set: req.body },
+      { new: true },
+    );
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 router.get('/ai-training/stats/:collegeCode', async (req, res) => {
   try {
     const AITrainingConfession = require('../models/AITrainingConfession');
