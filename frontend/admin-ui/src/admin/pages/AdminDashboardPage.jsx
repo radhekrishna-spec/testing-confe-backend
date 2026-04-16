@@ -5,6 +5,8 @@ import Pagination from '../components/Pagination';
 import QuickPreview from '../components/QuickPreview';
 import SearchBar from '../components/SearchBar';
 
+const API_BASE = 'https://testing-confe-backend.onrender.com';
+
 export default function AdminDashboardPage({ collegeId }) {
   const [confessions, setConfessions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,12 +18,11 @@ export default function AdminDashboardPage({ collegeId }) {
     count: 0,
     ready: false,
   });
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(
-      `https://testing-confe-backend.onrender.com/api/admin/ai-training/count/${collegeId}`,
-    )
+    fetch(`${API_BASE}/api/admin/ai-training/count/${collegeId}`)
       .then((res) => res.json())
       .then((data) => {
         setAiStats({
@@ -33,23 +34,16 @@ export default function AdminDashboardPage({ collegeId }) {
   }, [collegeId]);
 
   useEffect(() => {
-    fetch(
-      `https://testing-confe-backend.onrender.com/api/admin/confessions/${collegeId}`,
-    )
+    fetch(`${API_BASE}/api/admin/confessions/${collegeId}`)
       .then((res) => res.json())
       .then((data) => {
         setConfessions(Array.isArray(data.data) ? data.data : []);
       })
-      .catch((err) => {
-        console.error(err);
-        setConfessions([]);
-      });
+      .catch(() => setConfessions([]));
   }, [collegeId]);
 
   useEffect(() => {
-    fetch(
-      `https://testing-confe-backend.onrender.com/api/admin/college/${collegeId}`,
-    )
+    fetch(`${API_BASE}/api/admin/college/${collegeId}`)
       .then((res) => res.json())
       .then((data) => {
         setPaymentEnabled(!!data?.data?.payment?.enabled);
@@ -62,7 +56,7 @@ export default function AdminDashboardPage({ collegeId }) {
       setUpdatingPayment(true);
 
       const res = await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/college/${collegeId}/payment`,
+        `${API_BASE}/api/admin/college/${collegeId}/payment`,
         {
           method: 'PATCH',
           headers: {
@@ -71,17 +65,15 @@ export default function AdminDashboardPage({ collegeId }) {
           body: JSON.stringify({
             enabled: !paymentEnabled,
           }),
-        },
+        }
       );
 
       const data = await res.json();
 
       if (data.success) {
         setPaymentEnabled(!paymentEnabled);
-        alert(`Payment ${!paymentEnabled ? 'Enabled' : 'Disabled'} ✅`);
       }
     } catch (error) {
-      console.error(error);
       alert('Update failed ❌');
     } finally {
       setUpdatingPayment(false);
@@ -90,146 +82,115 @@ export default function AdminDashboardPage({ collegeId }) {
 
   const filteredData = useMemo(() => {
     return confessions.filter((item) => {
-      const matchesCollege =
-        !collegeId || item.collegeId?.toLowerCase() === collegeId.toLowerCase();
-
       const matchesSearch =
         item.nickname?.toLowerCase().includes(search.toLowerCase()) ||
         item.message?.toLowerCase().includes(search.toLowerCase()) ||
         String(item.confessionNo).includes(search);
 
-      return matchesCollege && matchesSearch;
+      return matchesSearch;
     });
-  }, [confessions, search, collegeId]);
+  }, [confessions, search]);
 
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
-  const logout = () => {
-    localStorage.removeItem('adminAuth');
-    window.location.href = '/admin/login';
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50 p-6">
-      {collegeId && (
-        <button
-          onClick={() => navigate('/admin')}
-          className="mb-4 px-4 py-2 rounded-xl border border-violet-200"
-        >
-          ← Back
-        </button>
-      )}
+    <div className="text-white">
+      {/* Header */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">
+              🏫 {collegeId?.toUpperCase()} Dashboard
+            </h1>
+            <p className="text-sm text-gray-400 mt-1">
+              Manage confessions, AI and payment
+            </p>
+          </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <button
-            onClick={() => navigate('/admin')}
-            className="rounded-2xl bg-violet-600 text-white p-4 font-semibold"
-          >
-            ← Main Dashboard
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() =>
+                navigate(`/admin/college/${collegeId}/edit`)
+              }
+              className="px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/10"
+            >
+              ✏ Edit
+            </button>
 
-          <button
-            onClick={() => navigate(`/admin/college/${collegeId}/edit`)}
-            className="rounded-2xl border border-violet-300 p-4"
-          >
-            ✏ Edit College
-          </button>
+            <button
+              onClick={() =>
+                navigate(
+                  `/admin/college/${collegeId}/ai-training`
+                )
+              }
+              className="px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/10"
+            >
+              🤖 AI
+            </button>
 
-          <button
-            onClick={() => navigate(`/admin/college/${collegeId}/ai-training`)}
-            className="rounded-2xl border border-violet-300 p-4"
-          >
-            🤖 AI Training
-          </button>
-
-          <button
-            onClick={togglePayment}
-            className="rounded-2xl border border-violet-300 p-4"
-          >
-            💳 Payment
-          </button>
-        </div>
-
-        <h1 className="text-2xl font-bold text-violet-700">
-          {collegeId?.toUpperCase()} Admin Dashboard
-        </h1>
-
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate(`/admin/college/${collegeId}/ai-training`)}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-xl"
-          >
-            AI Training Details
-          </button>
-          <button
-            onClick={togglePayment}
-            disabled={updatingPayment}
-            className={`px-4 py-2 rounded-xl text-white ${
-              paymentEnabled
-                ? 'bg-green-500 hover:bg-green-600'
-                : 'bg-gray-500 hover:bg-gray-600'
-            }`}
-          >
-            {updatingPayment
-              ? 'Updating...'
-              : `Payment ${paymentEnabled ? 'ON 💳' : 'OFF 🚫'}`}
-          </button>
-
-          <button
-            onClick={() => navigate('/admin/backend')}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl"
-          >
-            Backend Controls
-          </button>
-
-          <button
-            onClick={logout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
-          >
-            Logout
-          </button>
+            <button
+              onClick={togglePayment}
+              disabled={updatingPayment}
+              className={`px-4 py-2 rounded-2xl ${
+                paymentEnabled
+                  ? 'bg-green-500 text-white'
+                  : 'border border-white/20'
+              }`}
+            >
+              {updatingPayment
+                ? 'Updating...'
+                : paymentEnabled
+                ? '💳 Payment ON'
+                : '🚫 Payment OFF'}
+            </button>
+          </div>
         </div>
       </div>
 
-      <SearchBar
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setCurrentPage(1);
-        }}
-      />
-      <div className="mt-4 rounded-2xl border border-violet-200 bg-white p-4 shadow-sm">
+      {/* Search */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-6">
+        <SearchBar
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+        />
+      </div>
+
+      {/* Stats */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-5 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-sm text-gray-500">AI Training Count</p>
-            <h3 className="text-xl font-bold text-violet-700">
+            <p className="text-sm text-gray-400">
+              AI Training Count
+            </p>
+            <h3 className="text-2xl font-bold mt-1">
               {aiStats.count}
             </h3>
           </div>
 
-          <div>
-            <span
-              className={`px-3 py-1 rounded-full text-sm ${
-                aiStats.ready
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-yellow-100 text-yellow-700'
-              }`}
-            >
-              {aiStats.ready ? 'AI Ready' : 'Need 100+'}
-            </span>
-          </div>
+          <span
+            className={`px-4 py-2 rounded-full text-sm ${
+              aiStats.ready
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-yellow-500/20 text-yellow-400'
+            }`}
+          >
+            {aiStats.ready ? 'AI Ready' : 'Need 100+'}
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div className="col-span-2">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/5 p-4">
           <ConfessionTable
             confessions={paginatedData}
             onSelect={setSelectedConfession}
@@ -242,10 +203,12 @@ export default function AdminDashboardPage({ collegeId }) {
           />
         </div>
 
-        <QuickPreview
-          confession={selectedConfession}
-          onClose={() => setSelectedConfession(null)}
-        />
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+          <QuickPreview
+            confession={selectedConfession}
+            onClose={() => setSelectedConfession(null)}
+          />
+        </div>
       </div>
     </div>
   );

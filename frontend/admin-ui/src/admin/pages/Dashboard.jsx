@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import BackendControlsDashboard from '../../BackendControlsDashboard';
 import RecentActivityPanel from '../components//RecentActivity';
 import AITrainingPanel from '../components/AITrainingPanel';
 import CollegesGrid from '../components/CollegesGrid';
 import GlobalComposerPanel from '../components/GlobalComposerPanel';
 import useDashboardLogic from '../hooks/useDashboardLogic';
+
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -34,6 +34,8 @@ export default function Dashboard() {
     setSavingAI,
     clearActivity,
   } = useDashboardLogic();
+
+  const API_BASE = 'https://testing-confe-backend.onrender.com';
 
   const retryFailedColleges = async () => {
     if (!lastResult) return;
@@ -66,19 +68,14 @@ export default function Dashboard() {
       setLoading(true);
       setProgressText(`Sending to ${selectedColleges.length} colleges...`);
 
-      const res = await fetch(
-        'https://testing-confe-backend.onrender.com/api/admin/broadcast',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message,
-            collegeIds: selectedColleges,
-          }),
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/admin/broadcast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          collegeIds: selectedColleges,
+        }),
+      });
 
       const data = await res.json();
 
@@ -97,7 +94,6 @@ export default function Dashboard() {
       ]);
 
       setLastResult(data.data);
-
       setStatusType('success');
       setStatusMessage('Sent successfully 🚀');
 
@@ -106,7 +102,8 @@ export default function Dashboard() {
       setProgressText('');
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      setStatusType('error');
+      setStatusMessage(error.message);
     } finally {
       setLoading(false);
     }
@@ -122,19 +119,14 @@ export default function Dashboard() {
       setLoading(true);
       setProgressText('Broadcasting to all colleges...');
 
-      const res = await fetch(
-        'https://m-backend-4t8v.onrender.com/api/admin/broadcast',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message,
-            collegeIds: colleges.map((c) => c.collegeId),
-          }),
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/admin/broadcast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          collegeIds: colleges.map((c) => c.collegeId),
+        }),
+      });
 
       const data = await res.json();
 
@@ -151,6 +143,7 @@ export default function Dashboard() {
         },
         ...prev.slice(0, 4),
       ]);
+
       setLastResult(data.data);
       setStatusType('success');
       setStatusMessage('Broadcast sent 🚀');
@@ -166,6 +159,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
   const saveAITraining = async () => {
     if (!aiText.trim()) {
       alert('Write AI training text first');
@@ -181,31 +175,30 @@ export default function Dashboard() {
       setSavingAI(true);
 
       const requests = selectedColleges.map((collegeCode) =>
-        fetch(
-          'https://testing-confe-backend.onrender.com/api/admin/ai-training/add',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              collegeCode,
-              text: aiText,
-              source: 'super_admin',
-            }),
-          },
-        ),
+        fetch(`${API_BASE}/api/admin/ai-training/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            collegeCode,
+            text: aiText,
+            source: 'super_admin',
+          }),
+        })
       );
 
       await Promise.all(requests);
 
-      alert(`AI training saved for ${selectedColleges.join(', ')} ✅`);
+      setStatusType('success');
+      setStatusMessage(
+        `AI training saved for ${selectedColleges.join(', ')} ✅`
+      );
 
       setAiText('');
       setSelectedColleges([]);
     } catch (error) {
       console.error(error);
-      alert('Save failed ❌');
+      setStatusType('error');
+      setStatusMessage('Save failed ❌');
     } finally {
       setSavingAI(false);
     }
@@ -213,7 +206,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      <div className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-md mb-6">
+      {/* Top Navbar */}
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-md mb-8">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">🚀 Super Admin</h1>
 
@@ -226,10 +220,10 @@ export default function Dashboard() {
             </button>
 
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/admin/backend')}
               className="px-4 py-2 rounded-xl border border-white/20"
             >
-              Dashboard
+              Backend
             </button>
 
             <button
@@ -245,33 +239,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Super Admin Dashboard 🚀</h1>
-      <p className="text-gray-400 mb-3">Quick Actions</p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {/* Action Tabs */}
+      <div className="flex flex-wrap gap-3 mb-6">
         <button
           onClick={() => navigate('/admin/create-college')}
-          className="rounded-2xl bg-white text-black p-5 font-semibold text-lg hover:scale-[1.02] transition"
+          className="px-5 py-3 rounded-2xl border border-white/20"
         >
           🏫 Create College
         </button>
 
-        <button
-          onClick={() => setActiveTab('global')}
-          className="rounded-2xl border border-white/20 p-5 hover:bg-white/10 transition"
-        >
-          🌍 Global
-        </button>
-
-        <button
-          onClick={() => setActiveTab('ai')}
-          className="rounded-2xl border border-white/20 p-5 hover:bg-white/10 transition"
-        >
-          🤖 AI
-        </button>
-      </div>
-      <p className="text-gray-400 mb-3">Switch Panel</p>
-
-      <div className="flex gap-3 mb-6">
         <button
           onClick={() => setActiveTab('global')}
           className={`px-5 py-3 rounded-2xl ${
@@ -280,7 +256,7 @@ export default function Dashboard() {
               : 'border border-white/20'
           }`}
         >
-          Global
+          🌍 Global
         </button>
 
         <button
@@ -291,23 +267,14 @@ export default function Dashboard() {
               : 'border border-white/20'
           }`}
         >
-          AI Training
-        </button>
-
-        <button
-          onClick={() => setActiveTab('backend')}
-          className={`px-5 py-3 rounded-2xl ${
-            activeTab === 'backend'
-              ? 'bg-white text-black'
-              : 'border border-white/20'
-          }`}
-        >
-          Backend Control
+          🤖 AI Training
         </button>
       </div>
+
+      {/* Status */}
       {statusMessage && (
         <div
-          className={`mb-4 rounded-2xl p-3 ${
+          className={`mb-6 rounded-2xl p-3 ${
             statusType === 'success'
               ? 'bg-green-500/20 border border-green-400'
               : 'bg-red-500/20 border border-red-400'
@@ -316,6 +283,8 @@ export default function Dashboard() {
           {statusMessage}
         </div>
       )}
+
+      {/* Panels */}
       {activeTab === 'global' && (
         <GlobalComposerPanel
           colleges={colleges}
@@ -329,6 +298,7 @@ export default function Dashboard() {
           sendToAllColleges={sendToAllColleges}
         />
       )}
+
       {activeTab === 'ai' && (
         <AITrainingPanel
           colleges={colleges}
@@ -340,8 +310,8 @@ export default function Dashboard() {
           saveAITraining={saveAITraining}
         />
       )}
-      {activeTab === 'backend' && <BackendControlsDashboard />}
 
+      {/* Recent Activity */}
       <RecentActivityPanel
         recentActivity={recentActivity}
         lastResult={lastResult}
@@ -349,6 +319,7 @@ export default function Dashboard() {
         clearActivity={clearActivity}
       />
 
+      {/* Colleges Grid */}
       <CollegesGrid colleges={colleges} />
     </div>
   );

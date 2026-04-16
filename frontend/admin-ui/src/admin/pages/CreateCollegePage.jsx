@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = 'https://testing-confe-backend.onrender.com';
+
 export default function CreateCollegePage() {
   const navigate = useNavigate();
 
@@ -64,60 +66,59 @@ export default function CreateCollegePage() {
       setLoading(true);
 
       const payload = {
-        collegeId: formData.collegeId || '',
-        name: formData.name || '',
-        domain: formData.domain || '',
-        subdomain: formData.subdomain || '',
-        logo: formData.logo || '',
-        themeColor: formData.themeColor || '#000000',
-
+        collegeId: formData.collegeId,
+        name: formData.name,
+        domain: formData.domain,
+        subdomain: formData.subdomain,
+        logo: formData.logo,
+        themeColor: formData.themeColor,
         isActive: formData.isActive,
 
         payment: {
-          razorpayLink: formData.razorpayLink || '',
-          enabled: formData.paymentEnabled || false,
+          razorpayLink: formData.razorpayLink,
+          enabled: formData.paymentEnabled,
         },
 
         telegram: {
-          botToken: formData.telegramBotToken || '',
-          chatId: formData.telegramChatId || '',
+          botToken: formData.telegramBotToken,
+          chatId: formData.telegramChatId,
         },
 
         instagram: {
-          accessToken: formData.instagramAccessToken || '',
-          igUserId: formData.instagramIgUserId || '',
-          pageName: formData.instagramPageName || '',
+          accessToken: formData.instagramAccessToken,
+          igUserId: formData.instagramIgUserId,
+          pageName: formData.instagramPageName,
         },
 
         commandBot: {
-          botToken: formData.commandBotToken || '',
-          chatId: formData.commandBotChatId || '',
+          botToken: formData.commandBotToken,
+          chatId: formData.commandBotChatId,
         },
 
         drive: {
-          rootFolderId: formData.rootFolderId || '',
-          queueFolderId: formData.queueFolderId || '',
-          postedFolderId: formData.postedFolderId || '',
-          rejectedFolderId: formData.rejectedFolderId || '',
-          editArchiveFolderId: formData.editArchiveFolderId || '',
-          smallConfessionFolder: formData.smallConfessionFolder || '',
+          rootFolderId: formData.rootFolderId,
+          queueFolderId: formData.queueFolderId,
+          postedFolderId: formData.postedFolderId,
+          rejectedFolderId: formData.rejectedFolderId,
+          editArchiveFolderId: formData.editArchiveFolderId,
+          smallConfessionFolder: formData.smallConfessionFolder,
         },
 
         posting: {
           safeLimit: Number(formData.safeLimit) || 0,
-          templateId: formData.templateId || '',
+          templateId: formData.templateId,
         },
       };
 
       const res = await fetch(
-        'https://testing-confe-backend.onrender.com/api/admin/college/create',
+        `${API_BASE}/api/admin/college/create`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       const data = await res.json();
@@ -128,12 +129,12 @@ export default function CreateCollegePage() {
 
         setTimeout(() => {
           navigate('/admin');
-        }, 800);
+        }, 700);
       } else {
         alert(data.error || 'Failed ❌');
       }
     } catch (error) {
-      console.error('CREATE COLLEGE ERROR:', error);
+      console.error(error);
       alert('Something went wrong ❌');
     } finally {
       setLoading(false);
@@ -146,39 +147,71 @@ export default function CreateCollegePage() {
       placeholder={placeholder}
       value={formData[name]}
       onChange={handleChange}
-      className="border p-3 rounded-xl"
+      className="w-full rounded-2xl border border-white/10 bg-white/5 p-3 text-white placeholder:text-gray-400 outline-none"
     />
   );
 
   return (
-    <div className="min-h-screen p-6 bg-violet-50">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-violet-700 mb-6">
-          Create New College 🏫
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-5xl mx-auto rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl">
+        <h1 className="text-3xl font-bold mb-8">
+          🏫 Create New College
         </h1>
 
-        <div className="grid gap-4">
-          {renderInput('collegeId', 'College ID (miet)')}
+        <div className="grid md:grid-cols-2 gap-4">
+          {renderInput('collegeId', 'College ID')}
           {renderInput('name', 'College Name')}
           {renderInput('domain', 'Domain')}
           {renderInput('subdomain', 'Subdomain')}
           {renderInput('logo', 'Logo URL')}
+          {renderInput('razorpayLink', 'Razorpay Link')}
 
-          <div>
-            <label className="text-sm text-gray-500 mb-1 block">
-              Theme Color
-            </label>
-            <input
-              type="color"
-              name="themeColor"
-              value={formData.themeColor}
-              onChange={handleChange}
-              className="h-12 w-full rounded-xl"
-            />
-          </div>
+          {renderInput('telegramBotToken', 'Telegram Bot Token')}
+          {renderInput('telegramChatId', 'Telegram Chat ID')}
 
-          {renderInput('razorpayLink', 'Razorpay Payment Link')}
+          {renderInput(
+            'instagramAccessToken',
+            'Instagram Access Token'
+          )}
+          {renderInput('instagramIgUserId', 'Instagram User ID')}
+          {renderInput('instagramPageName', 'Instagram Page Name')}
 
+          {renderInput('commandBotToken', 'Command Bot Token')}
+          {renderInput('commandBotChatId', 'Command Bot Chat ID')}
+
+          {renderInput('rootFolderId', 'Root Folder ID')}
+          {renderInput('queueFolderId', 'Queue Folder ID')}
+          {renderInput('postedFolderId', 'Posted Folder ID')}
+          {renderInput('rejectedFolderId', 'Rejected Folder ID')}
+          {renderInput(
+            'editArchiveFolderId',
+            'Edit Archive Folder ID'
+          )}
+          {renderInput(
+            'smallConfessionFolder',
+            'Small Confession Folder'
+          )}
+
+          {renderInput('safeLimit', 'Safe Limit')}
+          {renderInput('templateId', 'Template ID')}
+        </div>
+
+        {/* Theme Color */}
+        <div className="mt-6">
+          <label className="text-sm text-gray-400 block mb-2">
+            Theme Color
+          </label>
+          <input
+            type="color"
+            name="themeColor"
+            value={formData.themeColor}
+            onChange={handleChange}
+            className="h-12 w-full rounded-2xl border border-white/10 bg-white/5"
+          />
+        </div>
+
+        {/* Checkboxes */}
+        <div className="mt-6 space-y-3">
           <label className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -189,26 +222,6 @@ export default function CreateCollegePage() {
             Payment Enabled
           </label>
 
-          {renderInput('telegramBotToken', 'Telegram Bot Token')}
-          {renderInput('telegramChatId', 'Telegram Chat ID')}
-
-          {renderInput('instagramAccessToken', 'Instagram Access Token')}
-          {renderInput('instagramIgUserId', 'Instagram IG User ID')}
-          {renderInput('instagramPageName', 'Instagram Page Name')}
-
-          {renderInput('commandBotToken', 'Command Bot Token')}
-          {renderInput('commandBotChatId', 'Command Bot Chat ID')}
-
-          {renderInput('rootFolderId', 'Drive Root Folder ID')}
-          {renderInput('queueFolderId', 'Queue Folder ID')}
-          {renderInput('postedFolderId', 'Posted Folder ID')}
-          {renderInput('rejectedFolderId', 'Rejected Folder ID')}
-          {renderInput('editArchiveFolderId', 'Edit Archive Folder ID')}
-          {renderInput('smallConfessionFolder', 'Small Confession Folder ID')}
-
-          {renderInput('safeLimit', 'Safe Limit')}
-          {renderInput('templateId', 'Template ID')}
-
           <label className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -218,15 +231,16 @@ export default function CreateCollegePage() {
             />
             College Active
           </label>
-
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="bg-violet-600 hover:bg-violet-700 text-white py-3 rounded-xl transition"
-          >
-            {loading ? 'Saving...' : 'Create College'}
-          </button>
         </div>
+
+        {/* Submit */}
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="mt-8 w-full rounded-2xl bg-white text-black py-3 font-semibold hover:scale-[1.01] transition"
+        >
+          {loading ? 'Saving...' : 'Create College'}
+        </button>
       </div>
     </div>
   );
