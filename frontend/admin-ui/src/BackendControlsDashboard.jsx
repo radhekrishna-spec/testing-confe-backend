@@ -274,7 +274,7 @@ export default function BackendControlsDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-6 text-white">
+    <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-6 mb-8">
       <div className="max-w-7xl mx-auto rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
