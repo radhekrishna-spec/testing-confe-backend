@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import RecentActivityPanel from '../components//RecentActivity';
 import AITrainingPanel from '../components/AITrainingPanel';
 import CollegesGrid from '../components/CollegesGrid';
 import GlobalComposerPanel from '../components/GlobalComposerPanel';
-import RecentActivityPanel from '../components/RecentActivityPanel';
 import useDashboardLogic from '../hooks/useDashboardLogic';
 
 export default function Dashboard() {
