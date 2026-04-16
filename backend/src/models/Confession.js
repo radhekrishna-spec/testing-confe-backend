@@ -88,5 +88,8 @@ const confessionSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
+confessionSchema.index(
+  { collegeId: 1, confessionNo: 1 },
+  { unique: true }
+);
 module.exports = mongoose.model('Confession', confessionSchema);
