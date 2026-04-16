@@ -6,8 +6,8 @@ import CollegeWorkspace from './admin/pages/CollegeWorkspace';
 import CreateCollegePage from './admin/pages/CreateCollegePage';
 import Dashboard from './admin/pages/Dashboard';
 import EditCollegeSettingsPage from './admin/pages/EditCollegeSettingsPage';
+import FrontPage from './admin/pages/FrontPage';
 import BackendControlsDashboard from './BackendControlsDashboard';
-import FrontPage from './pages/FrontPage';
 
 function ProtectedRoute({ children }) {
   const isAuth = localStorage.getItem('adminAuth');
