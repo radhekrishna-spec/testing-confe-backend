@@ -230,6 +230,22 @@ export default function Dashboard() {
       <h1 className="text-3xl font-bold mb-6">Super Admin Dashboard 🚀</h1>
       <div className="flex gap-3 mb-6">
         <button
+          onClick={() => navigate('/admin/create-college')}
+          className="px-5 py-3 rounded-2xl bg-white text-black font-semibold"
+        >
+          + Create College
+        </button>
+
+        <button
+          onClick={() => navigate('/backend')}
+          className="px-5 py-3 rounded-2xl border border-white/20"
+        >
+          Backend Controls
+        </button>
+      </div>
+
+      <div className="flex gap-3 mb-6">
+        <button
           onClick={() => setActiveTab('global')}
           className={`px-5 py-3 rounded-2xl ${
             activeTab === 'global'
@@ -471,6 +487,27 @@ export default function Dashboard() {
             <p className="text-sm text-gray-400">
               Posted Today: {college.postedToday || 0}
             </p>
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/college/${college.collegeId}/settings`);
+                }}
+                className="text-xs border border-white/20 px-3 py-1 rounded-xl"
+              >
+                Settings
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/college/${college.collegeId}/ai-training`);
+                }}
+                className="text-xs border border-white/20 px-3 py-1 rounded-xl"
+              >
+                AI
+              </button>
+            </div>
           </div>
         ))}
       </div>
