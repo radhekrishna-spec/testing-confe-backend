@@ -185,7 +185,55 @@ function StatCard({ title, value, icon: Icon }) {
 
 export default function BackendControlsDashboard() {
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('global');
   const [controls, setControls] = useState(defaultControls);
+  const [aiText, setAiText] = useState('');
+  const [selectedColleges, setSelectedColleges] = useState(['miet']);
+  const [savingAI, setSavingAI] = useState(false);
+
+  const colleges = ['miet', 'niet'];
+  const toggleCollege = (college) => {
+    setSelectedColleges((prev) =>
+      prev.includes(college)
+        ? prev.filter((c) => c !== college)
+        : [...prev, college],
+    );
+  };
+  const saveAITraining = async () => {
+    if (!aiText.trim()) {
+      alert('Write training text first');
+      return;
+    }
+
+    try {
+      setSavingAI(true);
+
+      const requests = selectedColleges.map((collegeCode) =>
+        fetch(`${API_BASE}/api/admin/ai-training/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            collegeCode,
+            text: aiText,
+            source: 'super_admin',
+          }),
+        }),
+      );
+
+      await Promise.all(requests);
+
+      alert(`AI training saved for: ${selectedColleges.join(', ')} ✅`);
+
+      setAiText('');
+    } catch (error) {
+      console.error(error);
+      alert('Save failed ❌');
+    } finally {
+      setSavingAI(false);
+    }
+  };
 
   useEffect(() => {
     fetch(`${API_BASE}/api/settings`)
@@ -236,6 +284,40 @@ export default function BackendControlsDashboard() {
             <p className="text-gray-300 mt-2">
               Advanced admin dashboard for full backend control
             </p>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setActiveTab('global')}
+                className={`px-5 py-3 rounded-2xl ${
+                  activeTab === 'global'
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 border border-white/10'
+                }`}
+              >
+                Global
+              </button>
+
+              <button
+                onClick={() => setActiveTab('ai')}
+                className={`px-5 py-3 rounded-2xl ${
+                  activeTab === 'ai'
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 border border-white/10'
+                }`}
+              >
+                AI Training
+              </button>
+
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-5 py-3 rounded-2xl ${
+                  activeTab === 'analytics'
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 border border-white/10'
+                }`}
+              >
+                Analytics
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -248,92 +330,135 @@ export default function BackendControlsDashboard() {
             </button>
           </div>
         </div>
+        {activeTab === 'global' && (
+          <div className="grid md:grid-cols-4 gap-4 mb-6">
+            <StatCard title="Pending Approvals" value="18" icon={Bell} />
+            <StatCard title="Spam Blocked Today" value="42" icon={Shield} />
+            <StatCard title="Posted to Instagram" value="12" icon={Image} />
+            <StatCard
+              title="Processing Success"
+              value="99.2%"
+              icon={BarChart3}
+            />
+          </div>
+        )}
+        {activeTab === 'ai' && (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mt-6">
+            <h2 className="text-2xl font-bold mb-4">AI Training 🤖</h2>
 
-        <div className="grid md:grid-cols-4 gap-4 mb-6">
-          <StatCard title="Pending Approvals" value="18" icon={Bell} />
-          <StatCard title="Spam Blocked Today" value="42" icon={Shield} />
-          <StatCard title="Posted to Instagram" value="12" icon={Image} />
-          <StatCard title="Processing Success" value="99.2%" icon={BarChart3} />
-        </div>
+            <textarea
+              value={aiText}
+              onChange={(e) => setAiText(e.target.value)}
+              placeholder="Write AI training confession..."
+              className="w-full h-40 rounded-2xl bg-white/5 border border-white/10 p-4 text-white"
+            />
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3">
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-5 mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Search size={18} />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search controls..."
-                  className="w-full outline-none border border-white/10 bg-white/5 rounded-2xl px-4 py-3 text-white placeholder:text-gray-400"
-                />
-              </div>
+            <div className="flex gap-3 mt-4 flex-wrap">
+              {colleges.map((college) => (
+                <button
+                  key={college}
+                  onClick={() => toggleCollege(college)}
+                  className={`px-4 py-2 rounded-2xl ${
+                    selectedColleges.includes(college)
+                      ? 'bg-white text-black'
+                      : 'border border-white/10'
+                  }`}
+                >
+                  {college.toUpperCase()}
+                </button>
+              ))}
+            </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                {filtered.map((item) => (
-                  <div
-                    key={item.key}
-                    className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 flex items-center justify-between hover:bg-white/10 hover:shadow-xl transition-all"
-                  >
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">
-                        {item.category}
-                      </p>
-                      <h2 className="font-semibold text-lg text-white">
-                        {item.name}
-                      </h2>
-                      <p className="text-sm text-gray-300 max-w-xs">
-                        {item.desc}
-                      </p>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={saveAITraining}
+                className="px-5 py-3 rounded-2xl bg-white text-black font-semibold"
+              >
+                {savingAI ? 'Saving...' : 'Save Training'}
+              </button>
+            </div>
+          </div>
+        )}
+        {activeTab === 'global' && (
+          <div className="grid lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
+              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-5 mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Search size={18} />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search controls..."
+                    className="w-full outline-none border border-white/10 bg-white/5 rounded-2xl px-4 py-3 text-white placeholder:text-gray-400"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {filtered.map((item) => (
+                    <div
+                      key={item.key}
+                      className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 flex items-center justify-between hover:bg-white/10 hover:shadow-xl transition-all"
+                    >
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">
+                          {item.category}
+                        </p>
+                        <h2 className="font-semibold text-lg text-white">
+                          {item.name}
+                        </h2>
+                        <p className="text-sm text-gray-300 max-w-xs">
+                          {item.desc}
+                        </p>
+                      </div>
+
+                      <Toggle
+                        checked={item.enabled}
+                        onChange={() => toggleItem(item.key)}
+                      />
                     </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-                    <Toggle
-                      checked={item.enabled}
-                      onChange={() => toggleItem(item.key)}
-                    />
+            <div className="space-y-6">
+              <SubmitConfession />
+              <ConfessionNoControl />
+
+              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 shadow-xl">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                  <Database size={18} /> System Health
+                </h3>
+                <div className="space-y-3 text-sm text-gray-300">
+                  <div className="flex justify-between">
+                    <span>Node API</span>
+                    <span className="font-semibold text-green-400">Online</span>
                   </div>
-                ))}
+                  <div className="flex justify-between">
+                    <span>Telegram Bot</span>
+                    <span className="font-semibold text-green-400">
+                      Connected
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 shadow-xl">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                  <Palette size={18} /> Theme / Branding
+                </h3>
+
+                <button className="w-full border border-white/10 rounded-2xl p-3 mb-3 hover:bg-white/10 transition-all">
+                  Upload Logo
+                </button>
+
+                <button className="w-full border border-white/10 rounded-2xl p-3 hover:bg-white/10 transition-all">
+                  Change Accent Theme
+                </button>
               </div>
             </div>
           </div>
-
-          <div className="space-y-6">
-            <SubmitConfession />
-            <ConfessionNoControl />
-
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 shadow-xl">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Database size={18} /> System Health
-              </h3>
-              <div className="space-y-3 text-sm text-gray-300">
-                <div className="flex justify-between">
-                  <span>Node API</span>
-                  <span className="font-semibold text-green-400">Online</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Telegram Bot</span>
-                  <span className="font-semibold text-green-400">
-                    Connected
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-5 shadow-xl">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Palette size={18} /> Theme / Branding
-              </h3>
-
-              <button className="w-full border border-white/10 rounded-2xl p-3 mb-3 hover:bg-white/10 transition-all">
-                Upload Logo
-              </button>
-
-              <button className="w-full border border-white/10 rounded-2xl p-3 hover:bg-white/10 transition-all">
-                Change Accent Theme
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

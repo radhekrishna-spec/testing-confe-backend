@@ -307,7 +307,52 @@ router.post('/ai-training/import-legacy/:collegeCode', async (req, res) => {
     });
   }
 });
+router.patch('/ai-training/update/:id', async (req, res) => {
+  try {
+    const AITrainingConfession = require('../models/AITrainingConfession');
 
+    const { text } = req.body;
+
+    if (!text?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Text is required',
+      });
+    }
+
+    const updated = await AITrainingConfession.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          text: text.trim(),
+        },
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: 'Training item not found',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: updated,
+      message: 'Updated successfully ✅',
+    });
+  } catch (error) {
+    console.error('AI EDIT ERROR:', error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
 router.post('/ai-training/add', async (req, res) => {
   try {
     const AITrainingConfession = require('../models/AITrainingConfession');

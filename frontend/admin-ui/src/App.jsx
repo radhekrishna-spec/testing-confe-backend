@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AITrainingPage from './admin/pages/AITrainingPage';
+import CollegeAITrainingDetailsPage from './admin/pages/CollegeAITrainingDetailsPage';
 import CollegeWorkspace from './admin/pages/CollegeWorkspace';
 import CreateCollegePage from './admin/pages/CreateCollegePage';
 import Dashboard from './admin/pages/Dashboard';
@@ -52,6 +53,10 @@ export default function App() {
         <Route
           path="/admin/college/:collegeId/settings"
           element={<EditCollegeSettingsPage />}
+        />
+        <Route
+          path="/admin/college/:collegeId/ai-training"
+          element={<CollegeAITrainingDetailsPage />}
         />
 
         <Route path="*" element={<Navigate to="/admin/login" replace />} />

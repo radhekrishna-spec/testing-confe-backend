@@ -12,8 +12,25 @@ export default function AdminDashboardPage({ collegeId }) {
   const [selectedConfession, setSelectedConfession] = useState(null);
   const [paymentEnabled, setPaymentEnabled] = useState(false);
   const [updatingPayment, setUpdatingPayment] = useState(false);
-
+  const [aiStats, setAiStats] = useState({
+    count: 0,
+    ready: false,
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch(
+      `https://testing-confe-backend.onrender.com/api/admin/ai-training/count/${collegeId}`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setAiStats({
+          count: data.count || 0,
+          ready: data.readyForAI || false,
+        });
+      })
+      .catch(console.error);
+  }, [collegeId]);
 
   useEffect(() => {
     fetch(
@@ -116,6 +133,12 @@ export default function AdminDashboardPage({ collegeId }) {
 
         <div className="flex gap-3">
           <button
+            onClick={() => navigate(`/admin/college/${collegeId}/ai-training`)}
+            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-xl"
+          >
+            AI Training Details
+          </button>
+          <button
             onClick={togglePayment}
             disabled={updatingPayment}
             className={`px-4 py-2 rounded-xl text-white ${
@@ -152,6 +175,28 @@ export default function AdminDashboardPage({ collegeId }) {
           setCurrentPage(1);
         }}
       />
+      <div className="mt-4 rounded-2xl border border-violet-200 bg-white p-4 shadow-sm">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-sm text-gray-500">AI Training Count</p>
+            <h3 className="text-xl font-bold text-violet-700">
+              {aiStats.count}
+            </h3>
+          </div>
+
+          <div>
+            <span
+              className={`px-3 py-1 rounded-full text-sm ${
+                aiStats.ready
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-yellow-100 text-yellow-700'
+              }`}
+            >
+              {aiStats.ready ? 'AI Ready' : 'Need 100+'}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-3 gap-6 mt-6">
         <div className="col-span-2">
