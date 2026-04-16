@@ -487,28 +487,8 @@ export default function Dashboard() {
             <p className="text-sm text-gray-400">
               Posted Today: {college.postedToday || 0}
             </p>
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/admin/college/${college.collegeId}/settings`);
-                }}
-                className="text-xs border border-white/20 px-3 py-1 rounded-xl"
-              >
-                Settings
-              </button>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/admin/college/${college.collegeId}/ai-training`);
-                }}
-                className="text-xs border border-white/20 px-3 py-1 rounded-xl"
-              >
-                AI
-              </button>
-            </div>
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -517,6 +497,16 @@ export default function Dashboard() {
                 className="text-xs border border-white/20 px-3 py-1 rounded-xl hover:bg-white hover:text-black transition"
               >
                 Settings
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/college/${college.collegeId}/edit`);
+                }}
+                className="text-xs border border-blue-400 px-3 py-1 rounded-xl hover:bg-blue-500 hover:text-white transition"
+              >
+                Edit
               </button>
 
               <button
