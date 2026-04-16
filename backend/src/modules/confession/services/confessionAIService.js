@@ -83,13 +83,11 @@ Return only confession text.
       confessionTexts.push(confessionTexts[0]);
     }
 
-    let nextConfessionNo = await getNextConfessionNo(collegeId);
-
+    
     const savedConfessions = [];
 
     for (let i = 0; i < 3; i++) {
-      const confessionNo =
-        i === 0 ? nextConfessionNo : await getNextConfessionNo(collegeId);
+      const confessionNo = await getNextConfessionNo(collegeId);
 
       const confession = await Confession.create({
         confessionNo,
