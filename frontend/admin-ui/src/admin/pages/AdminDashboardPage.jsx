@@ -127,6 +127,36 @@ export default function AdminDashboardPage({ collegeId }) {
       )}
 
       <div className="flex justify-between items-center mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <button
+            onClick={() => navigate('/admin')}
+            className="rounded-2xl bg-violet-600 text-white p-4 font-semibold"
+          >
+            ← Main Dashboard
+          </button>
+
+          <button
+            onClick={() => navigate(`/admin/college/${collegeId}/edit`)}
+            className="rounded-2xl border border-violet-300 p-4"
+          >
+            ✏ Edit College
+          </button>
+
+          <button
+            onClick={() => navigate(`/admin/college/${collegeId}/ai-training`)}
+            className="rounded-2xl border border-violet-300 p-4"
+          >
+            🤖 AI Training
+          </button>
+
+          <button
+            onClick={togglePayment}
+            className="rounded-2xl border border-violet-300 p-4"
+          >
+            💳 Payment
+          </button>
+        </div>
+
         <h1 className="text-2xl font-bold text-violet-700">
           {collegeId?.toUpperCase()} Admin Dashboard
         </h1>
@@ -153,7 +183,7 @@ export default function AdminDashboardPage({ collegeId }) {
           </button>
 
           <button
-            onClick={() => navigate('/backend')}
+            onClick={() => navigate('/admin/backend')}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl"
           >
             Backend Controls
@@ -198,7 +228,7 @@ export default function AdminDashboardPage({ collegeId }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <div className="col-span-2">
           <ConfessionTable
             confessions={paginatedData}

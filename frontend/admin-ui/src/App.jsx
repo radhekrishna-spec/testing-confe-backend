@@ -7,22 +7,24 @@ import CreateCollegePage from './admin/pages/CreateCollegePage';
 import Dashboard from './admin/pages/Dashboard';
 import EditCollegeSettingsPage from './admin/pages/EditCollegeSettingsPage';
 import BackendControlsDashboard from './BackendControlsDashboard';
+import FrontPage from './pages/FrontPage';
 
 function ProtectedRoute({ children }) {
   const isAuth = localStorage.getItem('adminAuth');
-
   return isAuth === 'true' ? children : <Navigate to="/admin/login" replace />;
 }
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* FRONTEND */}
+        <Route path="/" element={<FrontPage />} />
+
+        {/* LOGIN */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
 
-        <Route
-          path="/admin/college/:collegeId"
-          element={<CollegeWorkspace />}
-        />
+        {/* ADMIN MAIN */}
         <Route
           path="/admin"
           element={
@@ -32,8 +34,69 @@ export default function App() {
           }
         />
 
+        {/* CREATE */}
         <Route
-          path="/backend"
+          path="/admin/create-college"
+          element={
+            <ProtectedRoute>
+              <CreateCollegePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* COLLEGE */}
+        <Route
+          path="/admin/college/:collegeId"
+          element={
+            <ProtectedRoute>
+              <CollegeWorkspace />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* EDIT */}
+        <Route
+          path="/admin/college/:collegeId/edit"
+          element={
+            <ProtectedRoute>
+              <EditCollegeSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* SETTINGS */}
+        <Route
+          path="/admin/college/:collegeId/settings"
+          element={
+            <ProtectedRoute>
+              <EditCollegeSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* AI */}
+        <Route
+          path="/admin/college/:collegeId/ai-training"
+          element={
+            <ProtectedRoute>
+              <CollegeAITrainingDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* GLOBAL AI */}
+        <Route
+          path="/admin/ai-training"
+          element={
+            <ProtectedRoute>
+              <AITrainingPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* BACKEND */}
+        <Route
+          path="/admin/backend"
           element={
             <ProtectedRoute>
               <BackendControlsDashboard />
@@ -41,25 +104,7 @@ export default function App() {
           }
         />
 
-        <Route
-          path="/ai-training"
-          element={
-            <ProtectedRoute>
-              <AITrainingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/admin/create-college" element={<CreateCollegePage />} />
-        <Route
-          path="/admin/college/:collegeId/settings"
-          element={<EditCollegeSettingsPage />}
-        />
-        <Route
-          path="/admin/college/:collegeId/ai-training"
-          element={<CollegeAITrainingDetailsPage />}
-        />
-
-        <Route path="*" element={<Navigate to="/admin/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

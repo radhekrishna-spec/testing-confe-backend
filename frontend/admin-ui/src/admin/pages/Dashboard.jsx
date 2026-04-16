@@ -227,7 +227,70 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-md mb-6">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">🚀 Super Admin</h1>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="px-4 py-2 rounded-xl border border-white/20"
+            >
+              Frontend
+            </button>
+
+            <button
+              onClick={() => navigate('/admin')}
+              className="px-4 py-2 rounded-xl border border-white/20"
+            >
+              Dashboard
+            </button>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem('adminAuth');
+                navigate('/admin/login');
+              }}
+              className="px-4 py-2 rounded-xl bg-red-500 text-white"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
       <h1 className="text-3xl font-bold mb-6">Super Admin Dashboard 🚀</h1>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <button
+          onClick={() => navigate('/admin/create-college')}
+          className="rounded-2xl bg-white text-black p-5 font-semibold text-lg hover:scale-[1.02] transition"
+        >
+          🏫 Create College
+        </button>
+
+        <button
+          onClick={() => navigate('/admin/backend')}
+          className="rounded-2xl border border-white/20 p-5 hover:bg-white/10 transition"
+        >
+          ⚙ Backend
+        </button>
+
+        <button
+          onClick={() => setActiveTab('global')}
+          className="rounded-2xl border border-white/20 p-5 hover:bg-white/10 transition"
+        >
+          🌍 Global
+        </button>
+
+        <button
+          onClick={() => setActiveTab('ai')}
+          className="rounded-2xl border border-white/20 p-5 hover:bg-white/10 transition"
+        >
+          🤖 AI
+        </button>
+      </div>
+
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => navigate('/admin/create-college')}
@@ -237,7 +300,7 @@ export default function Dashboard() {
         </button>
 
         <button
-          onClick={() => navigate('/backend')}
+          onClick={() => navigate('/admin/backend')}
           className="px-5 py-3 rounded-2xl border border-white/20"
         >
           Backend Controls
@@ -471,7 +534,17 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="flex justify-between items-center mb-4 mt-8">
+          <h2 className="text-2xl font-bold">🏫 Manage Colleges</h2>
+
+          <button
+            onClick={() => navigate('/admin/create-college')}
+            className="px-4 py-2 rounded-xl bg-white text-black font-semibold"
+          >
+            + Add New
+          </button>
+        </div>
         {colleges.map((college) => (
           <div
             key={college.collegeId}
