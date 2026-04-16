@@ -5,52 +5,118 @@ export default function AITrainingPage() {
   const [count, setCount] = useState(0);
   const [ready, setReady] = useState(false);
   const [text, setText] = useState('');
-  const [collegeCode, setCollegeCode] = useState('miet');
+  const [collegeCode, setCollegeCode] = useState('');
+  const [colleges, setColleges] = useState([]);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [stats, setStats] = useState([]);
 
-  const fetchStats = async () => {
+  /* Fetch colleges dynamically */
+  const fetchColleges = async () => {
     try {
       const res = await axios.get(
-        `/api/admin/ai-training/stats/${collegeCode}`,
+        '/api/admin/colleges'
       );
 
-      setStats(res.data.stats || []);
+      const list = res.data?.data || [];
+
+      setColleges(list);
+
+      if (
+        list.length > 0 &&
+        !collegeCode
+      ) {
+        setCollegeCode(
+          list[0].collegeId
+        );
+      }
     } catch (error) {
-      console.error('STATS ERROR:', error.message);
+      console.error(
+        'COLLEGE FETCH ERROR:',
+        error.message
+      );
+    }
+  };
+
+  const fetchStats = async () => {
+    if (!collegeCode) return;
+
+    try {
+      const res = await axios.get(
+        `/api/admin/ai-training/stats/${collegeCode}`
+      );
+
+      setStats(
+        res.data.stats || []
+      );
+    } catch (error) {
+      console.error(
+        'STATS ERROR:',
+        error.message
+      );
     }
   };
 
   const fetchCount = async () => {
+    if (!collegeCode) return;
+
     try {
       const res = await axios.get(
-        `/api/admin/ai-training/count/${collegeCode}`,
+        `/api/admin/ai-training/count/${collegeCode}`
       );
 
-      setCount(res.data.count || 0);
-      setReady(res.data.readyForAI || false);
+      setCount(
+        res.data.count || 0
+      );
+      setReady(
+        res.data.readyForAI ||
+          false
+      );
     } catch (error) {
-      console.error('COUNT FETCH ERROR:', error.message);
+      console.error(
+        'COUNT FETCH ERROR:',
+        error.message
+      );
     }
   };
 
   const fetchList = async () => {
-    try {
-      const res = await axios.get(`/api/admin/ai-training/list/${collegeCode}`);
+    if (!collegeCode) return;
 
-      setItems(res.data.items || []);
+    try {
+      const res = await axios.get(
+        `/api/admin/ai-training/list/${collegeCode}`
+      );
+
+      setItems(
+        res.data.items || []
+      );
     } catch (error) {
-      console.error('LIST FETCH ERROR:', error.message);
+      console.error(
+        'LIST FETCH ERROR:',
+        error.message
+      );
     }
   };
 
   const refreshAll = async () => {
-    await Promise.all([fetchCount(), fetchList(), fetchStats()]);
+    await Promise.all([
+      fetchCount(),
+      fetchList(),
+      fetchStats(),
+    ]);
   };
 
+  /* First load colleges */
   useEffect(() => {
-    refreshAll();
+    fetchColleges();
+  }, []);
+
+  /* Refresh on college change */
+  useEffect(() => {
+    if (collegeCode) {
+      refreshAll();
+    }
   }, [collegeCode]);
 
   const handleSave = async () => {
@@ -59,147 +125,246 @@ export default function AITrainingPage() {
     try {
       setLoading(true);
 
-      await axios.post('/api/admin/ai-training/add', {
-        collegeCode,
-        text,
-        source: 'admin',
-      });
+      await axios.post(
+        '/api/admin/ai-training/add',
+        {
+          collegeCode,
+          text,
+          source: 'admin',
+        }
+      );
 
       setText('');
-
       await refreshAll();
 
-      alert('Saved to AI training ✅');
+      alert(
+        `Saved for ${collegeCode} ✅`
+      );
     } catch (error) {
-      console.error('SAVE ERROR:', error.message);
+      console.error(
+        'SAVE ERROR:',
+        error.message
+      );
       alert('Failed ❌');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (
+    id
+  ) => {
     try {
-      await axios.delete(`/api/admin/ai-training/delete/${id}`);
+      await axios.delete(
+        `/api/admin/ai-training/delete/${id}`
+      );
 
       await refreshAll();
     } catch (error) {
-      console.error('DELETE ERROR:', error.message);
+      console.error(
+        'DELETE ERROR:',
+        error.message
+      );
       alert('Delete failed ❌');
     }
   };
-  const handleImportLegacy = async () => {
-    try {
-      setLoading(true);
 
-      const res = await axios.post(
-        `/api/admin/ai-training/import-legacy/${collegeCode}`,
-        {
-          limit: 100,
-        },
-      );
+  const handleImportLegacy =
+    async () => {
+      try {
+        setLoading(true);
 
-      await refreshAll();
+        const res =
+          await axios.post(
+            `/api/admin/ai-training/import-legacy/${collegeCode}`,
+            {
+              limit: 100,
+            }
+          );
 
-      alert(
-        `Imported ✅ ${res.data.inserted} | Skipped ⚠️ ${res.data.skipped}`,
-      );
-    } catch (error) {
-      console.error('IMPORT ERROR:', error.message);
-      alert('Import failed ❌');
-    } finally {
-      setLoading(false);
-    }
-  };
+        await refreshAll();
+
+        alert(
+          `Imported ✅ ${res.data.inserted} | Skipped ⚠️ ${res.data.skipped}`
+        );
+      } catch (error) {
+        console.error(
+          'IMPORT ERROR:',
+          error.message
+        );
+        alert(
+          'Import failed ❌'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>AI Training Data</h2>
+    <div className="text-white">
+      {/* Header */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
+        <h2 className="text-3xl font-bold">
+          🤖 AI Training Data
+        </h2>
 
-      <p>
-        Training Count: <b>{count}</b>
-      </p>
-
-      <p>
-        Status:{' '}
-        <b>{ready ? '✅ AI Ready (100+)' : '⚠️ Need 100 Confessions'}</b>
-      </p>
-
-      <h3>Source Stats</h3>
-
-      {stats.length === 0 ? (
-        <p>No stats yet</p>
-      ) : (
-        stats.map((stat) => (
-          <p key={stat._id}>
-            {stat._id}: <b>{stat.count}</b>
+        <div className="mt-4 space-y-2 text-gray-300">
+          <p>
+            Training Count:{' '}
+            <b>{count}</b>
           </p>
-        ))
-      )}
 
-      <br />
+          <p>
+            Status:{' '}
+            <b>
+              {ready
+                ? '✅ AI Ready (100+)'
+                : '⚠️ Need 100 Confessions'}
+            </b>
+          </p>
+        </div>
+      </div>
 
-      <select
-        value={collegeCode}
-        onChange={(e) => setCollegeCode(e.target.value)}
-      >
-        <option value="miet">MIET</option>
-        <option value="niet">NIET</option>
-      </select>
+      {/* Stats */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
+        <h3 className="text-xl font-semibold mb-4">
+          Source Stats
+        </h3>
 
-      <br />
-      <br />
+        {stats.length === 0 ? (
+          <p className="text-gray-400">
+            No stats yet
+          </p>
+        ) : (
+          stats.map((stat) => (
+            <p
+              key={stat._id}
+              className="mb-2"
+            >
+              {stat._id}:{' '}
+              <b>
+                {stat.count}
+              </b>
+            </p>
+          ))
+        )}
+      </div>
 
-      <textarea
-        rows="6"
-        cols="60"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Enter confession for AI learning"
-      />
+      {/* College Dropdown */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
+        <label className="block text-sm text-gray-400 mb-2">
+          Select College
+        </label>
 
-      <br />
-      <br />
-      <br />
-      <br />
+        <select
+          value={collegeCode}
+          onChange={(e) =>
+            setCollegeCode(
+              e.target.value
+            )
+          }
+          className="w-full rounded-2xl bg-white/5 border border-white/10 p-3 text-white"
+        >
+          {colleges.map(
+            (college) => (
+              <option
+                key={
+                  college.collegeId
+                }
+                value={
+                  college.collegeId
+                }
+                className="text-black"
+              >
+                {college.name ||
+                  college.collegeId}
+              </option>
+            )
+          )}
+        </select>
+      </div>
 
-      <button onClick={handleImportLegacy} disabled={loading}>
-        {loading ? 'Importing...' : 'Import 100 Legacy 🔥'}
-      </button>
+      {/* Input */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
+        <textarea
+          rows="6"
+          value={text}
+          onChange={(e) =>
+            setText(
+              e.target.value
+            )
+          }
+          placeholder="Enter confession for AI learning"
+          className="w-full rounded-2xl bg-white/5 border border-white/10 p-4"
+        />
 
-      <button onClick={handleSave} disabled={loading}>
-        {loading ? 'Saving...' : 'Add to AI Training'}
-      </button>
-
-      <hr style={{ margin: '20px 0' }} />
-
-      <h3>Recent Training Data</h3>
-
-      {items.length === 0 ? (
-        <p>No data yet</p>
-      ) : (
-        items.map((item) => (
-          <div
-            key={item._id}
-            style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              marginBottom: '10px',
-              borderRadius: '8px',
-            }}
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={
+              handleImportLegacy
+            }
+            disabled={loading}
+            className="px-5 py-3 rounded-2xl border border-white/20"
           >
-            <p>{item.text}</p>
+            {loading
+              ? 'Importing...'
+              : 'Import 100 Legacy 🔥'}
+          </button>
 
-            <small>
-              Source: <b>{item.source}</b>
-            </small>
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="px-5 py-3 rounded-2xl bg-white text-black"
+          >
+            {loading
+              ? 'Saving...'
+              : 'Add to AI Training'}
+          </button>
+        </div>
+      </div>
 
-            <br />
-            <br />
+      {/* List */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <h3 className="text-xl font-semibold mb-4">
+          Recent Training Data
+        </h3>
 
-            <button onClick={() => handleDelete(item._id)}>Delete ❌</button>
-          </div>
-        ))
-      )}
+        {items.length === 0 ? (
+          <p className="text-gray-400">
+            No data yet
+          </p>
+        ) : (
+          items.map((item) => (
+            <div
+              key={item._id}
+              className="rounded-2xl border border-white/10 bg-white/5 p-4 mb-4"
+            >
+              <p>{item.text}</p>
+
+              <small className="text-gray-400">
+                Source:{' '}
+                <b>
+                  {item.source}
+                </b>
+              </small>
+
+              <br />
+              <br />
+
+              <button
+                onClick={() =>
+                  handleDelete(
+                    item._id
+                  )
+                }
+                className="px-4 py-2 rounded-xl border border-red-400 text-red-400"
+              >
+                Delete ❌
+              </button>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
