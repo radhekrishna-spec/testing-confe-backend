@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import RecentActivityPanel from '../components//RecentActivity';
 import AITrainingPanel from '../components/AITrainingPanel';
-import BackendSettingsPanel from '../components/BackendSettingsPanel';
 import CollegesGrid from '../components/CollegesGrid';
 import GlobalComposerPanel from '../components/GlobalComposerPanel';
 import useDashboardLogic from '../hooks/useDashboardLogic';
@@ -305,13 +304,16 @@ export default function Dashboard() {
         >
           AI Training
         </button>
-        {activeTab === 'backend' && (
-          <BackendSettingsPanel
-            colleges={colleges}
-            selectedColleges={selectedColleges}
-            setSelectedColleges={setSelectedColleges}
-          />
-        )}
+        <button
+          onClick={() => setActiveTab('backend')}
+          className={`px-5 py-3 rounded-2xl ${
+            activeTab === 'backend'
+              ? 'bg-white text-black'
+              : 'border border-white/20'
+          }`}
+        >
+          Backend Control
+        </button>
       </div>
       {statusMessage && (
         <div
