@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const API_BASE = import.meta.env.DEV
   ? 'http://localhost:3001'
-  : 'https://testing-confe-backend-1.onrender.com';
+  : 'https://testing-confe-backend.onrender.com';
 
 export default function AITrainingPage() {
   const [count, setCount] = useState(0);
