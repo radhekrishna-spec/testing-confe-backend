@@ -10,6 +10,9 @@ export default function AdminDashboardPage({ collegeId }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selectedConfession, setSelectedConfession] = useState(null);
+  const [paymentEnabled, setPaymentEnabled] = useState(false);
+  const [updatingPayment, setUpdatingPayment] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +28,48 @@ export default function AdminDashboardPage({ collegeId }) {
         setConfessions([]);
       });
   }, [collegeId]);
+
+  useEffect(() => {
+    fetch(
+      `https://testing-confe-backend.onrender.com/api/admin/college/${collegeId}`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setPaymentEnabled(!!data?.data?.payment?.enabled);
+      })
+      .catch(console.error);
+  }, [collegeId]);
+
+  const togglePayment = async () => {
+    try {
+      setUpdatingPayment(true);
+
+      const res = await fetch(
+        `https://testing-confe-backend.onrender.com/api/admin/college/${collegeId}/payment`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            enabled: !paymentEnabled,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setPaymentEnabled(!paymentEnabled);
+        alert(`Payment ${!paymentEnabled ? 'Enabled' : 'Disabled'} ✅`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Update failed ❌');
+    } finally {
+      setUpdatingPayment(false);
+    }
+  };
 
   const filteredData = useMemo(() => {
     return confessions.filter((item) => {
@@ -47,6 +92,7 @@ export default function AdminDashboardPage({ collegeId }) {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
   const logout = () => {
     localStorage.removeItem('adminAuth');
     window.location.href = '/admin/login';
@@ -62,12 +108,27 @@ export default function AdminDashboardPage({ collegeId }) {
           ← Back
         </button>
       )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-violet-700">
           {collegeId?.toUpperCase()} Admin Dashboard
         </h1>
 
         <div className="flex gap-3">
+          <button
+            onClick={togglePayment}
+            disabled={updatingPayment}
+            className={`px-4 py-2 rounded-xl text-white ${
+              paymentEnabled
+                ? 'bg-green-500 hover:bg-green-600'
+                : 'bg-gray-500 hover:bg-gray-600'
+            }`}
+          >
+            {updatingPayment
+              ? 'Updating...'
+              : `Payment ${paymentEnabled ? 'ON 💳' : 'OFF 🚫'}`}
+          </button>
+
           <button
             onClick={() => navigate('/backend')}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl"
@@ -83,6 +144,7 @@ export default function AdminDashboardPage({ collegeId }) {
           </button>
         </div>
       </div>
+
       <SearchBar
         value={search}
         onChange={(e) => {

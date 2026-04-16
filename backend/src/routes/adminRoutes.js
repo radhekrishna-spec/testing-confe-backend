@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Confession = require('../models/Confession');
 const identifyCollege = require('../middleware/identifyCollege');
+const College = require('../models/College');
 const {
   broadcastConfession,
   getAllColleges,
@@ -25,6 +26,67 @@ router.get('/confessions', identifyCollege, async (req, res) => {
 router.post('/broadcast', broadcastConfession);
 
 router.get('/colleges', getAllColleges);
+router.get('/college/:collegeId', async (req, res) => {
+  try {
+    const college = await College.findOne({
+      collegeId: req.params.collegeId,
+    });
+
+    if (!college) {
+      return res.status(404).json({
+        success: false,
+        message: 'College not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: college,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+router.patch('/college/:collegeId/payment', async (req, res) => {
+  try {
+    const { enabled } = req.body;
+
+    const updatedCollege = await College.findOneAndUpdate(
+      { collegeId: req.params.collegeId },
+      {
+        $set: {
+          'payment.enabled': enabled,
+        },
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!updatedCollege) {
+      return res.status(404).json({
+        success: false,
+        message: 'College not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: updatedCollege,
+    });
+  } catch (error) {
+    console.error('PAYMENT TOGGLE ERROR:', error.message);
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 router.get('/confessions/:collegeId', getCollegeConfessions);
 

@@ -3,7 +3,7 @@ const Confession = require('../models/Confession');
 const {
   processFormSubmit,
 } = require('../modules/confession/formSubmitService');
-
+const College = require('../models/College');
 const {
   createCaptionFlow,
 } = require('../modules/confession/helpers/captionBuilderService');
@@ -22,6 +22,17 @@ exports.createConfession = async ({
   fromAdminUI = false,
   ...extraFields
 }) => {
+  const college = await College.findOne({ collegeId });
+
+  if (!college) {
+    throw new Error('College not found');
+  }
+
+  if (college.payment?.enabled && !isPaid) {
+    throw new Error(
+      `${college.name} ke liye payment required hai. Pehle payment complete karo 💳`,
+    );
+  }
   const result = await processFormSubmit({
     confession: message,
     collegeId,
