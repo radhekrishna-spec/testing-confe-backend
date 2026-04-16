@@ -54,6 +54,12 @@ export default function AdminNavbar() {
           >
             Frontend
           </button>
+          <button
+            onClick={() => navigate('/admin/backend')}
+            className="px-4 py-2 rounded-xl border border-white/20"
+          >
+            Backend
+          </button>
 
           <button
             onClick={logout}

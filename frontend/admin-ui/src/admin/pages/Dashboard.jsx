@@ -246,7 +246,7 @@ export default function Dashboard() {
       </div>
 
       <h1 className="text-3xl font-bold mb-6">Super Admin Dashboard 🚀</h1>
-
+      <p className="text-gray-400 mb-3">Quick Actions</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <button
           onClick={() => navigate('/admin/create-college')}
@@ -276,6 +276,7 @@ export default function Dashboard() {
           🤖 AI
         </button>
       </div>
+      <p className="text-gray-400 mb-3">Switch Panel</p>
 
       <div className="flex gap-3 mb-6">
         <button
