@@ -25,7 +25,8 @@ async function processFormSubmit(data, existingConfessionNo = null) {
     }
 
     // optional: make college-wise if needed later
-    const confessionNo = existingConfessionNo || (await getNextConfessionNo());
+    const confessionNo =
+      existingConfessionNo || (await getNextConfessionNo(data.collegeId));
 
     let mediaResult = {
       confessionNo,
