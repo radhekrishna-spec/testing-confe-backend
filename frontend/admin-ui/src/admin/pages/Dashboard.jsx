@@ -508,6 +508,27 @@ export default function Dashboard() {
                 AI
               </button>
             </div>
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/college/${college.collegeId}/settings`);
+                }}
+                className="text-xs border border-white/20 px-3 py-1 rounded-xl hover:bg-white hover:text-black transition"
+              >
+                Settings
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/college/${college.collegeId}/ai-training`);
+                }}
+                className="text-xs border border-white/20 px-3 py-1 rounded-xl hover:bg-white hover:text-black transition"
+              >
+                AI
+              </button>
+            </div>
           </div>
         ))}
       </div>
