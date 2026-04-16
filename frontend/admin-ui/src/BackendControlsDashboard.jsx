@@ -346,6 +346,36 @@ export default function BackendControlsDashboard() {
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mt-6">
             <h2 className="text-2xl font-bold mb-4">AI Training 🤖</h2>
 
+            {/* quick stats */}
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
+              <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
+                <p className="text-gray-400 text-sm">MIET</p>
+                <h3 className="text-2xl font-bold">AI Details</h3>
+                <button
+                  onClick={() =>
+                    (window.location.href = '/admin/college/miet/ai-training')
+                  }
+                  className="mt-3 px-4 py-2 rounded-xl bg-white text-black"
+                >
+                  Open MIET
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
+                <p className="text-gray-400 text-sm">NIET</p>
+                <h3 className="text-2xl font-bold">AI Details</h3>
+                <button
+                  onClick={() =>
+                    (window.location.href = '/admin/college/niet/ai-training')
+                  }
+                  className="mt-3 px-4 py-2 rounded-xl bg-white text-black"
+                >
+                  Open NIET
+                </button>
+              </div>
+            </div>
+
+            {/* add global training */}
             <textarea
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
@@ -369,14 +399,12 @@ export default function BackendControlsDashboard() {
               ))}
             </div>
 
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={saveAITraining}
-                className="px-5 py-3 rounded-2xl bg-white text-black font-semibold"
-              >
-                {savingAI ? 'Saving...' : 'Save Training'}
-              </button>
-            </div>
+            <button
+              onClick={saveAITraining}
+              className="mt-4 px-5 py-3 rounded-2xl bg-white text-black font-semibold"
+            >
+              {savingAI ? 'Saving...' : 'Save Training'}
+            </button>
           </div>
         )}
         {activeTab === 'global' && (
