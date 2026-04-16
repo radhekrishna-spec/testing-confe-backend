@@ -14,27 +14,22 @@ export default function AITrainingPage() {
   /* Fetch colleges dynamically */
   const fetchColleges = async () => {
     try {
-      const res = await axios.get(
-        '/api/admin/colleges'
-      );
+      const res = await axios.get('/api/admin/colleges');
+      const response = res.data;
 
-      const list = res.data?.data || [];
+      console.log('COLLEGES API RESPONSE:', response);
 
-      setColleges(list);
+      const list = response?.data || response?.colleges || response || [];
 
-      if (
-        list.length > 0 &&
-        !collegeCode
-      ) {
-        setCollegeCode(
-          list[0].collegeId
-        );
+      const finalList = Array.isArray(list) ? list : [];
+
+      setColleges(finalList);
+
+      if (finalList.length > 0 && !collegeCode) {
+        setCollegeCode(finalList[0].collegeId);
       }
     } catch (error) {
-      console.error(
-        'COLLEGE FETCH ERROR:',
-        error.message
-      );
+      console.error('COLLEGE FETCH ERROR:', error.message);
     }
   };
 
@@ -43,17 +38,12 @@ export default function AITrainingPage() {
 
     try {
       const res = await axios.get(
-        `/api/admin/ai-training/stats/${collegeCode}`
+        `/api/admin/ai-training/stats/${collegeCode}`,
       );
 
-      setStats(
-        res.data.stats || []
-      );
+      setStats(res.data.stats || []);
     } catch (error) {
-      console.error(
-        'STATS ERROR:',
-        error.message
-      );
+      console.error('STATS ERROR:', error.message);
     }
   };
 
@@ -62,21 +52,13 @@ export default function AITrainingPage() {
 
     try {
       const res = await axios.get(
-        `/api/admin/ai-training/count/${collegeCode}`
+        `/api/admin/ai-training/count/${collegeCode}`,
       );
 
-      setCount(
-        res.data.count || 0
-      );
-      setReady(
-        res.data.readyForAI ||
-          false
-      );
+      setCount(res.data.count || 0);
+      setReady(res.data.readyForAI || false);
     } catch (error) {
-      console.error(
-        'COUNT FETCH ERROR:',
-        error.message
-      );
+      console.error('COUNT FETCH ERROR:', error.message);
     }
   };
 
@@ -84,27 +66,16 @@ export default function AITrainingPage() {
     if (!collegeCode) return;
 
     try {
-      const res = await axios.get(
-        `/api/admin/ai-training/list/${collegeCode}`
-      );
+      const res = await axios.get(`/api/admin/ai-training/list/${collegeCode}`);
 
-      setItems(
-        res.data.items || []
-      );
+      setItems(res.data.items || []);
     } catch (error) {
-      console.error(
-        'LIST FETCH ERROR:',
-        error.message
-      );
+      console.error('LIST FETCH ERROR:', error.message);
     }
   };
 
   const refreshAll = async () => {
-    await Promise.all([
-      fetchCount(),
-      fetchList(),
-      fetchStats(),
-    ]);
+    await Promise.all([fetchCount(), fetchList(), fetchStats()]);
   };
 
   /* First load colleges */
@@ -125,126 +96,87 @@ export default function AITrainingPage() {
     try {
       setLoading(true);
 
-      await axios.post(
-        '/api/admin/ai-training/add',
-        {
-          collegeCode,
-          text,
-          source: 'admin',
-        }
-      );
+      await axios.post('/api/admin/ai-training/add', {
+        collegeCode,
+        text,
+        source: 'admin',
+      });
 
       setText('');
       await refreshAll();
 
-      alert(
-        `Saved for ${collegeCode} ✅`
-      );
+      alert(`Saved for ${collegeCode} ✅`);
     } catch (error) {
-      console.error(
-        'SAVE ERROR:',
-        error.message
-      );
+      console.error('SAVE ERROR:', error.message);
       alert('Failed ❌');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (
-    id
-  ) => {
+  const handleDelete = async (id) => {
     try {
-      await axios.delete(
-        `/api/admin/ai-training/delete/${id}`
-      );
+      await axios.delete(`/api/admin/ai-training/delete/${id}`);
 
       await refreshAll();
     } catch (error) {
-      console.error(
-        'DELETE ERROR:',
-        error.message
-      );
+      console.error('DELETE ERROR:', error.message);
       alert('Delete failed ❌');
     }
   };
 
-  const handleImportLegacy =
-    async () => {
-      try {
-        setLoading(true);
+  const handleImportLegacy = async () => {
+    try {
+      setLoading(true);
 
-        const res =
-          await axios.post(
-            `/api/admin/ai-training/import-legacy/${collegeCode}`,
-            {
-              limit: 100,
-            }
-          );
+      const res = await axios.post(
+        `/api/admin/ai-training/import-legacy/${collegeCode}`,
+        {
+          limit: 100,
+        },
+      );
 
-        await refreshAll();
+      await refreshAll();
 
-        alert(
-          `Imported ✅ ${res.data.inserted} | Skipped ⚠️ ${res.data.skipped}`
-        );
-      } catch (error) {
-        console.error(
-          'IMPORT ERROR:',
-          error.message
-        );
-        alert(
-          'Import failed ❌'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      alert(
+        `Imported ✅ ${res.data.inserted} | Skipped ⚠️ ${res.data.skipped}`,
+      );
+    } catch (error) {
+      console.error('IMPORT ERROR:', error.message);
+      alert('Import failed ❌');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="text-white">
       {/* Header */}
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
-        <h2 className="text-3xl font-bold">
-          🤖 AI Training Data
-        </h2>
+        <h2 className="text-3xl font-bold">🤖 AI Training Data</h2>
 
         <div className="mt-4 space-y-2 text-gray-300">
           <p>
-            Training Count:{' '}
-            <b>{count}</b>
+            Training Count: <b>{count}</b>
           </p>
 
           <p>
             Status:{' '}
-            <b>
-              {ready
-                ? '✅ AI Ready (100+)'
-                : '⚠️ Need 100 Confessions'}
-            </b>
+            <b>{ready ? '✅ AI Ready (100+)' : '⚠️ Need 100 Confessions'}</b>
           </p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6 mb-6">
-        <h3 className="text-xl font-semibold mb-4">
-          Source Stats
-        </h3>
+        <h3 className="text-xl font-semibold mb-4">Source Stats</h3>
 
         {stats.length === 0 ? (
-          <p className="text-gray-400">
-            No stats yet
-          </p>
+          <p className="text-gray-400">No stats yet</p>
         ) : (
           stats.map((stat) => (
-            <p
-              key={stat._id}
-              className="mb-2"
-            >
-              {stat._id}:{' '}
-              <b>
-                {stat.count}
-              </b>
+            <p key={stat._id} className="mb-2">
+              {stat._id}: <b>{stat.count}</b>
             </p>
           ))
         )}
@@ -258,29 +190,18 @@ export default function AITrainingPage() {
 
         <select
           value={collegeCode}
-          onChange={(e) =>
-            setCollegeCode(
-              e.target.value
-            )
-          }
+          onChange={(e) => setCollegeCode(e.target.value)}
           className="w-full rounded-2xl bg-white/5 border border-white/10 p-3 text-white"
         >
-          {colleges.map(
-            (college) => (
-              <option
-                key={
-                  college.collegeId
-                }
-                value={
-                  college.collegeId
-                }
-                className="text-black"
-              >
-                {college.name ||
-                  college.collegeId}
-              </option>
-            )
-          )}
+          {colleges.map((college) => (
+            <option
+              key={college.collegeId}
+              value={college.collegeId}
+              className="text-black"
+            >
+              {college.name || college.collegeId}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -289,26 +210,18 @@ export default function AITrainingPage() {
         <textarea
           rows="6"
           value={text}
-          onChange={(e) =>
-            setText(
-              e.target.value
-            )
-          }
+          onChange={(e) => setText(e.target.value)}
           placeholder="Enter confession for AI learning"
           className="w-full rounded-2xl bg-white/5 border border-white/10 p-4"
         />
 
         <div className="flex gap-3 mt-4">
           <button
-            onClick={
-              handleImportLegacy
-            }
+            onClick={handleImportLegacy}
             disabled={loading}
             className="px-5 py-3 rounded-2xl border border-white/20"
           >
-            {loading
-              ? 'Importing...'
-              : 'Import 100 Legacy 🔥'}
+            {loading ? 'Importing...' : 'Import 100 Legacy 🔥'}
           </button>
 
           <button
@@ -316,23 +229,17 @@ export default function AITrainingPage() {
             disabled={loading}
             className="px-5 py-3 rounded-2xl bg-white text-black"
           >
-            {loading
-              ? 'Saving...'
-              : 'Add to AI Training'}
+            {loading ? 'Saving...' : 'Add to AI Training'}
           </button>
         </div>
       </div>
 
       {/* List */}
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-        <h3 className="text-xl font-semibold mb-4">
-          Recent Training Data
-        </h3>
+        <h3 className="text-xl font-semibold mb-4">Recent Training Data</h3>
 
         {items.length === 0 ? (
-          <p className="text-gray-400">
-            No data yet
-          </p>
+          <p className="text-gray-400">No data yet</p>
         ) : (
           items.map((item) => (
             <div
@@ -342,21 +249,14 @@ export default function AITrainingPage() {
               <p>{item.text}</p>
 
               <small className="text-gray-400">
-                Source:{' '}
-                <b>
-                  {item.source}
-                </b>
+                Source: <b>{item.source}</b>
               </small>
 
               <br />
               <br />
 
               <button
-                onClick={() =>
-                  handleDelete(
-                    item._id
-                  )
-                }
+                onClick={() => handleDelete(item._id)}
                 className="px-4 py-2 rounded-xl border border-red-400 text-red-400"
               >
                 Delete ❌
