@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 export default function CreateCollegePage() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const initialState = {
     collegeId: '',
     name: '',
     domain: '',
@@ -22,9 +22,23 @@ export default function CreateCollegePage() {
     instagramIgUserId: '',
     instagramPageName: '',
 
-    isActive: true,
-  });
+    commandBotToken: '',
+    commandBotChatId: '',
 
+    rootFolderId: '',
+    queueFolderId: '',
+    postedFolderId: '',
+    rejectedFolderId: '',
+    editArchiveFolderId: '',
+    smallConfessionFolder: '',
+
+    safeLimit: '',
+    templateId: '',
+
+    isActive: true,
+  };
+
+  const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -37,26 +51,7 @@ export default function CreateCollegePage() {
   };
 
   const resetForm = () => {
-    setFormData({
-      collegeId: '',
-      name: '',
-      domain: '',
-      subdomain: '',
-      logo: '',
-      themeColor: '#000000',
-
-      razorpayLink: '',
-      paymentEnabled: false,
-
-      telegramBotToken: '',
-      telegramChatId: '',
-
-      instagramAccessToken: '',
-      instagramIgUserId: '',
-      instagramPageName: '',
-
-      isActive: true,
-    });
+    setFormData(initialState);
   };
 
   const handleSubmit = async () => {
@@ -68,6 +63,52 @@ export default function CreateCollegePage() {
     try {
       setLoading(true);
 
+      const payload = {
+        collegeId: formData.collegeId || '',
+        name: formData.name || '',
+        domain: formData.domain || '',
+        subdomain: formData.subdomain || '',
+        logo: formData.logo || '',
+        themeColor: formData.themeColor || '#000000',
+
+        isActive: formData.isActive,
+
+        payment: {
+          razorpayLink: formData.razorpayLink || '',
+          enabled: formData.paymentEnabled || false,
+        },
+
+        telegram: {
+          botToken: formData.telegramBotToken || '',
+          chatId: formData.telegramChatId || '',
+        },
+
+        instagram: {
+          accessToken: formData.instagramAccessToken || '',
+          igUserId: formData.instagramIgUserId || '',
+          pageName: formData.instagramPageName || '',
+        },
+
+        commandBot: {
+          botToken: formData.commandBotToken || '',
+          chatId: formData.commandBotChatId || '',
+        },
+
+        drive: {
+          rootFolderId: formData.rootFolderId || '',
+          queueFolderId: formData.queueFolderId || '',
+          postedFolderId: formData.postedFolderId || '',
+          rejectedFolderId: formData.rejectedFolderId || '',
+          editArchiveFolderId: formData.editArchiveFolderId || '',
+          smallConfessionFolder: formData.smallConfessionFolder || '',
+        },
+
+        posting: {
+          safeLimit: Number(formData.safeLimit) || 0,
+          templateId: formData.templateId || '',
+        },
+      };
+
       const res = await fetch(
         'https://testing-confe-backend.onrender.com/api/admin/college/create',
         {
@@ -75,32 +116,7 @@ export default function CreateCollegePage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            collegeId: formData.collegeId.trim(),
-            name: formData.name.trim(),
-            domain: formData.domain.trim(),
-            subdomain: formData.subdomain.trim(),
-            logo: formData.logo.trim(),
-            themeColor: formData.themeColor,
-
-            isActive: formData.isActive,
-
-            payment: {
-              razorpayLink: formData.razorpayLink.trim(),
-              enabled: formData.paymentEnabled,
-            },
-
-            telegram: {
-              botToken: formData.telegramBotToken.trim(),
-              chatId: formData.telegramChatId.trim(),
-            },
-
-            instagram: {
-              accessToken: formData.instagramAccessToken.trim(),
-              igUserId: formData.instagramIgUserId.trim(),
-              pageName: formData.instagramPageName.trim(),
-            },
-          }),
+          body: JSON.stringify(payload),
         },
       );
 
@@ -110,7 +126,6 @@ export default function CreateCollegePage() {
         alert('College created successfully ✅');
         resetForm();
 
-        // optional redirect
         setTimeout(() => {
           navigate('/admin');
         }, 800);
@@ -125,6 +140,16 @@ export default function CreateCollegePage() {
     }
   };
 
+  const renderInput = (name, placeholder) => (
+    <input
+      name={name}
+      placeholder={placeholder}
+      value={formData[name]}
+      onChange={handleChange}
+      className="border p-3 rounded-xl"
+    />
+  );
+
   return (
     <div className="min-h-screen p-6 bg-violet-50">
       <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg p-6">
@@ -133,45 +158,11 @@ export default function CreateCollegePage() {
         </h1>
 
         <div className="grid gap-4">
-          <input
-            name="collegeId"
-            placeholder="College ID (miet)"
-            value={formData.collegeId}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
-
-          <input
-            name="name"
-            placeholder="College Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
-
-          <input
-            name="domain"
-            placeholder="Domain"
-            value={formData.domain}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
-
-          <input
-            name="subdomain"
-            placeholder="Subdomain"
-            value={formData.subdomain}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
-
-          <input
-            name="logo"
-            placeholder="Logo URL"
-            value={formData.logo}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('collegeId', 'College ID (miet)')}
+          {renderInput('name', 'College Name')}
+          {renderInput('domain', 'Domain')}
+          {renderInput('subdomain', 'Subdomain')}
+          {renderInput('logo', 'Logo URL')}
 
           <div>
             <label className="text-sm text-gray-500 mb-1 block">
@@ -186,13 +177,7 @@ export default function CreateCollegePage() {
             />
           </div>
 
-          <input
-            name="razorpayLink"
-            placeholder="Razorpay Payment Link"
-            value={formData.razorpayLink}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('razorpayLink', 'Razorpay Payment Link')}
 
           <label className="flex items-center gap-3">
             <input
@@ -204,45 +189,25 @@ export default function CreateCollegePage() {
             Payment Enabled
           </label>
 
-          <input
-            name="telegramBotToken"
-            placeholder="Telegram Bot Token"
-            value={formData.telegramBotToken}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('telegramBotToken', 'Telegram Bot Token')}
+          {renderInput('telegramChatId', 'Telegram Chat ID')}
 
-          <input
-            name="telegramChatId"
-            placeholder="Telegram Chat ID"
-            value={formData.telegramChatId}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('instagramAccessToken', 'Instagram Access Token')}
+          {renderInput('instagramIgUserId', 'Instagram IG User ID')}
+          {renderInput('instagramPageName', 'Instagram Page Name')}
 
-          <input
-            name="instagramAccessToken"
-            placeholder="Instagram Access Token"
-            value={formData.instagramAccessToken}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('commandBotToken', 'Command Bot Token')}
+          {renderInput('commandBotChatId', 'Command Bot Chat ID')}
 
-          <input
-            name="instagramIgUserId"
-            placeholder="Instagram IG User ID"
-            value={formData.instagramIgUserId}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('rootFolderId', 'Drive Root Folder ID')}
+          {renderInput('queueFolderId', 'Queue Folder ID')}
+          {renderInput('postedFolderId', 'Posted Folder ID')}
+          {renderInput('rejectedFolderId', 'Rejected Folder ID')}
+          {renderInput('editArchiveFolderId', 'Edit Archive Folder ID')}
+          {renderInput('smallConfessionFolder', 'Small Confession Folder ID')}
 
-          <input
-            name="instagramPageName"
-            placeholder="Instagram Page Name"
-            value={formData.instagramPageName}
-            onChange={handleChange}
-            className="border p-3 rounded-xl"
-          />
+          {renderInput('safeLimit', 'Safe Limit')}
+          {renderInput('templateId', 'Template ID')}
 
           <label className="flex items-center gap-3">
             <input
