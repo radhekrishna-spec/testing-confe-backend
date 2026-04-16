@@ -125,7 +125,11 @@ async function startServer() {
     }, 10000);
   });
 }
+app.use(express.static(path.join(__dirname, '../frontend/admin-ui/dist')));
 
+app.get(['/admin', '/backend', '/admin/*'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/admin-ui/dist/index.html'));
+});
 app.use('*', (req, res) => {
   console.log('❌ 404 HIT:', req.method, req.originalUrl);
 
