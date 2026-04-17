@@ -27,7 +27,6 @@ async function postSingleImage(imageUrl, caption, collegeId) {
   const { IG_USER_ID, ACCESS_TOKEN } = await getInstagramConfig(collegeId);
 
   console.log('📸 SINGLE POST →', collegeId);
-  return true;
 
   let container;
 
@@ -52,18 +51,32 @@ async function postSingleImage(imageUrl, caption, collegeId) {
 
   await waitForMediaReady(creationId, ACCESS_TOKEN);
 
-  await axios.post(
-    `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`,
-    null,
-    {
-      params: {
-        creation_id: creationId,
-        access_token: ACCESS_TOKEN,
-      },
-    },
-  );
+  let publishRes;
 
-  console.log('✅ SINGLE POST DONE');
+  try {
+    publishRes = await axios.post(
+      `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`,
+      null,
+      {
+        params: {
+          creation_id: creationId,
+          access_token: ACCESS_TOKEN,
+        },
+      },
+    );
+
+    console.log('📤 PUBLISH RESPONSE:', publishRes.data);
+  } catch (err) {
+    console.error('❌ IG PUBLISH ERROR:', err.response?.data || err.message);
+    throw err;
+  }
+
+  if (!publishRes?.data?.id) {
+    throw new Error('Instagram publish failed');
+  }
+
+  console.log('✅ SINGLE POST SUCCESS:', publishRes.data.id);
+  return true;
 }
 
 // =========================
@@ -109,24 +122,35 @@ async function postCarousel(images, caption, collegeId) {
 
   const creationId = carousel.data.id;
 
-  await waitForMediaReady(creationId, ACCESS_TOKEN);
+  let publishRes;
 
-  await axios.post(
-    `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`,
-    null,
-    {
-      params: {
-        creation_id: creationId,
-        access_token: ACCESS_TOKEN,
+  try {
+    publishRes = await axios.post(
+      `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`,
+      null,
+      {
+        params: {
+          creation_id: creationId,
+          access_token: ACCESS_TOKEN,
+        },
       },
-    },
-  );
+    );
 
-  console.log('🚀 CAROUSEL POSTED');
+    console.log('📤 PUBLISH RESPONSE:', publishRes.data);
+  } catch (err) {
+    console.error('❌ IG PUBLISH ERROR:', err.response?.data || err.message);
+    throw err;
+  }
+
+  if (!publishRes?.data?.id) {
+    throw new Error('Instagram publish failed - no media id');
+  }
+
+  console.log('🚀 CAROUSEL POST SUCCESS:', publishRes.data.id);
   return true;
 }
 async function waitForMediaReady(creationId, accessToken) {
-  for (let i = 0; i < 20; i++){
+  for (let i = 0; i < 20; i++) {
     const res = await axios.get(
       `https://graph.facebook.com/v19.0/${creationId}`,
       {
