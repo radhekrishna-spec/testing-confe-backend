@@ -94,7 +94,7 @@ router.post('/confession-no', async (req, res) => {
       });
     }
 
-    const updated = await setConfessionNo(confessionNo, collegeId);
+    const updated = await setConfessionNo(collegeId, confessionNo);
 
     res.json({
       success: true,

@@ -3,8 +3,13 @@ const Confession = require('../../../models/Confession');
 
 const DEFAULT_CONFESSION_NO = 1000;
 
+// ======================
+// GET NEXT CONFESSION NO
+// ======================
 async function getNextConfessionNo(collegeId) {
-  const key = `confession_${collegeId}`;
+  if (!collegeId) throw new Error('collegeId is required');
+
+  const key = `confession_${String(collegeId)}`;
 
   let counter = await Counter.findOne({ key });
 
@@ -14,7 +19,7 @@ async function getNextConfessionNo(collegeId) {
     });
 
     const startNo = lastConfession
-      ? lastConfession.confessionNo
+      ? Number(lastConfession.confessionNo)
       : DEFAULT_CONFESSION_NO;
 
     counter = await Counter.create({
@@ -34,8 +39,15 @@ async function getNextConfessionNo(collegeId) {
   return updatedCounter.seq;
 }
 
+// ======================
+// SET CONFESSION NO
+// ======================
 async function setConfessionNo(collegeId, newNo) {
-  const key = `confession_${collegeId}`;
+  if (!collegeId) throw new Error('collegeId is required');
+  if (newNo === undefined || newNo === null)
+    throw new Error('newNo is required');
+
+  const key = `confession_${String(collegeId)}`;
 
   const updatedCounter = await Counter.findOneAndUpdate(
     { key },
@@ -49,12 +61,17 @@ async function setConfessionNo(collegeId, newNo) {
   return updatedCounter.seq;
 }
 
+// ======================
+// GET CURRENT CONFESSION NO
+// ======================
 async function getCurrentConfessionNo(collegeId) {
-  const key = `confession_${collegeId}`;
+  if (!collegeId) throw new Error('collegeId is required');
+
+  const key = `confession_${String(collegeId)}`;
 
   const counter = await Counter.findOne({ key });
 
-  return counter?.seq || DEFAULT_CONFESSION_NO;
+  return counter?.seq ?? DEFAULT_CONFESSION_NO;
 }
 
 module.exports = {
