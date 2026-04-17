@@ -49,15 +49,15 @@ async function pollTelegramUpdates(collegeId) {
 
   try {
     const { baseUrl } = await getTelegramConfig(collegeId);
+   
     let lastUpdateId = getLastUpdateId(collegeId);
-
     console.log(
       `🚀 POLLING START: ${collegeId} | lastUpdateId=${lastUpdateId}`,
     );
 
     const res = await axios.get(`${baseUrl}/getUpdates`, {
       params: {
-        offset: lastUpdateId + 1,
+        offset: lastUpdateId,
         timeout: 10,
       },
       timeout: 15000,
@@ -68,7 +68,7 @@ async function pollTelegramUpdates(collegeId) {
     console.log(`📥 [${collegeId}] Updates count: ${updates.length}`);
 
     for (const update of updates) {
-      lastUpdateId = update.update_id;
+      lastUpdateId = update.update_id+1;
       store.set(`last_update_id_${collegeId}`, lastUpdateId);
 
       // ==========================
@@ -194,7 +194,7 @@ function startTelegramPoller() {
       }
 
       // 🔥 stable delay
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 5000));
     }
   }
 

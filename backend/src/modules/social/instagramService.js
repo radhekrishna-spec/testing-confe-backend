@@ -26,27 +26,31 @@ async function getInstagramConfig(collegeId) {
 async function postSingleImage(imageUrl, caption, collegeId) {
   const { IG_USER_ID, ACCESS_TOKEN } = await getInstagramConfig(collegeId);
 
-  console.log('📸 SINGLE POST →', collegeId, IG_USER_ID);
+  console.log('📸 SINGLE POST →', collegeId);
+  return true;
 
-  const container = await axios.post(
-    `https://graph.facebook.com/v19.0/${IG_USER_ID}/media`,
-    null,
-    {
-      params: {
-        image_url: imageUrl,
-        caption,
-        access_token: ACCESS_TOKEN,
+  let container;
+
+  try {
+    container = await axios.post(
+      `https://graph.facebook.com/v19.0/${IG_USER_ID}/media`,
+      null,
+      {
+        params: {
+          image_url: imageUrl,
+          caption,
+          access_token: ACCESS_TOKEN,
+        },
       },
-    },
-  );
+    );
+  } catch (err) {
+    console.error('❌ IG ERROR:', err.response?.data || err.message);
+    throw err;
+  }
 
   const creationId = container.data.id;
 
-  if (!creationId) {
-    throw new Error('Single image container failed');
-  }
-
-  await new Promise((r) => setTimeout(r, 20000));
+  await waitForMediaReady(creationId, ACCESS_TOKEN);
 
   await axios.post(
     `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`,
@@ -60,7 +64,6 @@ async function postSingleImage(imageUrl, caption, collegeId) {
   );
 
   console.log('✅ SINGLE POST DONE');
-  return true;
 }
 
 // =========================
@@ -68,8 +71,6 @@ async function postSingleImage(imageUrl, caption, collegeId) {
 // =========================
 async function postCarousel(images, caption, collegeId) {
   const { IG_USER_ID, ACCESS_TOKEN } = await getInstagramConfig(collegeId);
-
-  console.log('📸 CAROUSEL POST →', collegeId);
 
   const children = [];
 
@@ -88,14 +89,10 @@ async function postCarousel(images, caption, collegeId) {
 
     const id = res.data.id;
 
-    if (!id) {
-      throw new Error('Child media failed');
-    }
+    await waitForMediaReady(id, ACCESS_TOKEN);
 
     children.push(id);
   }
-
-  await new Promise((r) => setTimeout(r, 15000));
 
   const carousel = await axios.post(
     `https://graph.facebook.com/v19.0/${IG_USER_ID}/media`,
@@ -112,11 +109,7 @@ async function postCarousel(images, caption, collegeId) {
 
   const creationId = carousel.data.id;
 
-  if (!creationId) {
-    throw new Error('Carousel create failed');
-  }
-
-  await new Promise((r) => setTimeout(r, 20000));
+  await waitForMediaReady(creationId, ACCESS_TOKEN);
 
   await axios.post(
     `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`,
@@ -132,7 +125,33 @@ async function postCarousel(images, caption, collegeId) {
   console.log('🚀 CAROUSEL POSTED');
   return true;
 }
+async function waitForMediaReady(creationId, accessToken) {
+  for (let i = 0; i < 20; i++){
+    const res = await axios.get(
+      `https://graph.facebook.com/v19.0/${creationId}`,
+      {
+        params: {
+          fields: 'status_code',
+          access_token: accessToken,
+        },
+      },
+    );
 
+    const status = res.data.status_code;
+
+    console.log('⏳ MEDIA STATUS:', status);
+
+    if (status === 'FINISHED') return true;
+
+    if (status === 'ERROR') {
+      throw new Error('Media processing failed');
+    }
+
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+
+  throw new Error('Media not ready timeout');
+}
 // =========================
 // MAIN FUNCTION
 // =========================

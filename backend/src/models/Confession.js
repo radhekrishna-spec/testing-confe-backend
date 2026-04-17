@@ -7,12 +7,13 @@ const confessionSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+
     confessionNo: {
       type: Number,
       required: true,
-
       index: true,
     },
+
     song: {
       title: String,
       artist: String,
@@ -62,10 +63,25 @@ const confessionSchema = new mongoose.Schema(
       default: false,
     },
 
+    // 🔥 MAIN STATUS FLOW
     status: {
       type: String,
       enum: ['PENDING', 'APPROVED', 'POSTING', 'POSTED', 'FAILED', 'REJECTED'],
       default: 'PENDING',
+      index: true,
+    },
+
+    // 🔥 RETRY SYSTEM (NEW)
+    retryCount: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+
+    // 🔥 SAFE FLAG (extra protection)
+    isPosted: {
+      type: Boolean,
+      default: false,
       index: true,
     },
 
@@ -88,8 +104,15 @@ const confessionSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-confessionSchema.index(
-  { collegeId: 1, confessionNo: 1 },
-  { unique: true }
-);
+
+// 🔥 UNIQUE INDEX (VERY IMPORTANT)
+confessionSchema.index({ collegeId: 1, confessionNo: 1 }, { unique: true });
+
+// 🔥 FAST QUERY INDEX (QUEUE OPTIMIZATION)
+confessionSchema.index({
+  status: 1,
+  retryCount: 1,
+  confessionNo: 1,
+});
+
 module.exports = mongoose.model('Confession', confessionSchema);

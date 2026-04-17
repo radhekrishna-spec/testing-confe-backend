@@ -42,7 +42,10 @@ async function getApprovedQueueCount() {
 async function getNextApprovedConfession() {
   return await Confession.findOne({
     status: 'APPROVED',
-  }).sort({ confessionNo: 1 });
+    retryCount: { $lt: 3 },
+  })
+    .sort({ confessionNo: 1 })
+    .lean();
 }
 
 // ======================
@@ -75,6 +78,7 @@ async function processApprovedQueue() {
       {
         status: 'FAILED',
         failureReason: 'No images found',
+        $inc: { retryCount: 1 },
       },
     );
     return;
@@ -83,7 +87,16 @@ async function processApprovedQueue() {
   try {
     store.set(`posting_${confessionNo}`, '1');
 
-    await Confession.updateOne({ confessionNo }, { status: 'POSTING' });
+    const lock = await Confession.findOneAndUpdate(
+      { confessionNo, status: 'APPROVED' },
+      { status: 'POSTING' },
+      { new: true },
+    );
+
+    if (!lock) {
+      console.log('⚠️ ALREADY PICKED BY OTHER WORKER');
+      return;
+    }
 
     console.log('📤 POSTING TO INSTAGRAM...');
 
@@ -101,6 +114,7 @@ async function processApprovedQueue() {
       { confessionNo },
       {
         status: 'POSTED',
+        isPosted: true,
         postedTime: new Date(),
       },
     );
@@ -168,7 +182,13 @@ async function startSchedulerWorker() {
 
   await refillLowQueues();
 
+  let isRunning = false;
+
   setInterval(async () => {
+    if (isRunning) return;
+
+    isRunning = true;
+
     try {
       const next = await getNextApprovedConfession();
 
@@ -177,6 +197,8 @@ async function startSchedulerWorker() {
       }
     } catch (error) {
       console.error('❌ SCHEDULER ERROR:', error.message);
+    } finally {
+      isRunning = false;
     }
   }, 15000); // 🔥 SAFE INTERVAL
 
