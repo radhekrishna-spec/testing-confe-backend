@@ -43,6 +43,7 @@ async function createSlidePNG(
   partNo,
   totalParts,
   collegeId,
+  type,
 ) {
   if (!collegeId) {
     throw new Error('collegeId missing in createSlidePNG');
@@ -124,6 +125,7 @@ async function createSlidePNG(
           fontSize,
           lineSpacing,
           collegeId,
+          type,
         ),
       },
     });
@@ -219,14 +221,14 @@ function buildSlideRequests(
   ];
 }
 
-async function generateSlidesImages(parts, confessionNo, collegeId) {
+async function generateSlidesImages(parts, confessionNo, collegeId, type) {
   if (!collegeId) {
     throw new Error('collegeId missing in generateSlidesImages');
   }
 
   return Promise.all(
     parts.map((part, index) =>
-      createSlidePNG(part, confessionNo, index + 1, parts.length, collegeId),
+      createSlidePNG(part, confessionNo, index + 1, parts.length, collegeId, type),
     ),
   );
 }
