@@ -34,13 +34,20 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 });
 
 // middlewares
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://testing-confe-backend-1.onrender.com',
+];
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'https://testing-confe-backend-1.onrender.com',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }),
 );
