@@ -7,7 +7,11 @@ const { checkQueueAndGenerate } = require('../ai/queueWatcher');
 const College = require('../models/College');
 const AITrainingConfession = require('../models/AITrainingConfession');
 
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const college = await College.findOne({
+  collegeId: confession.collegeId,
+});
+
+const chatId = college?.telegram?.chatId;
 
 // ======================
 // TIME LOGIC
@@ -132,7 +136,10 @@ async function processApprovedQueue() {
   }
 
   try {
-    store.set(`posting_${confessionNo}`, '1');
+    if (store.get(`posting_${confession.confessionNo}`)) {
+      console.log('⚠️ ALREADY POSTING, SKIP');
+      return;
+    }
 
     await Confession.updateOne({ confessionNo }, { status: 'POSTING' });
 
@@ -225,7 +232,7 @@ async function startSchedulerWorker() {
     } catch (error) {
       console.error('❌ SCHEDULER ERROR:', error);
     }
-  }, 6000);
+  }, 15000);
 
   // queue refill
   setInterval(refillLowQueues, 30 * 60 * 1000);
