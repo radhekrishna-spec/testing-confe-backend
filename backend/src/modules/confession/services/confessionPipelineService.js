@@ -18,11 +18,11 @@ function validateAndPrepareText(data) {
 
   let text = cleanText(raw, type);
 
-  if (!text || !/[a-zA-Z]/.test(text)) {
+  if (!text || text.trim().length < 3) {
     throw new Error('Invalid confession text');
   }
 
-  return { text, type }; // 🔥 IMPORTANT FIX
+  return { text, type };
 }
 
 // ======================
