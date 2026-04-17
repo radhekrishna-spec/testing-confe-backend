@@ -138,7 +138,7 @@ async function processApprovedQueue() {
 
     console.log('📤 POSTING TO INSTAGRAM...');
 
-    await postToInstagram(images, caption);
+    await postToInstagram(images, caption, confession.collegeId);
 
     console.log('✅ INSTAGRAM POSTED');
 
