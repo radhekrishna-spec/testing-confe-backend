@@ -27,6 +27,7 @@ async function processMediaFlow(
   existingConfessionNo,
   settings,
   collegeId,
+  type,
 ) {
   if (!existingConfessionNo) {
     throw new Error('confessionNo is required in processMediaFlow');
@@ -38,7 +39,9 @@ async function processMediaFlow(
 
   const confessionNo = existingConfessionNo;
 
-  const parts = settings.autoSplitParts ? splitTextSmart(text, 665 , data.type) : [text];
+  const parts = settings.autoSplitParts
+    ? splitTextSmart(text, 665, type)
+    : [text];
 
   // ✅ fixed: collegeId pass
   const imageBuffers = await generateSlidesImages(
