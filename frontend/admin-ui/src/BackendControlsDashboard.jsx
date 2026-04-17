@@ -110,7 +110,7 @@ export default function BackendControlsDashboard() {
   useEffect(() => {
     if (!collegeId) return;
 
-    fetch(`${API_BASE}/api/settings/${collegeId}`)
+    fetch(`${API_BASE}/api/settings?collegeId=${collegeId}`)
       .then((r) => r.json())
       .then(setSettings);
   }, [collegeId]);
@@ -119,10 +119,13 @@ export default function BackendControlsDashboard() {
     const updated = { ...settings, [key]: value };
     setSettings(updated);
 
-    await fetch(`${API_BASE}/api/settings/${collegeId}`, {
+    await fetch(`${API_BASE}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated),
+      body: JSON.stringify({
+        collegeId,
+        ...updated,
+      }),
     });
   };
 
@@ -166,7 +169,7 @@ export default function BackendControlsDashboard() {
           <div key={item.key} className="flex justify-between p-4 border">
             {item.name}
             <Toggle
-              checked={settings[item.key]}
+              checked={!!settings[item.key]}
               onChange={() => update(item.key, !settings[item.key])}
             />
           </div>
@@ -175,7 +178,7 @@ export default function BackendControlsDashboard() {
 
       {/* SIDE PANEL */}
       <div className="grid md:grid-cols-2 gap-6 mt-8">
-        <SubmitConfession />
+        <SubmitConfession collegeId={collegeId} />
         <ConfessionNoControl collegeId={collegeId} />
       </div>
     </div>

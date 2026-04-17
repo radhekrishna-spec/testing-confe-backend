@@ -4,7 +4,7 @@ const API_BASE = import.meta.env.DEV
   ? 'http://localhost:3001'
   : 'https://testing-confe-backend.onrender.com';
 
-export default function SubmitConfession() {
+export default function SubmitConfession({ collegeId }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -19,19 +19,22 @@ export default function SubmitConfession() {
       setLoading(true);
       setStatus('');
 
-      const res = await fetch(`${API_BASE}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await fetch(
+        `${API_BASE}/api/confessions/submit?collegeId=${collegeId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message,
+            fromAdminUI: true,
+            type: window.location.pathname.includes('shayari')
+              ? 'shayari'
+              : 'confession', // 🔥 bas ye add
+          }),
         },
-        body: JSON.stringify({
-          message,
-          fromAdminUI: true,
-          type: window.location.pathname.includes('shayari')
-            ? 'shayari'
-            : 'confession', // 🔥 bas ye add
-        }),
-      });
+      );
 
       const data = await res.json();
 
