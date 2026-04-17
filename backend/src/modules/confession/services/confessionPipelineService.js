@@ -13,10 +13,17 @@ const store = require('../../../store/store');
 // ✅ FIXED FUNCTION
 // ======================
 function validateAndPrepareText(data) {
+  console.log('📦 FULL DATA:', data); // 🔥 ADD THIS
+
   let raw = data?.confession || '';
   let type = data?.type || 'confession';
 
+  console.log('🧾 RAW INPUT:', raw); // 🔥 ADD
+  console.log('🏷️ TYPE:', type); // 🔥 ADD
+
   let text = cleanText(raw, type);
+
+  console.log('🧠 CLEAN TEXT:', text); // 🔥 ADD
 
   if (!text || text.trim().length < 3) {
     throw new Error('Invalid confession text');
