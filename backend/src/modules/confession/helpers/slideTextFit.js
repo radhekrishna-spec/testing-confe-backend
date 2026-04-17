@@ -1,4 +1,41 @@
-function autoFitTextConfig(textLength) {
+function autoFitTextConfig(text, type = 'confession') {
+  // =========================
+  // 📌 SHAYARI MODE
+  // =========================
+  if (type === 'shayari') {
+    const lines = text.split('\n').length;
+
+    let fontSize = 90;
+    let lineSpacing = 120;
+
+    if (lines <= 2) {
+      fontSize = 110;
+      lineSpacing = 110;
+    } else if (lines <= 4) {
+      fontSize = 95;
+      lineSpacing = 115;
+    } else if (lines <= 6) {
+      fontSize = 85;
+      lineSpacing = 120;
+    } else if (lines <= 8) {
+      fontSize = 75;
+      lineSpacing = 125;
+    } else {
+      fontSize = 65;
+      lineSpacing = 130;
+    }
+
+    return {
+      fontSize,
+      lineSpacing,
+    };
+  }
+
+  // =========================
+  // 📌 CONFESSION MODE (DEFAULT)
+  // =========================
+  const textLength = text.length;
+
   let fontSize;
   let lineSpacing = 110;
 
@@ -11,8 +48,6 @@ function autoFitTextConfig(textLength) {
 
   if (textLength <= 50) fontSize = 115;
   else if (textLength <= 60) fontSize = 100;
-  //if (textLength <= 60) fontSize = 115;
-  //else if (textLength <= 70) fontSize = 100;
   else if (textLength <= 84) fontSize = 96;
   else if (textLength <= 104) fontSize = 85;
   else if (textLength <= 120) fontSize = 77;

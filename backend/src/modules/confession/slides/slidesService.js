@@ -62,7 +62,7 @@ async function createSlidePNG(
 
   const templateId = await getTemplateId(collegeId);
 
-  const { fontSize, lineSpacing } = autoFitTextConfig(text.length);
+  const { fontSize, lineSpacing } = autoFitTextConfig(text, type);
 
   console.log('📄 COPYING TEMPLATE:', {
     collegeId,
