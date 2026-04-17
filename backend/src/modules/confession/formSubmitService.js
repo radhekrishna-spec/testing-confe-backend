@@ -18,7 +18,13 @@ async function processFormSubmit(data, existingConfessionNo = null) {
   try {
     const settings = normalizeSettings(getSettings());
 
-    const text = validateAndPrepareText(data);
+    let text;
+
+    if (data.type === 'shayari') {
+      text = data.confession || data.message; // 🔥 RAW TEXT
+    } else {
+      text = validateAndPrepareText(data);
+    }
 
     if (!existingConfessionNo && settings.duplicateCheck) {
       checkDuplicate(text);

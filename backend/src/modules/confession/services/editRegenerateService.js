@@ -13,7 +13,7 @@ async function regenerateEditedConfession(confessionNo, text, collegeId) {
     throw new Error('collegeId is required in regenerateEditedConfession');
   }
 
-  const parts = splitTextSmart(text, 665);
+  const parts = splitTextSmart(text, 665 , data.type);
 
   // ✅ fixed: pass collegeId
   const imageBuffers = await generateSlidesImages(

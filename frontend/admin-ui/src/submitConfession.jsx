@@ -27,15 +27,16 @@ export default function SubmitConfession() {
         body: JSON.stringify({
           message,
           fromAdminUI: true,
+          type: window.location.pathname.includes('shayari')
+            ? 'shayari'
+            : 'confession', // 🔥 bas ye add
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(
-          data.error || 'Submit failed'
-        );
+        throw new Error(data.error || 'Submit failed');
       }
 
       setStatus('Confession submitted 🎭');
@@ -75,21 +76,13 @@ export default function SubmitConfession() {
 
       {/* Footer */}
       <div className="flex justify-between items-center mt-3 mb-4">
-        <p className="text-sm text-gray-400">
-          Keep it respectful & anonymous
-        </p>
+        <p className="text-sm text-gray-400">Keep it respectful & anonymous</p>
 
-        <p className="text-sm text-gray-400">
-          {message.length}/6000
-        </p>
+        <p className="text-sm text-gray-400">{message.length}/6000</p>
       </div>
 
       {/* Status */}
-      {status && (
-        <p className="text-sm text-gray-300 mb-3">
-          {status}
-        </p>
-      )}
+      {status && <p className="text-sm text-gray-300 mb-3">{status}</p>}
 
       {/* Submit */}
       <button
@@ -97,9 +90,7 @@ export default function SubmitConfession() {
         disabled={loading}
         className="w-full rounded-2xl bg-white text-black font-semibold p-3 hover:scale-[1.01] transition"
       >
-        {loading
-          ? 'Submitting...'
-          : 'Submit Confession'}
+        {loading ? 'Submitting...' : 'Submit Confession'}
       </button>
     </div>
   );

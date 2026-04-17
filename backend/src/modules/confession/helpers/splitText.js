@@ -1,6 +1,14 @@
-function splitTextSmart(text, limit = 665) {
+function splitTextSmart(text, limit = 665, type = 'confession') {
   if (!text || typeof text !== 'string') {
     return [];
+  }
+
+  // 🔥 SHAYARI FIX (NO SPLIT, PRESERVE LINES)
+  if (type === 'shayari') {
+    return text
+      .split('\n') // break by user lines
+      .map((line) => line.trimEnd()) // keep left spacing, remove right only
+      .filter((line) => line.length > 0 || line === ''); // keep empty lines also
   }
 
   // EXACT APP SCRIPT SAME

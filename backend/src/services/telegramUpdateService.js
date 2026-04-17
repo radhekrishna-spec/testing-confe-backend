@@ -43,7 +43,7 @@ async function confirmEdit(chatId, confessionNo, text, collegeId) {
 
     store.set(`pending_edit_text_${collegeId}_${confessionNo}`, text);
 
-    const parts = splitTextSmart(text, 665);
+    const parts = splitTextSmart(text, 665 , data.type);
 
     const imageBuffers = await generateSlidesImages(
       parts,

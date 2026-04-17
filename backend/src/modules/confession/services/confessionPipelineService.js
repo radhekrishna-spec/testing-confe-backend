@@ -38,7 +38,7 @@ async function processMediaFlow(
 
   const confessionNo = existingConfessionNo;
 
-  const parts = settings.autoSplitParts ? splitTextSmart(text, 665) : [text];
+  const parts = settings.autoSplitParts ? splitTextSmart(text, 665 , data.type) : [text];
 
   // ✅ fixed: collegeId pass
   const imageBuffers = await generateSlidesImages(

@@ -57,6 +57,7 @@ async function answerCallback(cbId, text = 'Done ✅', collegeId) {
 }
 
 async function pollTelegramUpdates(collegeId) {
+  console.log('🚀 POLLING:', collegeId);
   if (pollingState.get(collegeId)) return;
 
   pollingState.set(collegeId, true);
@@ -77,8 +78,13 @@ async function pollTelegramUpdates(collegeId) {
     });
 
     const updates = res.data?.result || [];
+    console.log('📥 Updates count:', updates.length);
 
     for (const update of updates) {
+      console.log('🧾 UPDATE TYPE:', {
+        hasMessage: !!update.message,
+        hasCallback: !!update.callback_query,
+      });
       lastUpdateId = update.update_id;
 
       store.set(`last_update_id_${collegeId}`, lastUpdateId);
@@ -108,22 +114,26 @@ async function pollTelegramUpdates(collegeId) {
       }
 
       if (!update.callback_query) continue;
+      console.log('🔥 CALLBACK RECEIVED:', update.callback_query.id);
 
       const cb = update.callback_query;
       const cbId = cb.id;
 
       if (processedCallbacks.has(cbId)) {
+        console.log('⚠️ SKIPPED CALLBACK:', cbId);
         continue;
       }
 
       processedCallbacks.set(cbId, Date.now());
 
       const data = cb.data;
+      console.log('📦 CALLBACK DATA:', data);
       const chatId = cb.message?.chat?.id;
       const messageId = cb.message?.message_id;
 
       try {
         if (data.startsWith('approve_')) {
+          console.log('✅ APPROVE HIT:', data);
           const [, callbackCollegeId, id] = data.split('_');
 
           await approveConfession(
