@@ -9,18 +9,18 @@ const API_BASE = import.meta.env.DEV
 // ✅ TOGGLE
 function Toggle({ checked, onChange }) {
   return (
-    <button
+    <div
       onClick={onChange}
-      className={`w-14 h-8 rounded-full relative ${
+      className={`w-14 h-8 rounded-full cursor-pointer flex items-center px-1 transition ${
         checked ? 'bg-white' : 'bg-white/20'
       }`}
     >
       <div
-        className={`absolute top-1 h-6 w-6 rounded-full ${
-          checked ? 'left-7 bg-black' : 'left-1 bg-white'
+        className={`h-6 w-6 rounded-full transition ${
+          checked ? 'ml-auto bg-black' : 'ml-0 bg-white'
         }`}
       />
-    </button>
+    </div>
   );
 }
 
