@@ -9,6 +9,9 @@ const { exportSlideAsPNG } = require('../../../services/slideExportService');
 
 const College = require('../../../models/College');
 
+// ======================
+// 🎯 TEMPLATE FETCH
+// ======================
 async function getTemplateId(collegeId) {
   if (!collegeId) {
     throw new Error('collegeId is required in getTemplateId');
@@ -37,6 +40,9 @@ async function getTemplateId(collegeId) {
   return templateId;
 }
 
+// ======================
+// 🎯 CREATE SLIDE
+// ======================
 async function createSlidePNG(
   text,
   confessionNo,
@@ -48,6 +54,8 @@ async function createSlidePNG(
   if (!collegeId) {
     throw new Error('collegeId missing in createSlidePNG');
   }
+
+  console.log('🧾 RAW TEXT:', JSON.stringify(text)); // 🔥 DEBUG
 
   const auth = getGoogleAuthClient();
 
@@ -65,11 +73,10 @@ async function createSlidePNG(
 
   const { fontSize, lineSpacing } = autoFitTextConfig(text, type);
 
-  console.log('📄 COPYING TEMPLATE:', {
-    collegeId,
-    templateId,
-    confessionNo,
-    partNo,
+  console.log('🎨 STYLE CONFIG:', {
+    fontSize,
+    lineSpacing,
+    type,
   });
 
   const copyRes = await drive.files.copy({
@@ -113,6 +120,8 @@ async function createSlidePNG(
 
     const confessionBoxId = confessionShape.objectId;
 
+    console.log('📦 TEXTBOX ID:', confessionBoxId);
+
     await slides.presentations.batchUpdate({
       presentationId,
       requestBody: {
@@ -125,7 +134,6 @@ async function createSlidePNG(
           fontSize,
           lineSpacing,
           collegeId,
-          type,
         ),
       },
     });
@@ -142,6 +150,9 @@ async function createSlidePNG(
   }
 }
 
+// ======================
+// 🎯 BUILD REQUESTS (🔥 FIXED)
+// ======================
 function buildSlideRequests(
   text,
   confessionNo,
@@ -154,16 +165,29 @@ function buildSlideRequests(
 ) {
   const footerText = totalParts > 1 ? `Part ${partNo}/${totalParts}` : '';
 
+  console.log('🧠 FINAL TEXT TO INSERT:', JSON.stringify(text)); // 🔥 DEBUG
+
   return [
+    // ❌ REMOVE OLD TEXT
     {
-      replaceAllText: {
-        containsText: {
-          text: '{{CONFESSION}}',
-          matchCase: true,
+      deleteText: {
+        objectId: confessionBoxId,
+        textRange: {
+          type: 'ALL',
         },
-        replaceText: text,
       },
     },
+
+    // ✅ INSERT TEXT (NEWLINE SAFE)
+    {
+      insertText: {
+        objectId: confessionBoxId,
+        insertionIndex: 0,
+        text: text,
+      },
+    },
+
+    // FOOTER
     {
       replaceAllText: {
         containsText: {
@@ -173,6 +197,8 @@ function buildSlideRequests(
         replaceText: footerText,
       },
     },
+
+    // CONFESSION ID
     {
       replaceAllText: {
         containsText: {
@@ -182,6 +208,8 @@ function buildSlideRequests(
         replaceText: `Confession #${confessionNo}`,
       },
     },
+
+    // WATERMARK
     {
       replaceAllText: {
         containsText: {
@@ -191,6 +219,8 @@ function buildSlideRequests(
         replaceText: `@${collegeId}_confession`,
       },
     },
+
+    // FONT SIZE
     {
       updateTextStyle: {
         objectId: confessionBoxId,
@@ -206,6 +236,8 @@ function buildSlideRequests(
         fields: 'fontSize',
       },
     },
+
+    // 🔥 FINAL FIX: PARAGRAPH STYLE FORCE
     {
       updateParagraphStyle: {
         objectId: confessionBoxId,
@@ -214,13 +246,18 @@ function buildSlideRequests(
         },
         style: {
           lineSpacing,
+          spaceAbove: { magnitude: 0, unit: 'PT' },
+          spaceBelow: { magnitude: 0, unit: 'PT' },
         },
-        fields: 'lineSpacing',
+        fields: 'lineSpacing,spaceAbove,spaceBelow',
       },
     },
   ];
 }
 
+// ======================
+// 🎯 MAIN
+// ======================
 async function generateSlidesImages(parts, confessionNo, collegeId, type) {
   if (!collegeId) {
     throw new Error('collegeId missing in generateSlidesImages');
@@ -228,7 +265,14 @@ async function generateSlidesImages(parts, confessionNo, collegeId, type) {
 
   return Promise.all(
     parts.map((part, index) =>
-      createSlidePNG(part, confessionNo, index + 1, parts.length, collegeId, type),
+      createSlidePNG(
+        part,
+        confessionNo,
+        index + 1,
+        parts.length,
+        collegeId,
+        type,
+      ),
     ),
   );
 }
