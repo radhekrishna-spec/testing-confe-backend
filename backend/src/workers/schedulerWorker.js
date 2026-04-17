@@ -216,13 +216,16 @@ async function startSchedulerWorker() {
     try {
       const next = await getNextApprovedConfession();
 
-      if (next && (await shouldPostNow())) {
+      // if (next && (await shouldPostNow())) {
+      //   await processApprovedQueue();
+      // }
+      if (next) {
         await processApprovedQueue();
       }
     } catch (error) {
       console.error('❌ SCHEDULER ERROR:', error);
     }
-  }, 60000);
+  }, 6000);
 
   // queue refill
   setInterval(refillLowQueues, 30 * 60 * 1000);
