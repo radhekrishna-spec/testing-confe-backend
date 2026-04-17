@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import SubmitConfession from './submitConfession';
+import SubmitConfession from './SubmitConfession';
 
 const API_BASE = import.meta.env.DEV
   ? 'http://localhost:3001'
@@ -116,6 +116,7 @@ export default function BackendControlsDashboard() {
   }, [collegeId]);
 
   const update = async (key, value) => {
+    console.log('UPDATING:', key, value);
     const updated = { ...settings, [key]: value };
     setSettings(updated);
 
@@ -170,7 +171,10 @@ export default function BackendControlsDashboard() {
             {item.name}
             <Toggle
               checked={!!settings[item.key]}
-              onChange={() => update(item.key, !settings[item.key])}
+              onChange={() => {
+                console.log('CLICKED', item.key);
+                update(item.key, !settings[item.key]);
+              }}
             />
           </div>
         ))}

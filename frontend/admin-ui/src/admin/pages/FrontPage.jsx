@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import SubmitConfession from '../../submitConfession';
+import SubmitConfession from '../../SubmitConfession';
 
 export default function FrontPage() {
   const navigate = useNavigate();
@@ -35,15 +35,12 @@ export default function FrontPage() {
       <section className="max-w-5xl mx-auto px-6 pt-12 pb-8 text-center">
         <h1 className="text-4xl md:text-5xl font-bold leading-tight">
           Share your thoughts <br />
-          <span className="text-gray-400">
-            anonymously & freely
-          </span>
+          <span className="text-gray-400">anonymously & freely</span>
         </h1>
 
         <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-          Post confessions, thoughts and stories securely.
-          Your identity stays private while your voice
-          reaches everyone.
+          Post confessions, thoughts and stories securely. Your identity stays
+          private while your voice reaches everyone.
         </p>
       </section>
 
