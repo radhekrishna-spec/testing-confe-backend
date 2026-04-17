@@ -1,60 +1,57 @@
 const mongoose = require('mongoose');
 const path = require('path');
+
 require('dotenv').config({
-  path: require('path').resolve(__dirname, '../../../.env'),
+  path: path.resolve(__dirname, '../../../.env'),
 });
 
 const connectDB = require('../config/db');
 const College = require('../models/College');
 
-const colleges = [
-  {
-    collegeId: 'miet',
-    name: 'Meerut Institute of Engineering and Technology',
-    subdomain: 'miet',
-  },
-  {
-    collegeId: 'niet',
-    name: 'Noida Institute of Engineering and Technology',
-    subdomain: 'niet',
-  },
-  { collegeId: 'du', name: 'Delhi University', subdomain: 'du' },
-  {
-    collegeId: 'ccsu',
-    name: 'Chaudhary Charan Singh University',
-    subdomain: 'ccsu',
-  },
-  { collegeId: 'amity', name: 'Amity University', subdomain: 'amity' },
-  {
-    collegeId: 'lpu',
-    name: 'Lovely Professional University',
-    subdomain: 'lpu',
-  },
-  { collegeId: 'cu', name: 'Chandigarh University', subdomain: 'cu' },
-  { collegeId: 'bhu', name: 'Banaras Hindu University', subdomain: 'bhu' },
-  { collegeId: 'mu', name: 'University of Mumbai', subdomain: 'mu' },
-  {
-    collegeId: 'sppu',
-    name: 'Savitribai Phule Pune University',
-    subdomain: 'sppu',
-  },
-  { collegeId: 'jmi', name: 'Jamia Millia Islamia', subdomain: 'jmi' },
-  { collegeId: 'jnu', name: 'Jawaharlal Nehru University', subdomain: 'jnu' },
-];
+const { setupCollegeFolders } = require('../services/collegeAutoSetupService');
 
 async function seed() {
-  await connectDB();
+  try {
+    await connectDB();
 
-  for (const college of colleges) {
-    await College.updateOne(
-      { collegeId: college.collegeId },
-      { $set: college },
-      { upsert: true },
-    );
+    console.log('🚀 Running auto setup for all colleges...\n');
+
+    // 🔥 Step 1: DB se sab colleges lao
+    const colleges = await College.find();
+
+    if (!colleges.length) {
+      console.log('⚠️ No colleges found in DB');
+      process.exit();
+    }
+
+    // 🔥 Step 2: loop through ALL colleges
+    for (const college of colleges) {
+      console.log(`📌 Checking: ${college.name}`);
+
+      try {
+        const result = await setupCollegeFolders(
+          college.collegeId,
+          college.name,
+        );
+
+        if (result.skipped) {
+          console.log(`⏭️ Already setup: ${college.name}`);
+        } else {
+          console.log(`✅ Created folders: ${college.name}`);
+        }
+      } catch (err) {
+        console.error(`❌ Error for ${college.name}:`, err.message);
+      }
+
+      console.log('-----------------------------');
+    }
+
+    console.log('\n🎉 ALL DONE');
+    process.exit();
+  } catch (err) {
+    console.error('🔥 Script failed:', err.message);
+    process.exit(1);
   }
-
-  console.log('✅ All colleges inserted');
-  process.exit();
 }
 
 seed();
