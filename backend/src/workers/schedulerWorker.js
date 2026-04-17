@@ -9,20 +9,13 @@ const AITrainingConfession = require('../models/AITrainingConfession');
 
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-// Dynamic timing based on approved queue count
-
+// ======================
+// TIME LOGIC
+// ======================
 function getPostTimes(queueCount) {
-  let baseHours = [];
-
-  if (queueCount <= 3) {
-    baseHours = [9, 15, 21];
-  } else if (queueCount <= 6) {
-    baseHours = [9, 12, 14, 17, 20, 23];
-  } else {
-    baseHours = [7, 9, 11, 13, 15, 17, 19, 21, 23];
-  }
-
-  return baseHours;
+  if (queueCount <= 3) return [9, 15, 21];
+  if (queueCount <= 6) return [9, 12, 14, 17, 20, 23];
+  return [7, 9, 11, 13, 15, 17, 19, 21, 23];
 }
 
 function getRandomMinuteForHour(dateKey, hour) {
@@ -31,74 +24,23 @@ function getRandomMinuteForHour(dateKey, hour) {
   let minute = store.get(key);
 
   if (minute === undefined || minute === null) {
-    minute = Math.floor(Math.random() * 12) + 1; // 1 to 12
+    minute = Math.floor(Math.random() * 10) + 1; // 1–10
     store.set(key, minute);
   }
 
   return minute;
 }
 
-// count approved queue
+// ======================
+// QUEUE COUNT
+// ======================
 async function getApprovedQueueCount() {
-  return await Confession.countDocuments({
-    status: 'APPROVED',
-  });
-}
-async function refillLowQueues() {
-  const colleges = await College.find({
-    isActive: true,
-  }).sort({ collegeId: 1 });
-
-  if (!colleges.length) return;
-
-  const pointerKey = 'AI_COLLEGE_POINTER';
-
-  let pointer = Number(store.get(pointerKey)) || 0;
-
-  if (pointer >= colleges.length) {
-    pointer = 0;
-  }
-
-  const college = colleges[pointer];
-
-  const visibleKey = `AI_VISIBLE_COUNT_${college.collegeId}`;
-
-  let visibleCount = Number(store.get(visibleKey)) || 0;
-
-  //console.log(`📦 Visible AI queue for ${college.collegeId}: ${visibleCount}`);
-
-  if (visibleCount < 3) {
-    console.log(
-      `⚠️ Low AI visible queue for ${college.collegeId}: ${visibleCount}`,
-    );
-
-    const trainingCount = await AITrainingConfession.countDocuments({
-      collegeCode: college.collegeId,
-      isApprovedForTraining: true,
-      isRejected: false,
-    });
-
-    //console.log(`📚 ${college.collegeId} training count: ${trainingCount}`);
-
-    if (trainingCount < 100) {
-      console.log(
-        `⏳ AI blocked for ${college.collegeId}: ${trainingCount}/100`,
-      );
-    } else {
-      await checkQueueAndGenerate(college.collegeId, 'scheduler');
-
-      store.set(visibleKey, 3);
-    }
-
-    store.set(visibleKey, 3);
-  } else {
-    //console.log(`✅ Queue healthy for ${college.collegeId}`);
-  }
-
-  store.set(pointerKey, pointer + 1);
+  return await Confession.countDocuments({ status: 'APPROVED' });
 }
 
-// new time based posting logic
+// ======================
+// SHOULD POST NOW
+// ======================
 async function shouldPostNow() {
   const now = new Date(
     new Date().toLocaleString('en-US', {
@@ -106,91 +48,75 @@ async function shouldPostNow() {
     }),
   );
 
-  // if (now.getMinutes() % 2 === 0) {
-  //   return true;
-  // }
-  // return false;
-
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  //console.log('⏰ SCHEDULER CHECK RUNNING');
-  //console.log('🕒 CURRENT TIME:', now.toLocaleTimeString());
-
   const queueCount = await getApprovedQueueCount();
+
+  console.log('🧠 SHOULD POST CHECK');
+  console.log('⏰ TIME:', currentHour, currentMinute);
+  console.log('📦 QUEUE COUNT:', queueCount);
 
   if (!queueCount) return false;
 
   const postHours = getPostTimes(queueCount);
 
-  if (!postHours.includes(currentHour)) {
-    return false;
-  }
+  console.log('📅 POST HOURS:', postHours);
+
+  if (!postHours.includes(currentHour)) return false;
 
   const todayKey = now.toDateString();
-
   const randomMinute = getRandomMinuteForHour(todayKey, currentHour);
 
-  // allow only 2 min window
-  if (currentMinute < randomMinute || currentMinute > randomMinute + 1) {
+  console.log('🎯 RANDOM MINUTE:', randomMinute);
+
+  // 🔥 3 min window (stable)
+  if (currentMinute < randomMinute || currentMinute > randomMinute + 3) {
     return false;
   }
 
   const slotKey = `LAST_POST_SLOT_${todayKey}_${currentHour}`;
 
-  if (store.get(slotKey)) {
-    return false;
-  }
+  if (store.get(slotKey)) return false;
 
   store.set(slotKey, '1');
 
-  //console.log(`✅ Slot matched: ${currentHour}:${randomMinute}`);
+  console.log('✅ SLOT MATCHED → POST ALLOWED');
 
   return true;
 }
 
-//   if (currentMinute % 2 !== 0) {
-//     return false;
-//   }
-
-//   return true;
-// }
-
-// FIFO approved confession
+// ======================
+// GET NEXT CONFESSION
+// ======================
 async function getNextApprovedConfession() {
-  return await Confession.findOne({
+  const confession = await Confession.findOne({
     status: 'APPROVED',
   }).sort({ confessionNo: 1 });
+
+  if (confession) {
+    console.log(`📦 NEXT CONFESSION: ${confession.confessionNo}`);
+  }
+
+  return confession;
 }
 
-// post flow
+// ======================
+// MAIN POST FLOW
+// ======================
 async function processApprovedQueue() {
-  ////console.log('🧾 STORE DATA:', store.getAll());
-
   const confession = await getNextApprovedConfession();
 
-  ////console.log('🧾 NEXT APPROVED CONFESSION:', confession);
-
   if (!confession) {
-    ////console.log('❌ no approved confession');
-    return {
-      success: false,
-      message: 'No approved confession',
-    };
+    console.log('❌ NO APPROVED CONFESSION');
+    return;
   }
+
   const confessionNo = confession.confessionNo;
   const images = confession.images || [];
   const caption = confession.caption || '';
 
-  ////console.log('🖼 images:', images);
-  ////console.log('📝 caption:', caption);
-
-  if (!confessionNo) {
-    return {
-      success: false,
-      message: 'No approved confession',
-    };
-  }
+  console.log(`🚀 PROCESSING CONFESSION: ${confessionNo}`);
 
   if (!images.length) {
     await Confession.updateOne(
@@ -201,45 +127,27 @@ async function processApprovedQueue() {
       },
     );
 
-    store.set(`state_${confessionNo}`, 'FAILED');
-
-    //console.log(`❌ #${confessionNo} marked FAILED`);
-
-    return {
-      success: false,
-      message: 'No images found',
-    };
+    console.log(`❌ FAILED: No images`);
+    return;
   }
 
   try {
     store.set(`posting_${confessionNo}`, '1');
+
     await Confession.updateOne({ confessionNo }, { status: 'POSTING' });
-    // //console.log('📤 INSTAGRAM IMAGE URL:', images[0]);
-    // //console.log('📝 INSTAGRAM CAPTION:', caption);
 
-    const axios = require('axios');
-
-    try {
-      const testRes = await axios.get(images[0], {
-        responseType: 'arraybuffer',
-        timeout: 15000,
-        maxRedirects: 5,
-      });
-
-      // //console.log('🧪 IMAGE FETCH STATUS:', testRes.status);
-      // //console.log('🧪 IMAGE CONTENT TYPE:', testRes.headers['content-type']);
-      // //console.log('🧪 IMAGE SIZE:', testRes.data.length);
-    } catch (e) {
-      //console.error('❌ IMAGE URL TEST FAIL:', e.response?.data || e.message);
-    }
+    console.log('📤 POSTING TO INSTAGRAM...');
 
     await postToInstagram(images, caption);
+
+    console.log('✅ INSTAGRAM POSTED');
 
     const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
     for (const fileId of fileIds) {
       await moveFileToFolder(fileId, 'posted');
     }
+
     await Confession.updateOne(
       { confessionNo },
       {
@@ -248,26 +156,20 @@ async function processApprovedQueue() {
       },
     );
 
-    store.delete(`images_${confessionNo}`);
-    store.delete(`caption_${confessionNo}`);
-    store.set(`posted_time_${confessionNo}`, Date.now());
-
     const tgMsgId = store.get(`telegram_msg_${confessionNo}`);
 
-    await updateTelegramButtons(CHAT_ID, tgMsgId, 'posted', confessionNo);
-
-    ////console.log(`🚀 Posted confession #${confessionNo}`);
-    return {
-      success: true,
+    // 🔥 FIXED (collegeId added)
+    await updateTelegramButtons(
+      CHAT_ID,
+      tgMsgId,
+      'posted',
       confessionNo,
-      message: `Confession #${confessionNo} posted successfully`,
-    };
+      confession.collegeId,
+    );
+
+    console.log(`🚀 SUCCESS: #${confessionNo} POSTED`);
   } catch (error) {
-    console.error('❌ POST FAIL FULL:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-    });
+    console.error('❌ POST FAILED FULL:', error);
 
     await Confession.updateOne(
       { confessionNo },
@@ -276,103 +178,58 @@ async function processApprovedQueue() {
         failureReason: error.message,
       },
     );
-
-    return {
-      success: false,
-      confessionNo,
-      message: error.response?.data || error.message,
-    };
   } finally {
     store.delete(`posting_${confessionNo}`);
   }
 }
-async function decayOldAIQueues() {
-  const colleges = await College.find({
-    isActive: true,
-  }).sort({ collegeId: 1 });
+
+// ======================
+// AI QUEUE REFILL
+// ======================
+async function refillLowQueues() {
+  const colleges = await College.find({ isActive: true });
 
   for (const college of colleges) {
     const visibleKey = `AI_VISIBLE_COUNT_${college.collegeId}`;
-
     let visibleCount = Number(store.get(visibleKey)) || 0;
 
-    if (visibleCount <= 0) {
-      continue;
-    }
+    if (visibleCount < 3) {
+      console.log(`⚠️ LOW AI QUEUE: ${college.collegeId}`);
 
-    visibleCount = Math.max(0, visibleCount - 1);
-
-    store.set(visibleKey, visibleCount);
-
-    //console.log(`📉 ${college.collegeId}: visible ${visibleCount}`);
-
-    if (visibleCount === 0) {
-      console.log(
-        `🔄 ${college.collegeId} queue empty, refilling next rotation`,
-      );
+      await checkQueueAndGenerate(college.collegeId, 'scheduler');
+      store.set(visibleKey, 3);
     }
   }
 }
-// worker
+
+// ======================
+// WORKER START
+// ======================
 async function startSchedulerWorker() {
-  //console.log('🚀 Scheduler worker started');
+  console.log('🚀 Scheduler worker started');
 
-  // server start hote hi ek baar run
-  (async () => {
-    try {
-      //console.log('🚀 Initial queue warmup');
-      await refillLowQueues();
-    } catch (error) {
-      console.error('INITIAL REFILL ERROR:', error.message);
-    }
-  })();
+  // initial warmup
+  await refillLowQueues();
 
+  // main loop
   setInterval(async () => {
-    //console.log('🔁 Scheduler interval tick');
-
     try {
       const next = await getNextApprovedConfession();
-
-      //console.log('📦 NEXT APPROVED:', next?.confessionNo);
 
       if (next && (await shouldPostNow())) {
         await processApprovedQueue();
       }
     } catch (error) {
-      console.error('SCHEDULER ERROR:', error.message);
+      console.error('❌ SCHEDULER ERROR:', error);
     }
   }, 60000);
 
-  setInterval(
-    async () => {
-      //console.log('⏰ 30min college rotation check');
-
-      try {
-        await refillLowQueues();
-      } catch (error) {
-        console.error('30MIN ROTATION ERROR:', error.message);
-      }
-    },
-    30 * 60 * 1000,
-  );
-
-  // 🔥 every 8 hours reduce stale AI queue
-  setInterval(
-    async () => {
-      //console.log('⏰ 8hr AI decay check');
-
-      try {
-        await decayOldAIQueues();
-      } catch (error) {
-        console.error('8HR DECAY ERROR:', error.message);
-      }
-    },
-    8 * 60 * 60 * 1000,
-  );
+  // queue refill
+  setInterval(refillLowQueues, 30 * 60 * 1000);
 }
 
 module.exports = {
-  shouldPostNow,
-  processApprovedQueue,
   startSchedulerWorker,
+  processApprovedQueue,
+  shouldPostNow,
 };
