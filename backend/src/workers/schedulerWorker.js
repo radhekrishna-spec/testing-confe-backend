@@ -90,7 +90,7 @@ async function processApprovedQueue() {
     const lock = await Confession.findOneAndUpdate(
       { confessionNo, status: 'APPROVED' },
       { status: 'POSTING' },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     if (!lock) {
@@ -107,7 +107,7 @@ async function processApprovedQueue() {
     const fileIds = store.get(`fileIds_${confessionNo}`) || [];
 
     for (const fileId of fileIds) {
-      await moveFileToFolder(fileId, 'posted');
+      await moveFileToFolder(fileId, 'posted', confession.collegeId);
     }
 
     await Confession.updateOne(
