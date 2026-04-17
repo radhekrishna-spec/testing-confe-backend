@@ -37,6 +37,7 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 const allowedOrigins = [
   'http://localhost:5173',
   'https://testing-confe-backend-1.onrender.com',
+  'https://testing-confe.vercel.app',
 ];
 
 app.use(
