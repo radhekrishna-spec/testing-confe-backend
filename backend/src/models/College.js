@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { setupCollegeFolders } = require('../services/collegeAutoSetupService');
 
 const collegeSchema = new mongoose.Schema(
   {
@@ -133,5 +134,18 @@ const collegeSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+collegeSchema.post('save', async function (doc) {
+  try {
+    // ❌ agar already bana hai to skip
+    if (doc?.drive?.rootFolderId) return;
 
+    console.log(`📂 Auto creating folders for ${doc.name}`);
+
+    const result = await setupCollegeFolders(doc.collegeId, doc.name);
+
+    console.log(`✅ Auto setup done: ${doc.name}`);
+  } catch (err) {
+    console.error('❌ Auto Drive setup error:', err.message);
+  }
+});
 module.exports = mongoose.model('College', collegeSchema);
