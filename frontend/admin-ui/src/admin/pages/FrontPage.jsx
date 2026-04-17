@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import SubmitConfession from '../../SubmitConfession';
+import SubmitConfession from '../components/SubmitConfession';
 
 export default function FrontPage() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import SubmitConfession from './SubmitConfession';
+import SubmitConfession from './admin/components/SubmitConfession';
 
 const API_BASE = import.meta.env.DEV
   ? 'http://localhost:3001'

@@ -9,7 +9,7 @@ export default function SubmitConfession({ collegeId }) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
 
-  const SubmitConfession = async () => {
+  const handleSubmit = async () => {
     if (!message.trim()) {
       setStatus('Please write your confession ❌');
       return;
@@ -89,7 +89,7 @@ export default function SubmitConfession({ collegeId }) {
 
       {/* Submit */}
       <button
-        onClick={SubmitConfession}
+        onClick={handleSubmit}
         disabled={loading}
         className="w-full rounded-2xl bg-white text-black font-semibold p-3 hover:scale-[1.01] transition"
       >
