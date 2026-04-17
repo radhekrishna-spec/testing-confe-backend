@@ -77,7 +77,7 @@ function isDuplicateConfession(text) {
   return false;
 }
 
-function cleanText(raw) {
+function cleanText(raw, type = 'confession') {
   let text = raw || '';
 
   text = text
@@ -85,9 +85,21 @@ function cleanText(raw) {
     .replace(/\uFE0F/g, '')
     .replace(/[—]/g, '')
     .replace(/@\w+/g, 'id ')
-    .replace(/\.{3,}/g, '...')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/\.{3,}/g, '...');
+
+  // 🔥 TYPE BASED LOGIC
+  if (type === 'shayari') {
+    // newline preserve
+    text = text
+      .replace(/[ \t]+/g, ' ') // only spaces clean
+      .replace(/\n{3,}/g, '\n\n') // optional: limit empty lines
+      .trim();
+  } else {
+    // confession mode
+    text = text
+      .replace(/\s+/g, ' ') // collapse everything
+      .trim();
+  }
 
   text = basicGrammarFix(text);
   text = limitEmojis(text);

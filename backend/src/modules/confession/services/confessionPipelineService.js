@@ -13,7 +13,9 @@ const store = require('../../../store/store');
 
 function validateAndPrepareText(data) {
   let raw = data?.confession || '';
-  let text = cleanText(raw);
+  let type = data?.type || 'confession';
+
+  let text = cleanText(raw, type);
 
   if (!text || !/[a-zA-Z]/.test(text)) {
     throw new Error('Invalid confession text');
