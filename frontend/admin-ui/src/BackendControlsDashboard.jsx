@@ -1,10 +1,11 @@
-import { Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import SubmitConfession from './SubmitConfession';
 
 const API_BASE = import.meta.env.DEV
   ? 'http://localhost:3001'
   : 'https://testing-confe-backend.onrender.com';
 
+// ✅ TOGGLE
 function Toggle({ checked, onChange }) {
   return (
     <button
@@ -22,74 +23,127 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-export default function AdvancedDashboard() {
+// ✅ CONFESSION NUMBER (NOW COLLEGE-WISE)
+function ConfessionNoControl({ collegeId }) {
+  const [number, setNumber] = useState('');
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/confession-no?collegeId=${collegeId}`)
+      .then((res) => res.json())
+      .then((data) => setNumber(data.confessionNo || ''));
+  }, [collegeId]);
+
+  const updateNumber = async () => {
+    await fetch(`${API_BASE}/api/confession-no`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        confessionNo: Number(number),
+        collegeId,
+      }),
+    });
+
+    alert(`Updated to #${number}`);
+  };
+
+  return (
+    <div className="p-5 bg-white/5 border rounded-2xl">
+      <h3>Confession Number</h3>
+
+      <input
+        type="number"
+        value={number}
+        onChange={(e) => setNumber(e.target.value)}
+        className="w-full p-2 bg-black border rounded mt-2"
+      />
+
+      <div className="flex gap-2 mt-2">
+        {[1, 10, 100].map((n) => (
+          <button
+            key={n}
+            onClick={() => setNumber((prev) => Number(prev || 0) + n)}
+            className="px-2 py-1 border rounded"
+          >
+            +{n}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={updateNumber}
+        className="mt-3 w-full bg-white text-black p-2 rounded"
+      >
+        Update
+      </button>
+    </div>
+  );
+}
+
+// ✅ FULL CONTROLS (RESTORED)
+const defaultControls = [
+  { key: 'spamFilter', name: 'Spam Filter', category: 'Moderation' },
+  { key: 'duplicateCheck', name: 'Duplicate Check', category: 'Moderation' },
+  { key: 'toxicity', name: 'AI Toxicity', category: 'AI' },
+  { key: 'split', name: 'Auto Split', category: 'Posting' },
+  { key: 'telegram', name: 'Telegram Preview', category: 'Posting' },
+  { key: 'instagram', name: 'Instagram Auto Post', category: 'Posting' },
+];
+
+export default function BackendControlsDashboard() {
   const [collegeId, setCollegeId] = useState('');
   const [colleges, setColleges] = useState([]);
-  const [tab, setTab] = useState('system');
-
   const [settings, setSettings] = useState({});
-  const [stats, setStats] = useState({
-    approved: 0,
-    posted: 0,
-    failed: 0,
-  });
+  const [search, setSearch] = useState('');
 
-  // 🔥 LOAD COLLEGES
+  // ✅ LOAD COLLEGES
   useEffect(() => {
     fetch(`${API_BASE}/api/admin/colleges`)
       .then((r) => r.json())
       .then((d) => {
-        setColleges(d.data || []);
-        if (d.data?.length) setCollegeId(d.data[0].collegeId);
+        const list = d.data || [];
+        setColleges(list);
+        if (list.length) setCollegeId(list[0].collegeId);
       });
   }, []);
 
-  // 🔥 LOAD SETTINGS
+  // ✅ LOAD SETTINGS (COLLEGE-WISE)
   useEffect(() => {
     if (!collegeId) return;
 
     fetch(`${API_BASE}/api/settings/${collegeId}`)
       .then((r) => r.json())
       .then(setSettings);
-
-    fetch(`${API_BASE}/api/admin/stats/${collegeId}`)
-      .then((r) => r.json())
-      .then(setStats);
   }, [collegeId]);
 
-  const update = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
+  const update = async (key, value) => {
+    const updated = { ...settings, [key]: value };
+    setSettings(updated);
 
-  const save = async () => {
     await fetch(`${API_BASE}/api/settings/${collegeId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
+      body: JSON.stringify(updated),
     });
-
-    alert('Saved ✅');
   };
+
+  const filtered = useMemo(() => {
+    return defaultControls.filter((c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [search]);
 
   return (
     <div className="bg-black text-white min-h-screen p-6">
       {/* HEADER */}
       <div className="flex justify-between mb-6">
-        <h1 className="text-3xl font-bold">🚀 SaaS Control Panel</h1>
-
-        <button
-          onClick={save}
-          className="bg-white text-black px-4 py-2 rounded-xl"
-        >
-          <Save size={16} /> Save
-        </button>
+        <h1 className="text-3xl font-bold">🚀 Control Panel</h1>
       </div>
 
       {/* COLLEGE */}
       <select
         value={collegeId}
         onChange={(e) => setCollegeId(e.target.value)}
-        className="w-full mb-6 p-3 rounded-xl bg-white/10"
+        className="w-full mb-6 p-3 bg-white/10"
       >
         {colleges.map((c) => (
           <option key={c.collegeId} value={c.collegeId}>
@@ -98,106 +152,32 @@ export default function AdvancedDashboard() {
         ))}
       </select>
 
-      {/* STATS */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="p-4 bg-white/5 rounded-xl">
-          Approved: {stats.approved}
-        </div>
-        <div className="p-4 bg-white/5 rounded-xl">Posted: {stats.posted}</div>
-        <div className="p-4 bg-white/5 rounded-xl">Failed: {stats.failed}</div>
-      </div>
+      {/* SEARCH */}
+      <input
+        placeholder="Search..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full mb-6 p-3 bg-white/10"
+      />
 
-      {/* TABS */}
-      <div className="flex gap-3 mb-6">
-        {['system', 'posting', 'ai', 'queue'].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-xl ${
-              tab === t ? 'bg-white text-black' : 'border'
-            }`}
-          >
-            {t}
-          </button>
+      {/* CONTROLS */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {filtered.map((item) => (
+          <div key={item.key} className="flex justify-between p-4 border">
+            {item.name}
+            <Toggle
+              checked={settings[item.key]}
+              onChange={() => update(item.key, !settings[item.key])}
+            />
+          </div>
         ))}
       </div>
 
-      {/* SYSTEM */}
-      {tab === 'system' && (
-        <div className="grid gap-4">
-          <div className="flex justify-between">
-            Auto Posting
-            <Toggle
-              checked={settings.autoPosting}
-              onChange={() => update('autoPosting', !settings.autoPosting)}
-            />
-          </div>
-
-          <div className="flex justify-between">
-            Start Confession No
-            <input
-              type="number"
-              value={settings.startConfessionNo || 1000}
-              onChange={(e) =>
-                update('startConfessionNo', Number(e.target.value))
-              }
-            />
-          </div>
-        </div>
-      )}
-
-      {/* POSTING */}
-      {tab === 'posting' && (
-        <div className="grid gap-4">
-          <div className="flex justify-between">
-            Interval (sec)
-            <input
-              type="number"
-              value={settings.postingInterval || 15}
-              onChange={(e) =>
-                update('postingInterval', Number(e.target.value))
-              }
-            />
-          </div>
-
-          <div className="flex justify-between">
-            Max Queue
-            <input
-              type="number"
-              value={settings.maxQueue || 10}
-              onChange={(e) => update('maxQueue', Number(e.target.value))}
-            />
-          </div>
-
-          <div className="flex justify-between">
-            Retry Limit
-            <input
-              type="number"
-              value={settings.retryLimit || 3}
-              onChange={(e) => update('retryLimit', Number(e.target.value))}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* AI */}
-      {tab === 'ai' && (
-        <div>
-          <textarea
-            placeholder="Train AI..."
-            className="w-full h-40 bg-white/5 p-4"
-          />
-        </div>
-      )}
-
-      {/* QUEUE */}
-      {tab === 'queue' && (
-        <div>
-          <button className="bg-white text-black px-4 py-2 rounded-xl">
-            Refresh Queue
-          </button>
-        </div>
-      )}
+      {/* SIDE PANEL */}
+      <div className="grid md:grid-cols-2 gap-6 mt-8">
+        <SubmitConfession />
+        <ConfessionNoControl collegeId={collegeId} />
+      </div>
     </div>
   );
 }
