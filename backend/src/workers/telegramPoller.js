@@ -43,7 +43,7 @@ async function answerCallback(cbId, text = 'Done ✅', collegeId) {
       show_alert: false,
     });
   } catch (error) {
-    console.error('❌ CALLBACK ANSWER ERROR:', error.message);
+    //console.error('❌ CALLBACK ANSWER ERROR:', error.message);
   }
 }
 
@@ -56,9 +56,9 @@ async function pollTelegramUpdates(collegeId) {
     const { baseUrl } = await getTelegramConfig(collegeId);
     let lastUpdateId = getLastUpdateId(collegeId);
 
-    console.log(
-      `🚀 POLLING START: ${collegeId} | lastUpdateId=${lastUpdateId}`,
-    );
+    // //console.log(
+    //   `🚀 POLLING START: ${collegeId} | lastUpdateId=${lastUpdateId}`,
+    // );
 
     const res = await axios.get(`${baseUrl}/getUpdates`, {
       params: {
@@ -70,19 +70,19 @@ async function pollTelegramUpdates(collegeId) {
 
     const updates = res.data?.result || [];
 
-    console.log(`📥 [${collegeId}] Updates count: ${updates.length}`);
+    //console.log(`📥 [${collegeId}] Updates count: ${updates.length}`);
 
     for (const update of updates) {
       lastUpdateId = update.update_id;
       store.set(`last_update_id_${collegeId}`, lastUpdateId);
 
-      console.log(`🧾 [${collegeId}] UPDATE ID: ${update.update_id}`);
+      //console.log(`🧾 [${collegeId}] UPDATE ID: ${update.update_id}`);
 
       // ==========================
       // TEXT INPUT (EDIT FLOW)
       // ==========================
       if (update.message?.text) {
-        console.log(`💬 [${collegeId}] MESSAGE RECEIVED`);
+        //console.log(`💬 [${collegeId}] MESSAGE RECEIVED`);
 
         const text = update.message.text.trim();
         const chatId = update.message.chat.id;
@@ -96,7 +96,7 @@ async function pollTelegramUpdates(collegeId) {
           activeEditId &&
           String(editingChat) === String(chatId)
         ) {
-          console.log(`✏️ [${collegeId}] EDIT INPUT DETECTED`);
+          //console.log(`✏️ [${collegeId}] EDIT INPUT DETECTED`);
 
           await confirmEdit(chatId, activeEditId, text, collegeId);
           continue;
@@ -111,11 +111,11 @@ async function pollTelegramUpdates(collegeId) {
       const cb = update.callback_query;
       const cbId = cb.id;
 
-      console.log(`🔥 [${collegeId}] CALLBACK RECEIVED: ${cbId}`);
+      //console.log(`🔥 [${collegeId}] CALLBACK RECEIVED: ${cbId}`);
 
       // ❌ TEMP FIX: disable skip (important)
       // if (processedCallbacks.has(cbId)) {
-      //   console.log(`⚠️ SKIPPED CALLBACK: ${cbId}`);
+      //   //console.log(`⚠️ SKIPPED CALLBACK: ${cbId}`);
       //   continue;
       // }
 
@@ -125,11 +125,11 @@ async function pollTelegramUpdates(collegeId) {
       const chatId = cb.message?.chat?.id;
       const messageId = cb.message?.message_id;
 
-      console.log(`📦 [${collegeId}] DATA: ${data}`);
+      //console.log(`📦 [${collegeId}] DATA: ${data}`);
 
       try {
         if (data.startsWith('approve_')) {
-          console.log(`✅ APPROVE HIT: ${data}`);
+          //console.log(`✅ APPROVE HIT: ${data}`);
 
           const [, callbackCollegeId, id] = data.split('_');
 
@@ -142,7 +142,7 @@ async function pollTelegramUpdates(collegeId) {
             callbackCollegeId,
           );
         } else if (data.startsWith('reject_')) {
-          console.log(`❌ REJECT HIT: ${data}`);
+          //console.log(`❌ REJECT HIT: ${data}`);
 
           const [, callbackCollegeId, id] = data.split('_');
 
@@ -155,7 +155,7 @@ async function pollTelegramUpdates(collegeId) {
 
           await answerCallback(cbId, 'Rejected ❌', callbackCollegeId);
         } else if (data.startsWith('edit_')) {
-          console.log(`✏️ EDIT HIT: ${data}`);
+          //console.log(`✏️ EDIT HIT: ${data}`);
 
           const [, callbackCollegeId, id] = data.split('_');
 
@@ -163,19 +163,19 @@ async function pollTelegramUpdates(collegeId) {
 
           await answerCallback(cbId, 'Edit mode ✏️', callbackCollegeId);
         } else if (data.startsWith('more_')) {
-          console.log(`⚙️ MORE CLICKED`);
+          //console.log(`⚙️ MORE CLICKED`);
 
           const [, callbackCollegeId] = data.split('_');
 
           await answerCallback(cbId, 'More options ⚙️', callbackCollegeId);
         }
       } catch (err) {
-        console.error(`❌ CALLBACK ERROR:`, err.message);
+        //console.error(`❌ CALLBACK ERROR:`, err.message);
         await answerCallback(cbId, 'Failed ❌', collegeId);
       }
     }
   } catch (error) {
-    console.error(`❌ POLL ERROR [${collegeId}]:`, error.message);
+    //console.error(`❌ POLL ERROR [${collegeId}]:`, error.message);
   } finally {
     pollingState.set(collegeId, false);
   }
@@ -198,7 +198,7 @@ function startTelegramPoller() {
           pollTelegramUpdates(college.collegeId); // ❌ no await
         }
       } catch (error) {
-        console.error('❌ POLL LOOP ERROR:', error.message);
+        //console.error('❌ POLL LOOP ERROR:', error.message);
       }
 
       await new Promise((r) => setTimeout(r, 1000));

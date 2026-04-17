@@ -17,7 +17,7 @@ async function autoApproveConfession(confessionNo, collegeId) {
   confession.status = 'APPROVED';
   await confession.save();
 
-  console.log(`✅ Auto approved confession #${confessionNo} (${collegeId})`);
+  //console.log(`✅ Auto approved confession #${confessionNo} (${collegeId})`);
 
   return confession;
 }

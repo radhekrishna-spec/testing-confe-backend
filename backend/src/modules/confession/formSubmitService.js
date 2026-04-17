@@ -51,31 +51,31 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
     const caption = await createCaptionFlow(text, mediaResult.confessionNo);
 
-    console.log('⚙️ SETTINGS:', settings);
+    //console.log('⚙️ SETTINGS:', settings);
 
-    console.log('📨 TELEGRAM PREVIEW:', settings.telegramPreview);
+    //console.log('📨 TELEGRAM PREVIEW:', settings.telegramPreview);
 
     if (settings.telegramPreview) {
       const { sendTelegram } = require('../social/telegramService');
 
       try {
-        console.log('📸 TELEGRAM IMAGES:', mediaResult.telegramImages);
+        //console.log('📸 TELEGRAM IMAGES:', mediaResult.telegramImages);
 
-        console.log('📝 CAPTION:', caption);
+        //console.log('📝 CAPTION:', caption);
 
-        console.log('🔢 CONFESSION NO:', mediaResult.confessionNo);
+        //console.log('🔢 CONFESSION NO:', mediaResult.confessionNo);
 
-        console.log('🏫 COLLEGE ID:', data.collegeId);
+        //console.log('🏫 COLLEGE ID:', data.collegeId);
 
         const delay = fromAdminUI ? 2000 : 8000;
 
         await new Promise((resolve) => setTimeout(resolve, delay));
 
-        console.log(
-          fromAdminUI
-            ? '⚡ ADMIN AUTO FLOW → TELEGRAM in 2s'
-            : '🚀 NORMAL FLOW → TELEGRAM in 8s',
-        );
+        // //console.log(
+        //   fromAdminUI
+        //     ? '⚡ ADMIN AUTO FLOW → TELEGRAM in 2s'
+        //     : '🚀 NORMAL FLOW → TELEGRAM in 8s',
+        // );
 
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
@@ -85,7 +85,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
           !!existingConfessionNo,
         );
 
-        console.log('✅ TELEGRAM SENT SUCCESS:', tgResult);
+        //console.log('✅ TELEGRAM SENT SUCCESS:', tgResult);
 
         if (fromAdminUI) {
           setTimeout(async () => {
@@ -99,9 +99,9 @@ async function processFormSubmit(data, existingConfessionNo = null) {
                 data.collegeId,
               );
 
-              console.log(
-                `⚡ AUTO APPROVED FROM ADMIN UI: #${mediaResult.confessionNo} (${data.collegeId})`,
-              );
+              // //console.log(
+              //   `⚡ AUTO APPROVED FROM ADMIN UI: #${mediaResult.confessionNo} (${data.collegeId})`,
+              // );
             } catch (error) {
               console.error('❌ AUTO APPROVE FAILED:', error.message);
             }
@@ -124,10 +124,10 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       caption,
     };
   } catch (error) {
-    console.error('FORM SUBMIT ERROR:', error.message);
+    //console.error('FORM SUBMIT ERROR:', error.message);
     throw error;
   } finally {
-    console.log(`DONE IN ${Date.now() - startTime}ms`);
+    //console.log(`DONE IN ${Date.now() - startTime}ms`);
   }
 }
 

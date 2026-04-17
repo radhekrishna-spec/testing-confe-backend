@@ -65,7 +65,7 @@ async function refillLowQueues() {
 
   let visibleCount = Number(store.get(visibleKey)) || 0;
 
-  console.log(`📦 Visible AI queue for ${college.collegeId}: ${visibleCount}`);
+  //console.log(`📦 Visible AI queue for ${college.collegeId}: ${visibleCount}`);
 
   if (visibleCount < 3) {
     console.log(
@@ -78,7 +78,7 @@ async function refillLowQueues() {
       isRejected: false,
     });
 
-    console.log(`📚 ${college.collegeId} training count: ${trainingCount}`);
+    //console.log(`📚 ${college.collegeId} training count: ${trainingCount}`);
 
     if (trainingCount < 100) {
       console.log(
@@ -92,7 +92,7 @@ async function refillLowQueues() {
 
     store.set(visibleKey, 3);
   } else {
-    console.log(`✅ Queue healthy for ${college.collegeId}`);
+    //console.log(`✅ Queue healthy for ${college.collegeId}`);
   }
 
   store.set(pointerKey, pointer + 1);
@@ -114,8 +114,8 @@ async function shouldPostNow() {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  console.log('⏰ SCHEDULER CHECK RUNNING');
-  console.log('🕒 CURRENT TIME:', now.toLocaleTimeString());
+  //console.log('⏰ SCHEDULER CHECK RUNNING');
+  //console.log('🕒 CURRENT TIME:', now.toLocaleTimeString());
 
   const queueCount = await getApprovedQueueCount();
 
@@ -144,7 +144,7 @@ async function shouldPostNow() {
 
   store.set(slotKey, '1');
 
-  console.log(`✅ Slot matched: ${currentHour}:${randomMinute}`);
+  //console.log(`✅ Slot matched: ${currentHour}:${randomMinute}`);
 
   return true;
 }
@@ -165,14 +165,14 @@ async function getNextApprovedConfession() {
 
 // post flow
 async function processApprovedQueue() {
-  //console.log('🧾 STORE DATA:', store.getAll());
+  ////console.log('🧾 STORE DATA:', store.getAll());
 
   const confession = await getNextApprovedConfession();
 
-  //console.log('🧾 NEXT APPROVED CONFESSION:', confession);
+  ////console.log('🧾 NEXT APPROVED CONFESSION:', confession);
 
   if (!confession) {
-    //console.log('❌ no approved confession');
+    ////console.log('❌ no approved confession');
     return {
       success: false,
       message: 'No approved confession',
@@ -182,8 +182,8 @@ async function processApprovedQueue() {
   const images = confession.images || [];
   const caption = confession.caption || '';
 
-  //console.log('🖼 images:', images);
-  //console.log('📝 caption:', caption);
+  ////console.log('🖼 images:', images);
+  ////console.log('📝 caption:', caption);
 
   if (!confessionNo) {
     return {
@@ -203,7 +203,7 @@ async function processApprovedQueue() {
 
     store.set(`state_${confessionNo}`, 'FAILED');
 
-    console.log(`❌ #${confessionNo} marked FAILED`);
+    //console.log(`❌ #${confessionNo} marked FAILED`);
 
     return {
       success: false,
@@ -214,8 +214,8 @@ async function processApprovedQueue() {
   try {
     store.set(`posting_${confessionNo}`, '1');
     await Confession.updateOne({ confessionNo }, { status: 'POSTING' });
-    // console.log('📤 INSTAGRAM IMAGE URL:', images[0]);
-    // console.log('📝 INSTAGRAM CAPTION:', caption);
+    // //console.log('📤 INSTAGRAM IMAGE URL:', images[0]);
+    // //console.log('📝 INSTAGRAM CAPTION:', caption);
 
     const axios = require('axios');
 
@@ -226,11 +226,11 @@ async function processApprovedQueue() {
         maxRedirects: 5,
       });
 
-      // console.log('🧪 IMAGE FETCH STATUS:', testRes.status);
-      // console.log('🧪 IMAGE CONTENT TYPE:', testRes.headers['content-type']);
-      // console.log('🧪 IMAGE SIZE:', testRes.data.length);
+      // //console.log('🧪 IMAGE FETCH STATUS:', testRes.status);
+      // //console.log('🧪 IMAGE CONTENT TYPE:', testRes.headers['content-type']);
+      // //console.log('🧪 IMAGE SIZE:', testRes.data.length);
     } catch (e) {
-      console.error('❌ IMAGE URL TEST FAIL:', e.response?.data || e.message);
+      //console.error('❌ IMAGE URL TEST FAIL:', e.response?.data || e.message);
     }
 
     await postToInstagram(images, caption);
@@ -256,7 +256,7 @@ async function processApprovedQueue() {
 
     await updateTelegramButtons(CHAT_ID, tgMsgId, 'posted', confessionNo);
 
-    //console.log(`🚀 Posted confession #${confessionNo}`);
+    ////console.log(`🚀 Posted confession #${confessionNo}`);
     return {
       success: true,
       confessionNo,
@@ -304,7 +304,7 @@ async function decayOldAIQueues() {
 
     store.set(visibleKey, visibleCount);
 
-    console.log(`📉 ${college.collegeId}: visible ${visibleCount}`);
+    //console.log(`📉 ${college.collegeId}: visible ${visibleCount}`);
 
     if (visibleCount === 0) {
       console.log(
@@ -315,12 +315,12 @@ async function decayOldAIQueues() {
 }
 // worker
 async function startSchedulerWorker() {
-  console.log('🚀 Scheduler worker started');
+  //console.log('🚀 Scheduler worker started');
 
   // server start hote hi ek baar run
   (async () => {
     try {
-      console.log('🚀 Initial queue warmup');
+      //console.log('🚀 Initial queue warmup');
       await refillLowQueues();
     } catch (error) {
       console.error('INITIAL REFILL ERROR:', error.message);
@@ -328,12 +328,12 @@ async function startSchedulerWorker() {
   })();
 
   setInterval(async () => {
-    console.log('🔁 Scheduler interval tick');
+    //console.log('🔁 Scheduler interval tick');
 
     try {
       const next = await getNextApprovedConfession();
 
-      console.log('📦 NEXT APPROVED:', next?.confessionNo);
+      //console.log('📦 NEXT APPROVED:', next?.confessionNo);
 
       if (next && (await shouldPostNow())) {
         await processApprovedQueue();
@@ -345,7 +345,7 @@ async function startSchedulerWorker() {
 
   setInterval(
     async () => {
-      console.log('⏰ 30min college rotation check');
+      //console.log('⏰ 30min college rotation check');
 
       try {
         await refillLowQueues();
@@ -359,7 +359,7 @@ async function startSchedulerWorker() {
   // 🔥 every 8 hours reduce stale AI queue
   setInterval(
     async () => {
-      console.log('⏰ 8hr AI decay check');
+      //console.log('⏰ 8hr AI decay check');
 
       try {
         await decayOldAIQueues();

@@ -11,11 +11,11 @@ const {
 router.post(
   '/submit',
   (req, res, next) => {
-    console.log('🔥 SUBMIT ROUTE HIT');
-    console.log('METHOD:', req.method);
-    console.log('URL:', req.originalUrl);
-    console.log('QUERY:', req.query);
-    console.log('BODY:', req.body);
+    //console.log('🔥 SUBMIT ROUTE HIT');
+    //console.log('METHOD:', req.method);
+    //console.log('URL:', req.originalUrl);
+    //console.log('QUERY:', req.query);
+    //console.log('BODY:', req.body);
     next();
   },
   identifyCollege,
@@ -26,8 +26,8 @@ router.post(
 router.post(
   '/post-now',
   (req, res, next) => {
-    console.log('⚡ POST NOW ROUTE HIT');
-    console.log('BODY:', req.body);
+    //console.log('⚡ POST NOW ROUTE HIT');
+    //console.log('BODY:', req.body);
     next();
   },
   postConfessionNow,

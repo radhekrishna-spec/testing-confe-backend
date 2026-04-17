@@ -31,15 +31,15 @@ const identifyCollege = async (req, res, next) => {
     if (!collegeId) {
       collegeId = 'miet';
     }
-    console.log('🏫 MODEL COLLECTION:', College.collection.name);
-    console.log('🏫 MODEL DB NAME:', College.db.name);
+    //console.log('🏫 MODEL COLLECTION:', College.collection.name);
+    //console.log('🏫 MODEL DB NAME:', College.db.name);
 
-    console.log('🏫 LOOKING FOR COLLEGE:', collegeId);
+    //console.log('🏫 LOOKING FOR COLLEGE:', collegeId);
     const college = await College.findOne({
       $or: [{ collegeId }, { subdomain: collegeId }],
       isActive: true,
     });
-    console.log('🏫 DB RESULT:', college);
+    //console.log('🏫 DB RESULT:', college);
 
     if (!college) {
       return res.status(404).json({
@@ -52,7 +52,7 @@ const identifyCollege = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('identifyCollege error:', error);
+    //console.error('identifyCollege error:', error);
 
     return res.status(500).json({
       success: false,
