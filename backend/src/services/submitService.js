@@ -37,12 +37,17 @@ exports.createConfession = async ({
   const finalType =
     type || (collegeId === 'shayari' ? 'shayari' : 'confession');
 
-  const result = await processFormSubmit({
-    confession,
-    collegeId,
-    fromAdminUI,
-    type: finalType,
-  });
+  const confessionNo = await getNextConfessionNo(collegeId);
+
+  const result = await processFormSubmit(
+    {
+      confession,
+      collegeId,
+      fromAdminUI,
+      type: finalType,
+    },
+    confessionNo, // 🔥 pass fixed number
+  );
   // const result = await processFormSubmit({
   //   confession,
   //   collegeId,
@@ -50,7 +55,7 @@ exports.createConfession = async ({
   //   type,
   // });
 
-  const confessionNo = result.confessionNo;
+  // const confessionNo = result.confessionNo;
 
   // SINGLE AI CALL FOR ALL
   const aiAssets = await createCaptionFlow(confession, confessionNo, nickname);
@@ -80,13 +85,12 @@ exports.createConfession = async ({
   // 🔥 SAFE UPSERT (NO DUPLICATE EVER)
   const newConfession = await Confession.findOneAndUpdate(
     {
-      message: confession,
-      collegeId,
+      confessionNo,
     },
     {
       $setOnInsert: {
         collegeId,
-        message: confession,
+        message: result.text,
         nickname,
         song: finalSong,
         confessionNo,
@@ -104,7 +108,6 @@ exports.createConfession = async ({
       returnDocument: 'after',
     },
   );
-
   const queueAhead = await Confession.countDocuments({
     status: 'PENDING',
     confessionNo: { $lt: result.confessionNo },

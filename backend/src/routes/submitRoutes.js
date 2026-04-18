@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const identifyCollege = require('../middleware/identifyCollege');
+const identifyCollege = require('../../middleware/identifyCollege');
 const {
   submitConfession,
   postConfessionNow,
-} = require('../controllers/submitController');
+} = require('../../controllers/submitController');
 
 // Debug middleware for submit route
 router.post(

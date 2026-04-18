@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const College = require('../models/College');
-const { setupCollegeFolders } = require('../services/collegeAutoSetupService');
+const College = require('../../models/College');
+const {
+  setupCollegeFolders,
+} = require('../../services/collegeAutoSetupService');
 
 router.post('/setup-college', async (req, res) => {
   try {
