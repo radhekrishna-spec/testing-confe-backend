@@ -18,7 +18,6 @@ async function processFormSubmit(data, existingConfessionNo = null) {
   try {
     const settings = normalizeSettings(getSettings());
 
-
     const { text, type } = validateAndPrepareText(data);
 
     if (!existingConfessionNo && settings.duplicateCheck) {
@@ -44,8 +43,6 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       );
     }
 
-  
-
     console.log('⚙️ SETTINGS:', settings);
 
     console.log('📨 TELEGRAM PREVIEW:', settings.telegramPreview);
@@ -55,8 +52,6 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
       try {
         console.log('📸 TELEGRAM IMAGES:', mediaResult.telegramImages);
-
-        console.log('📝 CAPTION:', caption);
 
         console.log('🔢 CONFESSION NO:', mediaResult.confessionNo);
 
@@ -74,7 +69,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
-          caption.caption || caption,
+          '',
           mediaResult.confessionNo,
           data.collegeId,
           !!existingConfessionNo,
@@ -98,12 +93,12 @@ async function processFormSubmit(data, existingConfessionNo = null) {
                 `⚡ AUTO APPROVED FROM ADMIN UI: #${mediaResult.confessionNo} (${data.collegeId})`,
               );
             } catch (error) {
-          console.error('❌ AUTO APPROVE FAILED:', error.message);
+              console.error('❌ AUTO APPROVE FAILED:', error.message);
             }
           }, 3000);
         }
       } catch (error) {
-    console.error(
+        console.error(
           '❌ Telegram send failed but confession saved:',
           error.response?.data || error.message,
         );
@@ -116,7 +111,6 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       collegeId: data.collegeId,
       text,
       images: mediaResult.images,
-      
     };
   } catch (error) {
     console.error('FORM SUBMIT ERROR:', error.message);
