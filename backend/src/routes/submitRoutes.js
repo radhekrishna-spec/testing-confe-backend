@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const identifyCollege = require('../../middleware/identifyCollege');
+const identifyCollege = require('../middleware/identifyCollege');
 const {
   submitConfession,
   postConfessionNow,
