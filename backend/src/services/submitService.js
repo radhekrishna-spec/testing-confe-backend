@@ -60,20 +60,50 @@ exports.createConfession = async ({
       ? song
       : aiAssets.song;
 
-  const newConfession = await Confession.create({
-    collegeId,
+  // 🔥 DUPLICATE GUARD (MOST IMPORTANT)
+  const existing = await Confession.findOne({
     message: confession,
-    nickname,
-    song: finalSong,
-    confessionNo,
-    status: 'PENDING',
-    images: result.images || [],
-    caption: aiAssets.caption || result.caption || '',
-    adminComment: aiAssets.adminComment || '',
-    isPaid,
-    paymentId,
-    extraFields,
+    collegeId,
+    createdAt: { $gt: new Date(Date.now() - 10000) },
   });
+
+  if (existing) {
+    console.log('⚠️ DUPLICATE BLOCKED');
+    return {
+      confessionNo: existing.confessionNo,
+      queueAhead: 0,
+      eta: null,
+      data: existing,
+    };
+  }
+
+  // 🔥 SAFE UPSERT (NO DUPLICATE EVER)
+  const newConfession = await Confession.findOneAndUpdate(
+    {
+      message: confession,
+      collegeId,
+    },
+    {
+      $setOnInsert: {
+        collegeId,
+        message: confession,
+        nickname,
+        song: finalSong,
+        confessionNo,
+        status: 'PENDING',
+        images: result.images || [],
+        caption: aiAssets.caption || result.caption || '',
+        adminComment: aiAssets.adminComment || '',
+        isPaid,
+        paymentId,
+        extraFields,
+      },
+    },
+    {
+      upsert: true,
+      returnDocument: 'after',
+    },
+  );
 
   const queueAhead = await Confession.countDocuments({
     status: 'PENDING',
