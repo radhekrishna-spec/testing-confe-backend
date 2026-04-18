@@ -4,12 +4,9 @@ const router = express.Router();
 const {
   setConfessionNo,
   getCurrentConfessionNo,
-} = require('../confession/services/confessionCounter');
+} = require('../modules/confession//services/confessionCounter');
 
-const {
-  getSettings,
-  updateSettings,
-} = require('../../services/settingsService');
+const { getSettings, updateSettings } = require('../services/settingsService');
 
 // ======================
 // SETTINGS
