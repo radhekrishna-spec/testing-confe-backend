@@ -80,6 +80,8 @@ function isDuplicateConfession(text) {
 function cleanText(raw, type = 'confession') {
   let text = raw || '';
 
+  text = text.replace(/\\n/g, '\n');
+
   text = text
     .replace(/\r/g, '')
     .replace(/\uFE0F/g, '')
@@ -89,10 +91,10 @@ function cleanText(raw, type = 'confession') {
 
   // 🔥 TYPE BASED LOGIC
   if (type === 'shayari') {
-    // newline preserve
     text = text
-      .replace(/[ \t]+/g, ' ') // only spaces clean
-      .replace(/\n{3,}/g, '\n\n') // optional: limit empty lines
+      .replace(/\\n/g, '\n') // 🔥 THIS IS THE REAL FIX
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
   } else {
     // confession mode
