@@ -117,38 +117,8 @@ app.get('/api/song-search', async (req, res) => {
   }
 });
 // Routes
-app.use('/api/confessions', confessionRoutes);
-router.get('/status', async (req, res) => {
-  try {
-    const { collegeId } = req.query;
-
-    if (!collegeId) {
-      return res.status(400).json({ error: 'collegeId required' });
-    }
-
-    const latest = await Confession.findOne({ collegeId }).sort({
-      confessionNo: -1,
-    });
-
-    if (!latest) {
-      return res.json({});
-    }
-
-    const queueAhead = await Confession.countDocuments({
-      collegeId,
-      status: 'PENDING',
-      confessionNo: { $lt: latest.confessionNo },
-    });
-
-    res.json({
-      confessionNo: latest.confessionNo,
-      queueAhead,
-    });
-  } catch (err) {
-    console.error('❌ STATUS API ERROR:', err);
-    res.status(500).json({ error: 'server error' });
-  }
-});
+ app.use('/api/confessions', confessionRoutes);
+ 
 app.use('/api/payment', paymentRoutes);
 
 app.post('/api/test-submit', (req, res) => {

@@ -43,5 +43,35 @@ function getEstimatedPostTime(queueAhead) {
 }
 
 router.post('/submit', identifyCollege, submitConfession);
+router.get('/status', async (req, res) => {
+  try {
+    const { collegeId } = req.query;
 
+    if (!collegeId) {
+      return res.status(400).json({ error: 'collegeId required' });
+    }
+
+    const latest = await Confession.findOne({ collegeId }).sort({
+      confessionNo: -1,
+    });
+
+    if (!latest) {
+      return res.json({});
+    }
+
+    const queueAhead = await Confession.countDocuments({
+      collegeId,
+      status: 'PENDING',
+      confessionNo: { $lt: latest.confessionNo },
+    });
+
+    res.json({
+      confessionNo: latest.confessionNo,
+      queueAhead,
+    });
+  } catch (err) {
+    console.error('❌ STATUS API ERROR:', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
 module.exports = router;
