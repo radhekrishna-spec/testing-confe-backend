@@ -1,42 +1,35 @@
 function autoFitTextConfig(text, type = 'confession') {
+  const textLength = text.length;
+
   // =========================
-  // 📌 SHAYARI MODE
+  // 📌 SHAYARI MODE (SMART UPDATED)
   // =========================
   if (type === 'shayari') {
-    const textLength = text.length;
+    const minFont = 8;
+    const maxFont = 50;
+    const maxLength = 700;
 
-    let fontSize;
-    let lineSpacing = 110;
+    // 🔹 Smooth font scaling
+    let fontSize = maxFont - (textLength / maxLength) * (maxFont - minFont);
 
-    if (textLength <= 20) lineSpacing = 75;
-    else if (textLength <= 30) lineSpacing = 82;
-    else if (textLength <= 40) lineSpacing = 88;
-    else if (textLength <= 50) lineSpacing = 92;
-    else if (textLength <= 60) lineSpacing = 96;
-    else if (textLength <= 84) lineSpacing = 95;
+    fontSize = Math.max(minFont, Math.min(maxFont, Math.round(fontSize)));
 
-    if (textLength <= 50) fontSize = 50;
-    else if (textLength <= 60) fontSize = 48;
-    else if (textLength <= 84) fontSize = 46;
-    else if (textLength <= 104) fontSize = 44;
-    else if (textLength <= 120) fontSize = 42;
-    else if (textLength <= 144) fontSize = 40;
-    else if (textLength <= 170) fontSize = 38;
-    else if (textLength <= 180) fontSize = 36;
-    else if (textLength <= 209) fontSize = 34;
-    else if (textLength <= 220) fontSize = 32;
-    else if (textLength <= 240) fontSize = 30;
-    else if (textLength <= 264) fontSize = 28;
-    else if (textLength <= 299) fontSize = 26;
-    else if (textLength <= 336) fontSize = 24;
-    else if (textLength <= 350) fontSize = 22;
-    else if (textLength <= 405) fontSize = 20;
-    else if (textLength <= 464) fontSize = 18;
-    else if (textLength <= 510) fontSize = 16;
-    else if (textLength <= 576) fontSize = 14;
-    else if (textLength <= 627) fontSize = 12;
-    else if (textLength <= 665) fontSize = 10;
-    else fontSize = 8;
+    // 🔹 Smart line spacing
+    let lineSpacing;
+
+    if (textLength < 30) lineSpacing = 75;
+    else if (textLength < 60) lineSpacing = 85;
+    else if (textLength < 120) lineSpacing = 92;
+    else if (textLength < 250) lineSpacing = 100;
+    else if (textLength < 400) lineSpacing = 105;
+    else lineSpacing = 110;
+
+    // 🔹 Multiline shayari detection
+    const lineCount = text.split('\n').length;
+    if (lineCount > 8) {
+      lineSpacing -= 5;
+      fontSize -= 2;
+    }
 
     return {
       fontSize,
@@ -45,10 +38,8 @@ function autoFitTextConfig(text, type = 'confession') {
   }
 
   // =========================
-  // 📌 CONFESSION MODE (DEFAULT)
+  // 📌 CONFESSION MODE (UNCHANGED)
   // =========================
-  const textLength = text.length;
-
   let fontSize;
   let lineSpacing = 110;
 
