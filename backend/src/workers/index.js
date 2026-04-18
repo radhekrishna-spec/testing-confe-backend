@@ -7,20 +7,35 @@ const {
 const { startSchedulerWorker } = require('./schedulerWorker');
 const { startRecoveryWorker } = require('./recoveryWorker');
 
+const store = require('../store/store');
+
 let pollerStarted = false;
 
-function startWorkers() {
+async function startWorkers() {
+  // 🔥 GLOBAL LOCK (DB/STORE BASED)
+  const LOCK_KEY = 'GLOBAL_WORKER_LOCK';
+
+  if (store.get(LOCK_KEY)) {
+    console.log('⚠️ Workers already running (LOCK FOUND)');
+    return;
+  }
+
+  store.set(LOCK_KEY, '1');
+
   if (pollerStarted) {
-    //console.log('⚠️ Poller already running');
     return;
   }
 
   pollerStarted = true;
 
+  console.log('🚀 STARTING ALL WORKERS...');
+
   startTelegramPoller();
   startEditQueueWorker();
   startSchedulerWorker();
   startRecoveryWorker();
+
+  console.log('✅ WORKERS STARTED (SINGLE INSTANCE)');
 }
 
 module.exports = {

@@ -51,6 +51,9 @@ async function getNextApprovedConfession() {
 // ======================
 // MAIN POST FLOW
 // ======================
+// ======================
+// MAIN POST FLOW
+// ======================
 async function processApprovedQueue() {
   const confession = await getNextApprovedConfession();
 
@@ -61,9 +64,18 @@ async function processApprovedQueue() {
 
   const confessionNo = confession.confessionNo;
 
-  // 🔥 LOCK FIX
+  // 🔥 NEW: GLOBAL LOCK (MULTI INSTANCE FIX)
+  const GLOBAL_LOCK = `GLOBAL_POST_LOCK_${confessionNo}`;
+  if (store.get(GLOBAL_LOCK)) {
+    console.log('⚠️ GLOBAL LOCK ACTIVE, SKIP');
+    return;
+  }
+  store.set(GLOBAL_LOCK, '1');
+
+  // 🔥 EXISTING LOCK (UNCHANGED)
   if (store.get(`posting_${confessionNo}`)) {
     console.log('⚠️ ALREADY POSTING, SKIP');
+    store.delete(GLOBAL_LOCK); // 🔥 unlock
     return;
   }
 
@@ -81,6 +93,7 @@ async function processApprovedQueue() {
         $inc: { retryCount: 1 },
       },
     );
+    store.delete(GLOBAL_LOCK); // 🔥 unlock
     return;
   }
 
@@ -119,7 +132,6 @@ async function processApprovedQueue() {
       },
     );
 
-    // 🔥 TELEGRAM FIX (IMPORTANT)
     const tgMsgId = store.get(`telegram_msg_${confessionNo}`);
 
     const college = await College.findOne({
@@ -153,6 +165,7 @@ async function processApprovedQueue() {
     );
   } finally {
     store.delete(`posting_${confessionNo}`);
+    store.delete(GLOBAL_LOCK); // 🔥 NEW (MOST IMPORTANT)
   }
 }
 
@@ -178,6 +191,14 @@ async function refillLowQueues() {
 // WORKER START
 // ======================
 async function startSchedulerWorker() {
+  const WORKER_RUNNING_KEY = 'SCHEDULER_RUNNING';
+
+  if (store.get(WORKER_RUNNING_KEY)) {
+    console.log('⚠️ Scheduler already running, skipping...');
+    return;
+  }
+
+  store.set(WORKER_RUNNING_KEY, '1');
   console.log('🚀 Scheduler worker started');
 
   await refillLowQueues();
