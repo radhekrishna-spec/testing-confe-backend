@@ -31,18 +31,18 @@ async function generateAIConfession(collegeId, status = 'PENDING') {
     });
 
     if (trainingCount < 100) {
-      //console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
+      console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
       return [];
     }
 
     let samples = await getTrainingData(collegeId);
 
-    // fallback safety
+     //fallback safety
     if (!samples || samples.length === 0) {
       samples = await getCollegeMemory(collegeId);
     }
 
-    //console.log(`AI memory samples for ${collegeId}:`, samples.length);
+    console.log(`AI memory samples for ${collegeId}:`, samples.length);
 
     const sampleText = samples
       .slice(0, 20)
@@ -85,16 +85,16 @@ confession 2 ###
 confession 3
 `;
 
-    // //console.log('🤖 GROQ MODEL INIT:', {
-    //   file: 'ai/generator.js',
-    //   time: new Date().toISOString(),
-    //   model: 'llama-3.3-70b-versatile',
-    // });
+    console.log('🤖 GROQ MODEL INIT:', {
+      file: 'ai/generator.js',
+      time: new Date().toISOString(),
+      model: 'llama-3.3-70b-versatile',
+    });
 
-    // //console.log('📤 GROQ REQUEST SENT', {
-    //   promptLength: prompt.length,
-    //   collegeId,
-    // });
+    console.log('📤 GROQ REQUEST SENT', {
+      promptLength: prompt.length,
+      collegeId,
+    });
 
     const result = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
@@ -109,7 +109,7 @@ confession 3
 
     const text = result?.choices?.[0]?.message?.content?.trim() || '';
 
-    //console.log('🧠 RAW AI TEXT:', text);
+    console.log('🧠 RAW AI TEXT:', text);
 
     if (!text) {
       throw new Error('Empty AI response from Groq');
@@ -121,7 +121,7 @@ confession 3
       .filter(Boolean)
       .slice(0, 3);
 
-    //console.log('✂️ SPLIT CONFESSIONS:', confessionTexts);
+    console.log('✂️ SPLIT CONFESSIONS:', confessionTexts);
 
     while (confessionTexts.length < 3) {
       confessionTexts.push(
@@ -135,12 +135,12 @@ confession 3
     for (let i = 0; i < 3; i++) {
       let finalText = confessionTexts[i];
 
-      //console.log(`📝 SAVING CONFESSION ${i + 1}:`, finalText);
+      console.log(`📝 SAVING CONFESSION ${i + 1}:`, finalText);
 
       const qualityScore = scoreConfessionQuality(finalText);
 
       if (qualityScore < 3) {
-        //console.log(`⚠️ Low quality confession ${i + 1}, retrying...`);
+        console.log(`⚠️ Low quality confession ${i + 1}, retrying...`);
 
         const retryResult = await groq.chat.completions.create({
           model: 'llama-3.3-70b-versatile',
@@ -168,9 +168,9 @@ confession 3
         isAIGenerated: true,
       });
 
-      //console.log(`✅ SAVED TO DB: ${confession._id}`);
+      console.log(`✅ SAVED TO DB: ${confession._id}`);
 
-      // 🔥 send directly to telegram admin approval
+       //🔥 send directly to telegram admin approval
       try {
         const imageBuffers = await generateSlidesImages(
           [finalText],
@@ -180,7 +180,7 @@ confession 3
 
         await sendTelegram(imageBuffers, finalText, confessionNo, collegeId);
 
-        //console.log(`📨 TELEGRAM PREVIEW SENT: #${confessionNo}`);
+        console.log(`📨 TELEGRAM PREVIEW SENT: #${confessionNo}`);
       } catch (tgError) {
         console.error(
           `❌ TELEGRAM SEND FAILED: #${confessionNo}`,
@@ -191,11 +191,11 @@ confession 3
       savedConfessions.push(confession);
     }
 
-    //console.log(`🎉 TOTAL SAVED: ${savedConfessions.length}`);
+    console.log(`🎉 TOTAL SAVED: ${savedConfessions.length}`);
 
     return savedConfessions;
   } catch (error) {
-    //console.error('❌ GROQ AI GENERATION ERROR:', error);
+    console.error('❌ GROQ AI GENERATION ERROR:', error);
     throw error;
   }
 }

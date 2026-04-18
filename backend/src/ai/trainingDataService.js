@@ -8,7 +8,7 @@ async function getTrainingData(collegeCode) {
     isRejected: false,
   });
 
-  //console.log(`Training count for ${collegeCode}:`, count);
+  console.log(`Training count for ${collegeCode}:`, count);
 
   // If 100 or more clean confessions, use only new collection
   if (count >= 100) {

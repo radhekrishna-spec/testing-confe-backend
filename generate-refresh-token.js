@@ -5,12 +5,12 @@ const readline = require('readline');
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'http://localhost',
+  'http:localhost',
 );
 
 const scopes = [
-  'https://www.googleapis.com/auth/drive',
-  'https://www.googleapis.com/auth/presentations',
+  'https:www.googleapis.com/auth/drive',
+  'https:www.googleapis.com/auth/presentations',
 ];
 
 const authUrl = oauth2Client.generateAuthUrl({
@@ -19,8 +19,8 @@ const authUrl = oauth2Client.generateAuthUrl({
   scope: scopes,
 });
 
-// console.log('\nOpen this URL in browser:\n');
-// console.log(authUrl);
+ console.log('\nOpen this URL in browser:\n');
+ console.log(authUrl);
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -31,11 +31,11 @@ rl.question('\nPaste NEW code here: ', async (code) => {
   try {
     const { tokens } = await oauth2Client.getToken(code.trim());
 
-    // console.log('\nTOKENS:\n');
-    // console.log(tokens);
+     console.log('\nTOKENS:\n');
+     console.log(tokens);
 
-    // console.log('\nREFRESH TOKEN:\n');
-    // console.log(tokens.refresh_token);
+     console.log('\nREFRESH TOKEN:\n');
+     console.log(tokens.refresh_token);
 
     rl.close();
   } catch (err) {

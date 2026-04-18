@@ -5,15 +5,15 @@ const store = require('../store/store');
 exports.submitConfession = async (req, res) => {
   console.log('🟢 SUBMIT API HIT:', new Date().toISOString());
   try {
-    // console.log('📝 New confession submit request received');
-    // console.log('📦 Request body:', req.body);
+    console.log('📝 New confession submit request received');
+    console.log('📦 Request body:', req.body);
 
     const result = await createConfession({
       ...req.body,
       collegeId: req.college.collegeId,
     });
 
-    // console.log('✅ Confession created successfully:', result);
+    console.log('✅ Confession created successfully:', result);
 
     res.status(201).json({
       success: true,
@@ -31,11 +31,11 @@ exports.submitConfession = async (req, res) => {
 
 exports.postConfessionNow = async (req, res) => {
   try {
-    // console.log('🚀 Manual post-now request received');
+    console.log('🚀 Manual post-now request received');
 
     const result = await processApprovedQueue();
 
-    // console.log('📤 processApprovedQueue result:', result);
+    console.log('📤 processApprovedQueue result:', result);
 
     if (!result) {
       return res.status(500).json({

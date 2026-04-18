@@ -32,10 +32,10 @@ async function sendTelegram(
     try {
       for (let i = 0; i < images.length; i++) {
         const imageBuffer = images[i];
-        //console.log('📦 TELEGRAM BUFFER SIZE:', imageBuffer.length);
-        //console.log('🧪 PNG SIGNATURE:', imageBuffer.slice(0, 8));
+        console.log('📦 TELEGRAM BUFFER SIZE:', imageBuffer.length);
+        console.log('🧪 PNG SIGNATURE:', imageBuffer.slice(0, 8));
 
-        //console.log(`📤 Sending image buffer ${i + 1} for Telegram`);
+        console.log(`📤 Sending image buffer ${i + 1} for Telegram`);
 
         const form = new FormData();
 
@@ -77,7 +77,7 @@ async function sendTelegram(
         },
       );
 
-      //console.log('📨 Fallback text message sent');
+      console.log('📨 Fallback text message sent');
     }
 
     // approval buttons always send
@@ -133,7 +133,7 @@ async function sendTelegram(
     );
     store.set(`telegram_sent_${collegeId}_${confessionNo}`, 'yes');
 
-    //console.log(`✅ Telegram sent for #${confessionNo}`);
+    console.log(`✅ Telegram sent for #${confessionNo}`);
   } finally {
     store.delete(`telegram_sending_${collegeId}_${confessionNo}`);
   }
