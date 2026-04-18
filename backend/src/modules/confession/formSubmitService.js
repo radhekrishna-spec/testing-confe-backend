@@ -20,11 +20,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
     let text;
 
-    if (data.type === 'shayari') {
-      text = data.confession || data.message; // 🔥 RAW TEXT
-    } else {
-      text = validateAndPrepareText(data);
-    }
+    const { text, type } = validateAndPrepareText(data);
 
     if (!existingConfessionNo && settings.duplicateCheck) {
       checkDuplicate(text);
@@ -42,7 +38,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
 
     if (!fromAdminUI) {
       mediaResult = await processMediaFlow(
-        text,
+        data,
         confessionNo,
         settings,
         data.collegeId,
