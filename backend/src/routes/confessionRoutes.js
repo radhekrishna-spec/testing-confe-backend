@@ -6,6 +6,7 @@ const identifyCollege = require('../middleware/identifyCollege');
 const {
   processFormSubmit,
 } = require('../modules/confession/formSubmitService');
+const { submitConfession } = require('../controllers/submitController');
 function getPostTimes(queueCount) {
   if (queueCount <= 3) return [9, 13, 21];
   if (queueCount <= 6) return [9, 12, 15, 17, 19, 22];
