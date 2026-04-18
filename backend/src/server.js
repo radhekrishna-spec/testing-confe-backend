@@ -38,7 +38,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://testing-confe-backend-1.onrender.com',
   'https://testing-confe.vercel.app',
-  'https://confession-wallah.vercel.app/',
+  'https://confession-wallah.vercel.app',
 ];
 
 app.use(
