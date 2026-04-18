@@ -28,8 +28,12 @@ exports.createConfession = async ({
 }) => {
   const college = await College.findOne({ collegeId });
 
-  if (!college) {
-    throw new Error('College not found');
+  if (!collegeId) {
+    throw new Error('collegeId missing');
+  }
+
+  if (typeof collegeId !== 'string') {
+    throw new Error('invalid collegeId');
   }
 
   if (college.payment?.enabled && !isPaid) {

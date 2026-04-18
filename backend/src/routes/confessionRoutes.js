@@ -41,51 +41,6 @@ function getEstimatedPostTime(queueAhead) {
   return `Around ${hour12}:00 ${suffix}`;
 }
 
-router.post('/submit', identifyCollege, async (req, res) => {
-  try {
-    const { message, nickname = '', song = '' } = req.body;
-
-    const result = await processFormSubmit({
-      confession: message,
-    });
-
-    const newConfession = new Confession({
-      collegeId: req.college.collegeId,
-      message,
-      nickname,
-      song,
-      confessionNo: result.confessionNo,
-      status: 'PENDING',
-      images: result.images,
-      caption: result.caption,
-      isPaid: true,
-    });
-
-    await newConfession.save();
-
-    const queueAhead = await Confession.countDocuments({
-      status: 'PENDING',
-      confessionNo: { $lt: result.confessionNo },
-      collegeId: req.college.collegeId,
-    });
-
-    const eta = getEstimatedPostTime(queueAhead);
-
-    res.status(201).json({
-      success: true,
-      confessionNo: result.confessionNo,
-      queueAhead,
-      eta,
-      data: newConfession,
-    });
-  } catch (error) {
-    console.error('ROUTE ERROR:', error);
-
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
+router.post('/submit', identifyCollege, submitConfession);
 
 module.exports = router;

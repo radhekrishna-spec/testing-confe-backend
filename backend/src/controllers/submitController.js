@@ -9,8 +9,13 @@ exports.submitConfession = async (req, res) => {
     console.log('📦 Request body:', req.body);
 
     const result = await createConfession({
-      ...req.body,
-      collegeId: req.college.collegeId,
+      confession: req.body.confession,
+      type: req.body.type,
+      nickname: req.body.nickname,
+      song: req.body.song,
+      isPaid: req.body.isPaid,
+      paymentId: req.body.paymentId,
+      collegeId: req.college.collegeId, // 🔥 only trusted source
     });
 
     console.log('✅ Confession created successfully:', result);
