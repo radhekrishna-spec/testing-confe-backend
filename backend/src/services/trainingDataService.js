@@ -1,4 +1,4 @@
-const AITrainingConfession = require('../../models/AITrainingConfession');
+const AITrainingConfession = require('../models/AITrainingConfession');
 
 async function getTrainingData(collegeCode) {
   const count = await AITrainingConfession.countDocuments({

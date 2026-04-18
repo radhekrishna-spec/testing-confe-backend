@@ -1,6 +1,6 @@
 const Counter = require('../../../models/Counter');
 const Confession = require('../../../models/Confession');
-const { processFormSubmit } = require('./formSubmitService');
+const { processFormSubmit } = require('../formSubmitService');
 
 async function createManualConfession(message) {
   try {

@@ -8,11 +8,12 @@ const {
 
 const { getSettings, updateSettings } = require('../services/settingsService');
 
-// ======================
+// ======================     
 // SETTINGS
 // ======================
 router.get('/settings', (req, res) => {
   try {
+    
     const { collegeId } = req.query;
 
     if (!collegeId) {
