@@ -14,6 +14,7 @@ const { getEstimatedPostTime } = require('../utils/etaHelper');
 
 exports.createConfession = async ({
   confession,
+  type,
   nickname = '',
   song = null,
   collegeId,
@@ -33,11 +34,21 @@ exports.createConfession = async ({
       `${college.name} ke liye payment required hai. Pehle payment complete karo 💳`,
     );
   }
+  const finalType =
+    type || (collegeId === 'shayari' ? 'shayari' : 'confession');
+
   const result = await processFormSubmit({
     confession,
     collegeId,
     fromAdminUI,
+    type: finalType,
   });
+  // const result = await processFormSubmit({
+  //   confession,
+  //   collegeId,
+  //   fromAdminUI,
+  //   type,
+  // });
 
   const confessionNo = result.confessionNo;
 
