@@ -43,6 +43,27 @@ function getEstimatedPostTime(queueAhead) {
 }
 
 router.post('/submit', identifyCollege, submitConfession);
+router.get('/by-id', async (req, res) => {
+  const { collegeId, confessionNo } = req.query;
+
+  const confession = await Confession.findOne({
+    collegeId,
+    confessionNo,
+  });
+
+  if (!confession) return res.json({});
+
+  const queueAhead = await Confession.countDocuments({
+    collegeId,
+    status: 'PENDING',
+    confessionNo: { $lt: confessionNo },
+  });
+
+  res.json({
+    confessionNo,
+    queueAhead,
+  });
+});
 router.get('/status', async (req, res) => {
   try {
     const { collegeId } = req.query;
