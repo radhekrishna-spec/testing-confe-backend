@@ -11,6 +11,7 @@ const {
 const { checkQueueAndGenerate } = require('../ai/queueWatcher');
 
 const { getEstimatedPostTime } = require('../utils/etaHelper');
+import { getNextConfessionNo } from '../modules/confession/services/confessionCounter';
 
 exports.createConfession = async ({
   confession,
