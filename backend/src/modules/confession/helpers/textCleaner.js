@@ -80,14 +80,14 @@ function isDuplicateConfession(text) {
 function cleanText(raw, type = 'confession') {
   let text = raw || '';
 
-  text = text.replace(/\\n/g, '\n');
-
   text = text
     .replace(/\r/g, '')
     .replace(/\uFE0F/g, '')
     .replace(/[—]/g, '')
     .replace(/@\w+/g, 'id ')
-    .replace(/\.{3,}/g, '...');
+    .replace(/\.{3,}/g, '...')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   // 🔥 TYPE BASED LOGIC
   if (type === 'shayari') {
