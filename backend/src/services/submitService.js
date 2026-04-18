@@ -13,7 +13,7 @@ const { checkQueueAndGenerate } = require('../ai/queueWatcher');
 const { getEstimatedPostTime } = require('../utils/etaHelper');
 
 exports.createConfession = async ({
-  message,
+  confession,
   nickname = '',
   song = null,
   collegeId,
@@ -34,7 +34,7 @@ exports.createConfession = async ({
     );
   }
   const result = await processFormSubmit({
-    confession: message,
+    confession,
     collegeId,
     fromAdminUI,
   });
@@ -42,7 +42,7 @@ exports.createConfession = async ({
   const confessionNo = result.confessionNo;
 
   // SINGLE AI CALL FOR ALL
-  const aiAssets = await createCaptionFlow(message, confessionNo, nickname);
+  const aiAssets = await createCaptionFlow(confession, confessionNo, nickname);
 
   const finalSong =
     song && typeof song === 'object' && (song.title || song.artist)
@@ -51,7 +51,7 @@ exports.createConfession = async ({
 
   const newConfession = await Confession.create({
     collegeId,
-    message,
+    message: confession,
     nickname,
     song: finalSong,
     confessionNo,
