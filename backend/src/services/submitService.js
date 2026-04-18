@@ -114,10 +114,8 @@ exports.createConfession = async ({
   const eta = getEstimatedPostTime(queueAhead);
   // await checkQueueAndGenerate(collegeId, 'user');
 
-  try {
+  if (false) {
     await checkQueueAndGenerate(collegeId, 'user');
-  } catch (error) {
-    console.error('AI queue generation failed:', error.message);
   }
 
   return {
