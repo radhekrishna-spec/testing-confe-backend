@@ -41,7 +41,7 @@ function autoFitTextConfig(text, type = 'confession') {
   // 📌 CONFESSION MODE (UNCHANGED)
   // =========================
   let fontSize;
-  let lineSpacing = 110;
+  let lineSpacing = 120;
 
   if (textLength <= 20) lineSpacing = 75;
   else if (textLength <= 30) lineSpacing = 82;
