@@ -18,7 +18,6 @@ async function processFormSubmit(data, existingConfessionNo = null) {
   try {
     const settings = normalizeSettings(getSettings());
 
-    let text;
 
     const { text, type } = validateAndPrepareText(data);
 
