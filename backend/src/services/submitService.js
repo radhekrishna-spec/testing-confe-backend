@@ -65,7 +65,12 @@ exports.createConfession = async ({
   // const confessionNo = result.confessionNo;
 
   // SINGLE AI CALL FOR ALL
-  const aiAssets = await createCaptionFlow(confession, confessionNo, nickname);
+  const aiAssets = await createCaptionFlow(
+    confession,
+    confessionNo,
+    nickname,
+    collegeId,
+  );
 
   const finalSong =
     song && typeof song === 'object' && (song.title || song.artist)
@@ -93,6 +98,7 @@ exports.createConfession = async ({
   const newConfession = await Confession.findOneAndUpdate(
     {
       confessionNo,
+      collegeId,
     },
     {
       $setOnInsert: {

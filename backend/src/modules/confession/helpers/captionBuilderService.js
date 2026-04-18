@@ -1,5 +1,5 @@
 const store = require('../../../store/store');
-
+const College = require('../../../models/College');
 const {
   buildCaption,
   addEmotionEmoji,
@@ -10,7 +10,9 @@ const {
 
 const { generateAIConfession } = require('../services/confessionAIService');
 
-async function createCaptionFlow(text, confessionNo, nickname = '') {
+async function createCaptionFlow(text, confessionNo, nickname = '', collegeId) {
+  const college = await College.findOne({ collegeId });
+  const pageName = college?.instagram?.pageName;
   let aiAssets = store.get(`ai_assets_${confessionNo}`);
 
   if (!aiAssets) {
@@ -33,6 +35,7 @@ async function createCaptionFlow(text, confessionNo, nickname = '') {
     finalQuestion,
     confessionNo,
     hashtags,
+    pageName,
   )}`;
 
   store.set(`caption_${confessionNo}`, caption);

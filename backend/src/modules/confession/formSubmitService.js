@@ -44,7 +44,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       );
     }
 
-    const caption = await createCaptionFlow(text, mediaResult.confessionNo);
+  
 
     console.log('⚙️ SETTINGS:', settings);
 
@@ -116,7 +116,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       collegeId: data.collegeId,
       text,
       images: mediaResult.images,
-      caption,
+      
     };
   } catch (error) {
     console.error('FORM SUBMIT ERROR:', error.message);

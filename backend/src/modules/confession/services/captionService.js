@@ -1,15 +1,17 @@
-const PAGE_NAME = process.env.PAGE_NAME || '@miet_k_dilwale_confession_wale';
+
 
 // EXACT SAME AS APPSCRIPT
-function buildCaption(question, confessionNo, hashtags = '') {
+function buildCaption(question, confessionNo, hashtags = '', pageName = '') {
+  const finalPageName =
+    pageName && pageName.trim() ? pageName : 'CONFESSION WALLAH';
   const styles = [
-    `${question}\n\nConfession #${confessionNo}\n\nTum kya karte?\nFollow ${PAGE_NAME}\n\n${hashtags}`,
+    `${question}\n\nConfession #${confessionNo}\n\nTum kya karte?\nFollow ${finalPageName}\n\n${hashtags}`,
 
     `Confession #${confessionNo}\n\n${question}\n\nHonest opinion do 👇\n${hashtags}`,
 
     `${question}\n\nSach me right kya hota?\nConfession #${confessionNo}\n\n${hashtags}`,
 
-    `Confession #${confessionNo}\n\n${question}\n\nReply zarur karna.\nFollow ${PAGE_NAME}\n\n${hashtags}`,
+    `Confession #${confessionNo}\n\n${question}\n\nReply zarur karna.\nFollow ${finalPageName}\n\n${hashtags}`,
 
     `${question}\n\nReality check do 👇\nConfession #${confessionNo}\n\n${hashtags}`,
   ];
