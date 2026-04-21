@@ -49,11 +49,11 @@ async function pollTelegramUpdates(collegeId) {
 
   try {
     const { baseUrl } = await getTelegramConfig(collegeId);
-   
+
     let lastUpdateId = getLastUpdateId(collegeId);
-    console.log(
-      `🚀 POLLING START: ${collegeId} | lastUpdateId=${lastUpdateId}`,
-    );
+    // console.log(
+    //   `🚀 POLLING START: ${collegeId} | lastUpdateId=${lastUpdateId}`,
+    // );
 
     const res = await axios.get(`${baseUrl}/getUpdates`, {
       params: {
@@ -65,10 +65,10 @@ async function pollTelegramUpdates(collegeId) {
 
     const updates = res.data?.result || [];
 
-    console.log(`📥 [${collegeId}] Updates count: ${updates.length}`);
+    //console.log(`📥 [${collegeId}] Updates count: ${updates.length}`);
 
     for (const update of updates) {
-      lastUpdateId = update.update_id+1;
+      lastUpdateId = update.update_id + 1;
       store.set(`last_update_id_${collegeId}`, lastUpdateId);
 
       // ==========================

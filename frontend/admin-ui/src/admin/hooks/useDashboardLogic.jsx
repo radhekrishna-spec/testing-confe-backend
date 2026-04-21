@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 
 export default function useDashboardLogic() {
@@ -16,7 +15,8 @@ export default function useDashboardLogic() {
   const [savingAI, setSavingAI] = useState(false);
 
   useEffect(() => {
-    fetch('https://testing-confe-backend.onrender.com/api/admin/colleges')
+    // fetch('https://testing-confe-backend.onrender.com/api/admin/colleges')
+    fetch('http://localhost:3008/api/admin/colleges')
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -34,18 +34,12 @@ export default function useDashboardLogic() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(
-      'recentActivity',
-      JSON.stringify(recentActivity),
-    );
+    localStorage.setItem('recentActivity', JSON.stringify(recentActivity));
   }, [recentActivity]);
 
   useEffect(() => {
     if (!statusMessage) return;
-    const timer = setTimeout(
-      () => setStatusMessage(''),
-      3000,
-    );
+    const timer = setTimeout(() => setStatusMessage(''), 3000);
     return () => clearTimeout(timer);
   }, [statusMessage]);
 
@@ -82,4 +76,3 @@ export default function useDashboardLogic() {
     clearActivity,
   };
 }
-

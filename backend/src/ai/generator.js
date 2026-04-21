@@ -31,7 +31,7 @@ async function generateAIConfession(collegeId, status = 'PENDING') {
     });
 
     if (trainingCount < 100) {
-      console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
+      //console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
       return [];
     }
 

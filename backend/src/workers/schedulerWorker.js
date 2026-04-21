@@ -180,7 +180,7 @@ async function refillLowQueues() {
     let visibleCount = Number(store.get(visibleKey)) || 0;
 
     if (visibleCount < 3) {
-      console.log(`⚠️ LOW AI QUEUE: ${college.collegeId}`);
+      //console.log(`⚠️ LOW AI QUEUE: ${college.collegeId}`);
       await checkQueueAndGenerate(college.collegeId, 'scheduler');
       store.set(visibleKey, 3);
     }

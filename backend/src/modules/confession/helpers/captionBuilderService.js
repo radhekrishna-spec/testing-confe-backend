@@ -16,7 +16,10 @@ async function createCaptionFlow(text, confessionNo, nickname = '', collegeId) {
   let aiAssets = store.get(`ai_assets_${confessionNo}`);
 
   if (!aiAssets) {
-    aiAssets = await generateAIConfession(text);
+    const aiAssets = {
+      song: '',
+      adminComment: '',
+    };
 
     store.set(`ai_assets_${confessionNo}`, aiAssets);
   }

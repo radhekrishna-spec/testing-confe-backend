@@ -18,13 +18,13 @@ async function checkQueueAndGenerate(collegeId, source = 'user') {
     isRejected: false,
   });
 
-  console.log(`📚 Training count for ${collegeId}: ${trainingCount}`);
+  //console.log(`📚 Training count for ${collegeId}: ${trainingCount}`);
 
   if (trainingCount < 100) {
-    console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
+    //console.log(`⏳ AI blocked for ${collegeId}: ${trainingCount}/100`);
     return;
   }
-   //total pending + queued AI confessions
+  //total pending + queued AI confessions
   const queueCount = await Confession.countDocuments({
     collegeId,
     source: 'AI',
@@ -35,7 +35,7 @@ async function checkQueueAndGenerate(collegeId, source = 'user') {
 
   console.log(`📦 Queue for ${collegeId}: ${queueCount}`);
 
-   //aaj kitne AI confessions generate hue
+  //aaj kitne AI confessions generate hue
   const todayAiCount = await Confession.countDocuments({
     collegeId,
     source: 'AI',
@@ -46,13 +46,13 @@ async function checkQueueAndGenerate(collegeId, source = 'user') {
 
   console.log(`🤖 Today's AI count for ${collegeId}: ${todayAiCount}`);
 
-   //daily max 3
+  //daily max 3
   if (todayAiCount >= DAILY_AI_LIMIT) {
     console.log(`⛔ Daily AI limit reached for ${collegeId}`);
     return;
   }
 
-   //queue ko 3 tak fill karo
+  //queue ko 3 tak fill karo
   const needed = TARGET_QUEUE - queueCount;
 
   if (needed <= 0) {
@@ -63,14 +63,14 @@ async function checkQueueAndGenerate(collegeId, source = 'user') {
   console.log(`🚀 Generating batch of 3 AI confessions for ${collegeId}`);
 
   try {
-     //✅ one API request -> 3 confessions
+    //✅ one API request -> 3 confessions
     await generateAIConfession(collegeId, 'PENDING');
 
     console.log(`✅ AI batch generated successfully for ${collegeId}`);
   } catch (error) {
     console.error(`❌ AI generation failed for ${collegeId}:`, error.message);
 
-     //quota safe log
+    //quota safe log
     if (error.message.includes('429') || error.message.includes('quota')) {
       console.log(`⛔ Gemini quota exceeded for ${collegeId}`);
     }

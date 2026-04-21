@@ -36,6 +36,7 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 // middlewares
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5174',
   'https://testing-confe-backend-1.onrender.com',
   'https://testing-confe.vercel.app',
 
@@ -117,8 +118,8 @@ app.get('/api/song-search', async (req, res) => {
   }
 });
 // Routes
- app.use('/api/confessions', confessionRoutes);
- 
+app.use('/api/confessions', confessionRoutes);
+
 app.use('/api/payment', paymentRoutes);
 
 app.post('/api/test-submit', (req, res) => {
