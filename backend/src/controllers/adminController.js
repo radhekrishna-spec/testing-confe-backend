@@ -4,10 +4,13 @@ const Confession = require('../models/Confession');
 
 exports.getAllColleges = async (req, res) => {
   try {
+    console.log('STEP 1: colleges fetch start');
     const colleges = await College.find({ isActive: true });
+    console.log('STEP 2: colleges =', colleges.length);
 
     const result = await Promise.all(
       colleges.map(async (college) => {
+        console.log('Processing:', college.collegeId);
         const pending = await Confession.countDocuments({
           collegeId: college.collegeId,
           status: 'PENDING',
@@ -29,11 +32,12 @@ exports.getAllColleges = async (req, res) => {
         };
       }),
     );
-
+    console.log('STEP 3: result ready', result.length);
     res.status(200).json({
       success: true,
       data: result,
     });
+    console.log('STEP 4: response sent');
   } catch (error) {
     console.error(error);
 
