@@ -36,19 +36,28 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 const allowedOrigins = [process.env.FRONTEND_URL, process.env.ADMIN_URL].filter(
   Boolean,
 );
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: true,
     credentials: true,
   }),
 );
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error('Not allowed by CORS'));
+//       }
+//     },
+//     credentials: true,
+//   }),
+// );
+app.use((req, res, next) => {
+  console.log('🌍 ORIGIN:', req.headers.origin);
+  next();
+});
 app.use(helmet());
 app.use(compression());
 
@@ -121,7 +130,7 @@ app.post('/api/test-submit', (req, res) => {
   });
 });
 
-app.use('/api/confessions', submitRoutes);
+// app.use('/api/confessions', submitRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api/admin', (req, res, next) => {
   console.log('🔥 ADMIN API HIT:', req.originalUrl);
