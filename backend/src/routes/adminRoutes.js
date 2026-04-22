@@ -25,7 +25,10 @@ router.get('/confessions', identifyCollege, async (req, res) => {
 });
 router.post('/broadcast', broadcastConfession);
 
-router.get('/colleges', getAllColleges);
+router.get('/colleges', (req, res) => {
+  console.log('🔥 /api/admin/colleges HIT');
+  getAllColleges(req, res);
+});
 router.get('/college/:collegeId', async (req, res) => {
   try {
     const college = await College.findOne({
