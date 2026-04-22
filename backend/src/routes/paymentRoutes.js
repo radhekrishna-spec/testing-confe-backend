@@ -64,6 +64,8 @@ router.post('/create-order', async (req, res) => {
     res.status(500).json({ error: 'Order failed' });
   }
 });
+console.log('KEY_ID:', process.env.RAZORPAY_KEY_ID);
+console.log('KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET);
 router.post('/verify-payment', async (req, res) => {
   try {
     const { confessionNo, paymentId } = req.body;
