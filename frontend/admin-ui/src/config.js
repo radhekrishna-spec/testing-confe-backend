@@ -1,5 +1,1 @@
-const isDev = import.meta.env.DEV;
-
-export const API_BASE = isDev
-  ? 'http://localhost:3008'
-  : 'https://testing-confe-backend.onrender.com';
+export const API_BASE = import.meta.env.VITE_API_URL;
