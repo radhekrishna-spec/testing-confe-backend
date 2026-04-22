@@ -29,7 +29,8 @@ async function getTemplateId(collegeId) {
   if (!college) {
     throw new Error(`College not found: ${collegeId}`);
   }
-  const pageName = college?.pageName || `${collegeId}_confession`;
+  const pageName =
+    college?.instagram?.pageName?.replace('@', '') || `${collegeId}_confession`;
   console.log('🎯 FINAL PAGENAME USED:', pageName);
   const templateId = college?.posting?.templateId;
 
@@ -81,7 +82,8 @@ async function createSlidePNG(
     collegeIdFromDB: college?.collegeId,
     pageNameFromDB: college?.pageName,
   });
-  const pageName = college?.pageName || `${collegeId}_confession`;
+  const pageName =
+    college?.instagram?.pageName?.replace('@', '') || `${collegeId}_confession`;
   console.log('🎯 FINAL PAGENAME USED:', pageName);
 
   const { fontSize, lineSpacing } = autoFitTextConfig(text, type);
