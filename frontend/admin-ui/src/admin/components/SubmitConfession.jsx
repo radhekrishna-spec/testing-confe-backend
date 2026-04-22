@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { API_BASE } from '../config';
+import { API_BASE } from '../../config';
 
 export default function SubmitConfession({ collegeId }) {
   const [message, setMessage] = useState('');
