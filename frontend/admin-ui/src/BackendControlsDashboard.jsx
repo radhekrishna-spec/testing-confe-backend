@@ -3,8 +3,6 @@ import { API_BASE } from './config';
 
 import SubmitConfession from './admin/components/SubmitConfession';
 
-
-
 // ✅ TOGGLE
 function Toggle({ checked, onChange }) {
   return (
@@ -97,7 +95,9 @@ export default function BackendControlsDashboard() {
 
   // ✅ LOAD COLLEGES
   useEffect(() => {
-    fetch(`${API_BASE}/api/admin/colleges`)
+    fetch(`${API_BASE}/api/admin/colleges`, {
+      credentials: 'include',
+    })
       .then((r) => r.json())
       .then((d) => {
         const list = d.data || [];
