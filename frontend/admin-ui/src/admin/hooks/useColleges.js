@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_BASE } from '../config';
+import { API_BASE } from '../../config';
 
 export default function useColleges() {
   const [colleges, setColleges] = useState([]);
