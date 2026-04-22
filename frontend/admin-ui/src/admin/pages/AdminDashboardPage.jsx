@@ -4,7 +4,7 @@ import ConfessionTable from '../components/ConfessionTable';
 import Pagination from '../components/Pagination';
 import QuickPreview from '../components/QuickPreview';
 import SearchBar from '../components/SearchBar';
-import { API_BASE } from '../config';
+import { API_BASE } from '../../config';
 export default function AdminDashboardPage({ collegeId }) {
   const [confessions, setConfessions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);

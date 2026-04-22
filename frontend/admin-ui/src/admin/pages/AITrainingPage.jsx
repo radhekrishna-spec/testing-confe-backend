@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
-import { API_BASE } from '../config';
+import { API_BASE } from '../../config';
 
 export default function AITrainingPage() {
   const [count, setCount] = useState(0);

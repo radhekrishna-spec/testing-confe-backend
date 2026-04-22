@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API_BASE } from '../config';
+import { API_BASE } from '../../config';
 
 export default function EditCollegeSettingsPage() {
   const { collegeId } = useParams();
