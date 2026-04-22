@@ -66,10 +66,16 @@ async function processFormSubmit(data, existingConfessionNo = null) {
             ? '⚡ ADMIN AUTO FLOW → TELEGRAM in 2s'
             : '🚀 NORMAL FLOW → TELEGRAM in 8s',
         );
+        const aiAssets = await createCaptionFlow(
+          text,
+          mediaResult.confessionNo,
+          '',
+          data.collegeId,
+        );
 
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
-          '',
+          aiAssets.caption,
           mediaResult.confessionNo,
           data.collegeId,
           !!existingConfessionNo,
