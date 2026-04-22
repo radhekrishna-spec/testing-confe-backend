@@ -8,8 +8,6 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const connectDB = require('./config/db');
-
-const { FRONTEND_URL, ADMIN_URL, BASE_URL } = require('./config');
 const confessionRoutes = require('./routes/confessionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const submitRoutes = require('./routes/submitRoutes');
@@ -35,7 +33,7 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 });
 
 // middlewares
-const allowedOrigins = [BASE_URL, FRONTEND_URL, ADMIN_URL];
+const allowedOrigins = [BASE_URL, FRONTEND_URL, ADMIN_URL].filter(Boolean);
 
 app.use(
   cors({
