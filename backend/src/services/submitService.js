@@ -45,10 +45,10 @@ exports.createConfession = async ({
     type || (collegeId === 'shayari' ? 'shayari' : 'confession');
 
   const confessionNo = await getNextConfessionNo(collegeId);
-
+  const finalConfession = confession || extraFields.message;
   const result = await processFormSubmit(
     {
-      confession,
+      confession: finalConfession,
       collegeId,
       fromAdminUI,
       type: finalType,
@@ -66,7 +66,7 @@ exports.createConfession = async ({
 
   // SINGLE AI CALL FOR ALL
   const aiAssets = await createCaptionFlow(
-    confession,
+    finalConfession,
     confessionNo,
     nickname,
     collegeId,
@@ -79,7 +79,7 @@ exports.createConfession = async ({
 
   // 🔥 DUPLICATE GUARD (MOST IMPORTANT)
   const existing = await Confession.findOne({
-    message: confession,
+    message: finalConfession,
     collegeId,
     createdAt: { $gt: new Date(Date.now() - 10000) },
   });
