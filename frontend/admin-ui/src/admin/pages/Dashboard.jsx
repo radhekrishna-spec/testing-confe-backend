@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import RecentActivityPanel from '../components//RecentActivity';
 import AITrainingPanel from '../components/AITrainingPanel';
 import CollegesGrid from '../components/CollegesGrid';
 import GlobalComposerPanel from '../components/GlobalComposerPanel';
 import useDashboardLogic from '../hooks/useDashboardLogic';
-import { API_BASE } from '../config';
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -34,8 +34,6 @@ export default function Dashboard() {
     setSavingAI,
     clearActivity,
   } = useDashboardLogic();
-
-  
 
   const retryFailedColleges = async () => {
     if (!lastResult) return;
@@ -183,14 +181,14 @@ export default function Dashboard() {
             text: aiText,
             source: 'super_admin',
           }),
-        })
+        }),
       );
 
       await Promise.all(requests);
 
       setStatusType('success');
       setStatusMessage(
-        `AI training saved for ${selectedColleges.join(', ')} ✅`
+        `AI training saved for ${selectedColleges.join(', ')} ✅`,
       );
 
       setAiText('');
