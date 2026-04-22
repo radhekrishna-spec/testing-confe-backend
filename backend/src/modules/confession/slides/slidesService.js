@@ -25,6 +25,7 @@ async function getTemplateId(collegeId) {
   if (!college) {
     throw new Error(`College not found: ${collegeId}`);
   }
+  const pageName = college?.pageName || `${collegeId}_confession`;
 
   const templateId = college?.posting?.templateId;
 
@@ -70,6 +71,9 @@ async function createSlidePNG(
   });
 
   const templateId = await getTemplateId(collegeId);
+
+  const college = await College.findOne({ collegeId, isActive: true });
+  const pageName = college?.pageName || `${collegeId}_confession`;
 
   const { fontSize, lineSpacing } = autoFitTextConfig(text, type);
 
@@ -133,7 +137,7 @@ async function createSlidePNG(
           confessionBoxId,
           fontSize,
           lineSpacing,
-          collegeId,
+          pageName,
         ),
       },
     });
@@ -161,7 +165,7 @@ function buildSlideRequests(
   confessionBoxId,
   fontSize,
   lineSpacing,
-  collegeId,
+  pageName,
 ) {
   const footerText = totalParts > 1 ? `Part ${partNo}/${totalParts}` : '';
 
@@ -216,7 +220,7 @@ function buildSlideRequests(
           text: '{{watermark}}',
           matchCase: false,
         },
-        replaceText: `@${collegeId}_confession`,
+        replaceText: `@${pageName}`,
       },
     },
 
