@@ -52,6 +52,10 @@ router.post('/create-payment-link', async (req, res) => {
 });
 router.post('/create-order', async (req, res) => {
   try {
+    // 🔥 DEBUG LOGS (yahi lagana hai)
+    console.log('KEY_ID:', process.env.RAZORPAY_KEY_ID);
+    console.log('KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET);
+
     const order = await razorpay.orders.create({
       amount: 200,
       currency: 'INR',
@@ -60,12 +64,10 @@ router.post('/create-order', async (req, res) => {
 
     res.json(order);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Order failed' });
+    console.error('❌ ORDER ERROR:', err);
+    res.status(500).json({ error: err.message });
   }
 });
-console.log('KEY_ID:', process.env.RAZORPAY_KEY_ID);
-console.log('KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET);
 router.post('/verify-payment', async (req, res) => {
   try {
     const { confessionNo, paymentId } = req.body;
