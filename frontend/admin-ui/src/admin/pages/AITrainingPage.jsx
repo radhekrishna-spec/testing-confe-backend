@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 
 const API_BASE = import.meta.env.DEV
-  ? 'http://localhost:3001'
+  ? 'http://localhost:3008'
   : 'https://testing-confe-backend.onrender.com';
 
 export default function AITrainingPage() {

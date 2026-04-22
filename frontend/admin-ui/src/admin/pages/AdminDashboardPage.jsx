@@ -5,7 +5,8 @@ import Pagination from '../components/Pagination';
 import QuickPreview from '../components/QuickPreview';
 import SearchBar from '../components/SearchBar';
 
-const API_BASE = 'https://testing-confe-backend.onrender.com';
+//const API_BASE = 'https://testing-confe-backend.onrender.com';
+const API_BASE = 'http://localhost:3008';
 
 export default function AdminDashboardPage({ collegeId }) {
   const [confessions, setConfessions] = useState([]);
@@ -65,7 +66,7 @@ export default function AdminDashboardPage({ collegeId }) {
           body: JSON.stringify({
             enabled: !paymentEnabled,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -96,7 +97,7 @@ export default function AdminDashboardPage({ collegeId }) {
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   return (
@@ -115,9 +116,7 @@ export default function AdminDashboardPage({ collegeId }) {
 
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() =>
-                navigate(`/admin/college/${collegeId}/edit`)
-              }
+              onClick={() => navigate(`/admin/college/${collegeId}/edit`)}
               className="px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/10"
             >
               ✏ Edit
@@ -125,9 +124,7 @@ export default function AdminDashboardPage({ collegeId }) {
 
             <button
               onClick={() =>
-                navigate(
-                  `/admin/college/${collegeId}/ai-training`
-                )
+                navigate(`/admin/college/${collegeId}/ai-training`)
               }
               className="px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/10"
             >
@@ -146,8 +143,8 @@ export default function AdminDashboardPage({ collegeId }) {
               {updatingPayment
                 ? 'Updating...'
                 : paymentEnabled
-                ? '💳 Payment ON'
-                : '🚫 Payment OFF'}
+                  ? '💳 Payment ON'
+                  : '🚫 Payment OFF'}
             </button>
           </div>
         </div>
@@ -168,12 +165,8 @@ export default function AdminDashboardPage({ collegeId }) {
       <div className="rounded-3xl border border-white/10 bg-white/5 p-5 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-sm text-gray-400">
-              AI Training Count
-            </p>
-            <h3 className="text-2xl font-bold mt-1">
-              {aiStats.count}
-            </h3>
+            <p className="text-sm text-gray-400">AI Training Count</p>
+            <h3 className="text-2xl font-bold mt-1">{aiStats.count}</h3>
           </div>
 
           <span

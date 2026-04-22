@@ -71,7 +71,7 @@ exports.createConfession = async ({
     nickname,
     collegeId,
   );
-
+  console.log('🔥 SAVED CAPTION:', aiAssets.caption);
   const finalSong =
     song && typeof song === 'object' && (song.title || song.artist)
       ? song

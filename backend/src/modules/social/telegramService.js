@@ -16,6 +16,7 @@ async function sendTelegram(
   collegeId,
   isEdit = false,
 ) {
+  console.log('🔥 TELEGRAM CAPTION:', caption);
   const college = await College.findOne({ collegeId });
 
   const BOT_TOKEN = college.telegram.botToken;

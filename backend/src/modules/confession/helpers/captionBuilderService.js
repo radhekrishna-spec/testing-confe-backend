@@ -16,7 +16,7 @@ async function createCaptionFlow(text, confessionNo, nickname = '', collegeId) {
   let aiAssets = store.get(`ai_assets_${confessionNo}`);
 
   if (!aiAssets) {
-    const aiAssets = {
+    aiAssets = {
       song: '',
       adminComment: '',
     };
@@ -40,6 +40,7 @@ async function createCaptionFlow(text, confessionNo, nickname = '', collegeId) {
     hashtags,
     pageName,
   )}`;
+  console.log('🔥 CAPTION GENERATED:', caption);
 
   store.set(`caption_${confessionNo}`, caption);
   store.set(`song_${confessionNo}`, aiAssets?.song || '');
