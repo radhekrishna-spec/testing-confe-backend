@@ -34,7 +34,7 @@ async function processFormSubmit(data, existingConfessionNo = null) {
       telegramImages: [],
     };
 
-    if (!fromAdminUI) {
+    if (!fromAdminUI || true) {
       mediaResult = await processMediaFlow(
         data,
         confessionNo,
@@ -67,16 +67,9 @@ async function processFormSubmit(data, existingConfessionNo = null) {
             : '🚀 NORMAL FLOW → TELEGRAM in 8s',
         );
 
-        const aiAssets = await createCaptionFlow(
-          text,
-          mediaResult.confessionNo,
-          '',
-          data.collegeId,
-        );
-
         const tgResult = await sendTelegram(
           mediaResult.telegramImages,
-          aiAssets.caption,
+          '',
           mediaResult.confessionNo,
           data.collegeId,
           !!existingConfessionNo,
