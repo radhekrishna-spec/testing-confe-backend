@@ -50,7 +50,20 @@ router.post('/create-payment-link', async (req, res) => {
     });
   }
 });
+router.post('/create-order', async (req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 200,
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}`,
+    });
 
+    res.json(order);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Order failed' });
+  }
+});
 router.post('/verify-payment', async (req, res) => {
   try {
     const { confessionNo, paymentId } = req.body;
