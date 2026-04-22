@@ -21,12 +21,16 @@ async function getTemplateId(collegeId) {
     collegeId,
     isActive: true,
   });
+  console.log('🏫 COLLEGE FROM DB:', {
+    collegeIdFromDB: college?.collegeId,
+    pageNameFromDB: college?.pageName,
+  });
 
   if (!college) {
     throw new Error(`College not found: ${collegeId}`);
   }
   const pageName = college?.pageName || `${collegeId}_confession`;
-
+  console.log('🎯 FINAL PAGENAME USED:', pageName);
   const templateId = college?.posting?.templateId;
 
   console.log('🎞️ TEMPLATE FETCH:', {
@@ -57,7 +61,7 @@ async function createSlidePNG(
   }
 
   console.log('🧾 RAW TEXT:', JSON.stringify(text)); // 🔥 DEBUG
-
+  console.log('🔥 COLLEGE ID RECEIVED:', collegeId);
   const auth = getGoogleAuthClient();
 
   const drive = google.drive({
@@ -73,7 +77,12 @@ async function createSlidePNG(
   const templateId = await getTemplateId(collegeId);
 
   const college = await College.findOne({ collegeId, isActive: true });
+  console.log('🏫 COLLEGE FROM DB:', {
+    collegeIdFromDB: college?.collegeId,
+    pageNameFromDB: college?.pageName,
+  });
   const pageName = college?.pageName || `${collegeId}_confession`;
+  console.log('🎯 FINAL PAGENAME USED:', pageName);
 
   const { fontSize, lineSpacing } = autoFitTextConfig(text, type);
 
