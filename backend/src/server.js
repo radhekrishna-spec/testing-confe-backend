@@ -20,7 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const { startWorkers } = require('./workers/index');
-const { FRONTEND_URL, BASE_URL, ADMIN_URL } = require('./config');
+const { FRONTEND_URL, ADMIN_URL } = require('./config');
 
 // logs folder
 const logsDir = path.join(__dirname, '../logs');
@@ -33,7 +33,9 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 });
 
 // middlewares
-const allowedOrigins = [BASE_URL, FRONTEND_URL, ADMIN_URL].filter(Boolean);
+const allowedOrigins = [process.env.FRONTEND_URL, process.env.ADMIN_URL].filter(
+  Boolean,
+);
 
 app.use(
   cors({
