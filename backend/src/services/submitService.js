@@ -75,7 +75,7 @@ exports.createConfession = async ({
   const finalSong =
     song && typeof song === 'object' && (song.title || song.artist)
       ? song
-      : aiAssets.song;
+      : null;
 
   // 🔥 DUPLICATE GUARD (MOST IMPORTANT)
   const existing = await Confession.findOne({
