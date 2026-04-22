@@ -1,9 +1,6 @@
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
-
-const API_BASE = import.meta.env.DEV
-  ? 'http://localhost:3008'
-  : 'https://testing-confe-backend.onrender.com';
+import { API_BASE } from '../config';
 
 export default function AITrainingPage() {
   const [count, setCount] = useState(0);

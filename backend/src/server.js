@@ -7,9 +7,9 @@ const compression = require('compression');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
-
 const connectDB = require('./config/db');
 
+const { FRONTEND_URL, ADMIN_URL, BASE_URL } = require('./config');
 const confessionRoutes = require('./routes/confessionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const submitRoutes = require('./routes/submitRoutes');
@@ -22,6 +22,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const { startWorkers } = require('./workers/index');
+const { FRONTEND_URL, BASE_URL, ADMIN_URL } = require('./config');
 
 // logs folder
 const logsDir = path.join(__dirname, '../logs');
@@ -34,16 +35,7 @@ const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), {
 });
 
 // middlewares
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'https://testing-confe-backend-1.onrender.com',
-  'https://testing-confe.vercel.app',
-
-  'https://confession-wallah.vercel.app/',
-
-  'https://confession-wallah.vercel.app',
-];
+const allowedOrigins = [BASE_URL, FRONTEND_URL, ADMIN_URL];
 
 app.use(
   cors({

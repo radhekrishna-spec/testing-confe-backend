@@ -4,10 +4,7 @@ import ConfessionTable from '../components/ConfessionTable';
 import Pagination from '../components/Pagination';
 import QuickPreview from '../components/QuickPreview';
 import SearchBar from '../components/SearchBar';
-
-//const API_BASE = 'https://testing-confe-backend.onrender.com';
-const API_BASE = 'http://localhost:3008';
-
+import { API_BASE } from '../config';
 export default function AdminDashboardPage({ collegeId }) {
   const [confessions, setConfessions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);

@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { API_BASE } from './config';
 
 import SubmitConfession from './admin/components/SubmitConfession';
 
-// const API_BASE = import.meta.env.DEV
-//   ? 'http://localhost:3008'
-//   : 'https://testing-confe-backend.onrender.com';
-const API_BASE = 'http://localhost:3008';
+
 
 // ✅ TOGGLE
 function Toggle({ checked, onChange }) {

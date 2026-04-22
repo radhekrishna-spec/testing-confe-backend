@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-
-const API_BASE = 'https://testing-confe-backend.onrender.com';
+import { API_BASE } from '../config';
 
 export default function EditCollegeSettingsPage() {
   const { collegeId } = useParams();
@@ -60,61 +59,41 @@ export default function EditCollegeSettingsPage() {
           logo: college.logo || '',
           themeColor: college.themeColor || '#000000',
 
-          razorpayLink:
-            college.payment?.razorpayLink || '',
-          paymentEnabled:
-            college.payment?.enabled || false,
+          razorpayLink: college.payment?.razorpayLink || '',
+          paymentEnabled: college.payment?.enabled || false,
 
-          telegramBotToken:
-            college.telegram?.botToken || '',
-          telegramChatId:
-            college.telegram?.chatId || '',
+          telegramBotToken: college.telegram?.botToken || '',
+          telegramChatId: college.telegram?.chatId || '',
 
-          instagramAccessToken:
-            college.instagram?.accessToken || '',
-          instagramIgUserId:
-            college.instagram?.igUserId || '',
-          instagramPageName:
-            college.instagram?.pageName || '',
+          instagramAccessToken: college.instagram?.accessToken || '',
+          instagramIgUserId: college.instagram?.igUserId || '',
+          instagramPageName: college.instagram?.pageName || '',
 
-          commandBotToken:
-            college.commandBot?.botToken || '',
-          commandBotChatId:
-            college.commandBot?.chatId || '',
+          commandBotToken: college.commandBot?.botToken || '',
+          commandBotChatId: college.commandBot?.chatId || '',
 
-          rootFolderId:
-            college.drive?.rootFolderId || '',
-          queueFolderId:
-            college.drive?.queueFolderId || '',
-          postedFolderId:
-            college.drive?.postedFolderId || '',
-          rejectedFolderId:
-            college.drive?.rejectedFolderId || '',
-          editArchiveFolderId:
-            college.drive?.editArchiveFolderId || '',
-          smallConfessionFolder:
-            college.drive?.smallConfessionFolder || '',
+          rootFolderId: college.drive?.rootFolderId || '',
+          queueFolderId: college.drive?.queueFolderId || '',
+          postedFolderId: college.drive?.postedFolderId || '',
+          rejectedFolderId: college.drive?.rejectedFolderId || '',
+          editArchiveFolderId: college.drive?.editArchiveFolderId || '',
+          smallConfessionFolder: college.drive?.smallConfessionFolder || '',
 
-          safeLimit:
-            college.posting?.safeLimit || '',
-          templateId:
-            college.posting?.templateId || '',
+          safeLimit: college.posting?.safeLimit || '',
+          templateId: college.posting?.templateId || '',
 
-          isActive:
-            college.isActive ?? true,
+          isActive: college.isActive ?? true,
         });
       })
       .finally(() => setLoading(false));
   }, [collegeId]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } =
-      e.target;
+    const { name, value, type, checked } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -141,12 +120,9 @@ export default function EditCollegeSettingsPage() {
         },
 
         instagram: {
-          accessToken:
-            formData.instagramAccessToken,
-          igUserId:
-            formData.instagramIgUserId,
-          pageName:
-            formData.instagramPageName,
+          accessToken: formData.instagramAccessToken,
+          igUserId: formData.instagramIgUserId,
+          pageName: formData.instagramPageName,
         },
 
         commandBot: {
@@ -155,23 +131,16 @@ export default function EditCollegeSettingsPage() {
         },
 
         drive: {
-          rootFolderId:
-            formData.rootFolderId,
-          queueFolderId:
-            formData.queueFolderId,
-          postedFolderId:
-            formData.postedFolderId,
-          rejectedFolderId:
-            formData.rejectedFolderId,
-          editArchiveFolderId:
-            formData.editArchiveFolderId,
-          smallConfessionFolder:
-            formData.smallConfessionFolder,
+          rootFolderId: formData.rootFolderId,
+          queueFolderId: formData.queueFolderId,
+          postedFolderId: formData.postedFolderId,
+          rejectedFolderId: formData.rejectedFolderId,
+          editArchiveFolderId: formData.editArchiveFolderId,
+          smallConfessionFolder: formData.smallConfessionFolder,
         },
 
         posting: {
-          safeLimit:
-            Number(formData.safeLimit) || 0,
+          safeLimit: Number(formData.safeLimit) || 0,
           templateId: formData.templateId,
         },
       };
@@ -181,11 +150,10 @@ export default function EditCollegeSettingsPage() {
         {
           method: 'PATCH',
           headers: {
-            'Content-Type':
-              'application/json',
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await res.json();
@@ -202,10 +170,7 @@ export default function EditCollegeSettingsPage() {
     }
   };
 
-  const renderInput = (
-    name,
-    placeholder
-  ) => (
+  const renderInput = (name, placeholder) => (
     <input
       name={name}
       placeholder={placeholder}
@@ -216,11 +181,7 @@ export default function EditCollegeSettingsPage() {
   );
 
   if (loading) {
-    return (
-      <div className="text-white">
-        Loading...
-      </div>
-    );
+    return <div className="text-white">Loading...</div>;
   }
 
   return (
@@ -233,87 +194,34 @@ export default function EditCollegeSettingsPage() {
           ← Back
         </button>
 
-        <h1 className="text-3xl font-bold mb-8">
-          ✏ Edit College Settings
-        </h1>
+        <h1 className="text-3xl font-bold mb-8">✏ Edit College Settings</h1>
 
         <div className="grid md:grid-cols-2 gap-4">
           {renderInput('name', 'College Name')}
           {renderInput('domain', 'Domain')}
-          {renderInput(
-            'subdomain',
-            'Subdomain'
-          )}
+          {renderInput('subdomain', 'Subdomain')}
           {renderInput('logo', 'Logo URL')}
-          {renderInput(
-            'razorpayLink',
-            'Razorpay Link'
-          )}
+          {renderInput('razorpayLink', 'Razorpay Link')}
 
-          {renderInput(
-            'telegramBotToken',
-            'Telegram Bot Token'
-          )}
-          {renderInput(
-            'telegramChatId',
-            'Telegram Chat ID'
-          )}
+          {renderInput('telegramBotToken', 'Telegram Bot Token')}
+          {renderInput('telegramChatId', 'Telegram Chat ID')}
 
-          {renderInput(
-            'instagramAccessToken',
-            'Instagram Access Token'
-          )}
-          {renderInput(
-            'instagramIgUserId',
-            'Instagram User ID'
-          )}
-          {renderInput(
-            'instagramPageName',
-            'Instagram Page Name'
-          )}
+          {renderInput('instagramAccessToken', 'Instagram Access Token')}
+          {renderInput('instagramIgUserId', 'Instagram User ID')}
+          {renderInput('instagramPageName', 'Instagram Page Name')}
 
-          {renderInput(
-            'commandBotToken',
-            'Command Bot Token'
-          )}
-          {renderInput(
-            'commandBotChatId',
-            'Command Bot Chat ID'
-          )}
+          {renderInput('commandBotToken', 'Command Bot Token')}
+          {renderInput('commandBotChatId', 'Command Bot Chat ID')}
 
-          {renderInput(
-            'rootFolderId',
-            'Root Folder ID'
-          )}
-          {renderInput(
-            'queueFolderId',
-            'Queue Folder ID'
-          )}
-          {renderInput(
-            'postedFolderId',
-            'Posted Folder ID'
-          )}
-          {renderInput(
-            'rejectedFolderId',
-            'Rejected Folder ID'
-          )}
-          {renderInput(
-            'editArchiveFolderId',
-            'Edit Archive Folder ID'
-          )}
-          {renderInput(
-            'smallConfessionFolder',
-            'Small Folder'
-          )}
+          {renderInput('rootFolderId', 'Root Folder ID')}
+          {renderInput('queueFolderId', 'Queue Folder ID')}
+          {renderInput('postedFolderId', 'Posted Folder ID')}
+          {renderInput('rejectedFolderId', 'Rejected Folder ID')}
+          {renderInput('editArchiveFolderId', 'Edit Archive Folder ID')}
+          {renderInput('smallConfessionFolder', 'Small Folder')}
 
-          {renderInput(
-            'safeLimit',
-            'Safe Limit'
-          )}
-          {renderInput(
-            'templateId',
-            'Template ID'
-          )}
+          {renderInput('safeLimit', 'Safe Limit')}
+          {renderInput('templateId', 'Template ID')}
         </div>
 
         {/* Theme Color */}
@@ -337,9 +245,7 @@ export default function EditCollegeSettingsPage() {
             <input
               type="checkbox"
               name="paymentEnabled"
-              checked={
-                formData.paymentEnabled
-              }
+              checked={formData.paymentEnabled}
               onChange={handleChange}
             />
             Payment Enabled
@@ -362,9 +268,7 @@ export default function EditCollegeSettingsPage() {
           disabled={saving}
           className="mt-8 w-full rounded-2xl bg-white text-black py-3 font-semibold hover:scale-[1.01] transition"
         >
-          {saving
-            ? 'Saving...'
-            : 'Save Settings'}
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
     </div>

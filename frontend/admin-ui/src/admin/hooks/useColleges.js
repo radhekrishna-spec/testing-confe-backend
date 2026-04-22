@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-
-const API_BASE = 'https://testing-confe-backend.onrender.com';
+import { API_BASE } from '../config';
 
 export default function useColleges() {
   const [colleges, setColleges] = useState([]);

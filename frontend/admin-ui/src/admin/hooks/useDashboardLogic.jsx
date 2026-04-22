@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_BASE } from '../config';
 
 export default function useDashboardLogic() {
   const [selectedColleges, setSelectedColleges] = useState([]);
@@ -15,8 +16,7 @@ export default function useDashboardLogic() {
   const [savingAI, setSavingAI] = useState(false);
 
   useEffect(() => {
-    // fetch('https://testing-confe-backend.onrender.com/api/admin/colleges')
-    fetch('http://localhost:3008/api/admin/colleges')
+    fetch(`${API_BASE}/api/admin/colleges`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

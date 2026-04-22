@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 
-const API_BASE = 'https://testing-confe-backend.onrender.com';
 
 export default function CreateCollegePage() {
   const navigate = useNavigate();

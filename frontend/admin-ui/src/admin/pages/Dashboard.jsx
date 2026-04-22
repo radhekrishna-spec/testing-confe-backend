@@ -4,7 +4,7 @@ import AITrainingPanel from '../components/AITrainingPanel';
 import CollegesGrid from '../components/CollegesGrid';
 import GlobalComposerPanel from '../components/GlobalComposerPanel';
 import useDashboardLogic from '../hooks/useDashboardLogic';
-
+import { API_BASE } from '../config';
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -35,7 +35,7 @@ export default function Dashboard() {
     clearActivity,
   } = useDashboardLogic();
 
-  const API_BASE = 'https://testing-confe-backend.onrender.com';
+  
 
   const retryFailedColleges = async () => {
     if (!lastResult) return;

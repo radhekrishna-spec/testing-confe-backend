@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { API_BASE } from '../config';
 
 export default function CollegeAITrainingDetailsPage() {
   const { collegeId } = useParams();
@@ -19,15 +20,15 @@ export default function CollegeAITrainingDetailsPage() {
   const fetchAll = async () => {
     try {
       const countRes = await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/ai-training/count/${collegeId}`,
+        `${API_BASE}/api/admin/ai-training/count/${collegeId}`,
       );
 
       const listRes = await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/ai-training/list/${collegeId}`,
+        `${API_BASE}/api/admin/ai-training/list/${collegeId}`,
       );
 
       const statsRes = await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/ai-training/stats/${collegeId}`,
+        `${API_BASE}/api/admin/ai-training/stats/${collegeId}`,
       );
 
       const countData = await countRes.json();
@@ -57,7 +58,7 @@ export default function CollegeAITrainingDetailsPage() {
       setLoading(true);
 
       await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/ai-training/add`,
+        `${API_BASE}/api/admin/ai-training/add`,
         {
           method: 'POST',
           headers: {
@@ -84,7 +85,7 @@ export default function CollegeAITrainingDetailsPage() {
   const deleteItem = async (id) => {
     try {
       await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/ai-training/delete/${id}`,
+        `${API_BASE}/api/admin/ai-training/delete/${id}`,
         {
           method: 'DELETE',
         },
@@ -99,7 +100,7 @@ export default function CollegeAITrainingDetailsPage() {
   const saveEdit = async () => {
     try {
       await fetch(
-        `https://testing-confe-backend.onrender.com/api/admin/ai-training/update/${editingId}`,
+        `${API_BASE}/api/admin/ai-training/update/${editingId}`,
         {
           method: 'PATCH',
           headers: {

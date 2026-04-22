@@ -10,6 +10,10 @@ const Razorpay = require('razorpay');
 
 const router = express.Router();
 
+const { FRONTEND_URL } = require('../config');
+
+const successUrl = `${FRONTEND_URL}/success`;
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -30,7 +34,7 @@ router.post('/create-payment-link', async (req, res) => {
         email: false,
       },
       reminder_enable: false,
-      callback_url: 'https://confession-wallah.vercel.app/success',
+      callback_url: successUrl,
       callback_method: 'get',
     });
 
