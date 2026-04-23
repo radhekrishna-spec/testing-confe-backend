@@ -213,16 +213,19 @@ async function startSchedulerWorker() {
     try {
       const now = new Date();
       const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
 
       const queueCount = await getApprovedQueueCount();
       const postHours = getPostTimes(queueCount);
 
-      if (!postHours.includes(currentHour)) {
-        return;
-      }
+      if (!postHours.includes(currentHour)) return;
+
+      const todayKey = now.toISOString().split('T')[0];
+      const targetMinute = getRandomMinuteForHour(todayKey, currentHour);
+
       const next = await getNextApprovedConfession();
 
-      if (next) {
+      if (next && currentMinute === targetMinute) {
         await processApprovedQueue();
       }
     } catch (error) {
