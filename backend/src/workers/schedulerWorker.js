@@ -211,6 +211,15 @@ async function startSchedulerWorker() {
     isRunning = true;
 
     try {
+      const now = new Date();
+      const currentHour = now.getHours();
+
+      const queueCount = await getApprovedQueueCount();
+      const postHours = getPostTimes(queueCount);
+
+      if (!postHours.includes(currentHour)) {
+        return;
+      }
       const next = await getNextApprovedConfession();
 
       if (next) {
