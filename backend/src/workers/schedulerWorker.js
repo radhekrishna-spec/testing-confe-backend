@@ -244,14 +244,14 @@ async function startSchedulerWorker() {
 
         if (!postHours.includes(currentHour)) continue;
 
-        const todayKey = now.toISOString().split('T')[0] + '_' + collegeId;
+        const todayKey = istTime.toISOString().split('T')[0] + '_' + collegeId;
 
         const targetMinute = getRandomMinuteForHour(todayKey, currentHour);
         console.log(
           `⏱️ Now: ${currentHour}:${currentMinute} | Target: ${currentHour}:${targetMinute}`,
         );
 
-        if (currentMinute !== targetMinute) continue;
+        if (Math.abs(currentMinute - targetMinute) > 2) continue;
         console.log(`🚀 MATCHED TIME → WILL POST NOW`);
 
         await processApprovedQueue(collegeId);
