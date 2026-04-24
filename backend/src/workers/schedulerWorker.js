@@ -261,8 +261,40 @@ async function startSchedulerWorker() {
 
   setInterval(refillLowQueues, 30 * 60 * 1000);
 }
+// 🔥 TEST FUNCTION (2:20 PM MIET ONLY)
+function testPostAt220() {
+  const TARGET_HOUR = 14;
+  const TARGET_MINUTE = 22;
+  const collegeId = 'miet';
+
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    console.log(`🧪 TEST CHECK: ${hour}:${minute}`);
+
+    if (hour === TARGET_HOUR && minute === TARGET_MINUTE) {
+      console.log(`🚀 TEST TRIGGERED → ${collegeId}`);
+
+      const confession = await getNextApprovedConfession(collegeId);
+
+      if (!confession) {
+        console.log(`❌ No approved confession`);
+        return;
+      }
+
+      console.log(`🔥 TEST FOUND: #${confession.confessionNo}`);
+
+      await processApprovedQueue(collegeId);
+
+      console.log(`✅ TEST DONE`);
+    }
+  }, 10000);
+}
 
 module.exports = {
   startSchedulerWorker,
   processApprovedQueue,
+  testPostAt220,
 };
