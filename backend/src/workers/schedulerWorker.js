@@ -219,21 +219,36 @@ async function startSchedulerWorker() {
 
       for (const college of colleges) {
         const collegeId = college.collegeId;
+        console.log(`\n🏫 COLLEGE: ${collegeId}`);
 
         const queueCount = await Confession.countDocuments({
           status: 'APPROVED',
           collegeId,
         });
+        console.log(`📦 Queue: ${queueCount}`);
+
+        const next = await getNextApprovedConfession(collegeId);
+
+        if (next) {
+          console.log(`⏭️ Next Post: ${collegeId} → #${next.confessionNo}`);
+        } else {
+          console.log(`❌ ${collegeId} → No approved confession`);
+        }
 
         const postHours = getPostTimes(queueCount);
+        console.log(`🕒 Post Hours: ${postHours}`);
 
         if (!postHours.includes(currentHour)) continue;
 
         const todayKey = now.toISOString().split('T')[0] + '_' + collegeId;
 
         const targetMinute = getRandomMinuteForHour(todayKey, currentHour);
+        console.log(
+          `⏱️ Now: ${currentHour}:${currentMinute} | Target: ${currentHour}:${targetMinute}`,
+        );
 
         if (currentMinute !== targetMinute) continue;
+        console.log(`🚀 MATCHED TIME → WILL POST NOW`);
 
         await processApprovedQueue(collegeId);
       }
