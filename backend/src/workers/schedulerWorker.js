@@ -212,8 +212,12 @@ async function startSchedulerWorker() {
 
     try {
       const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
+      const istTime = new Date(
+        now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
+      );
+
+      const currentHour = istTime.getHours();
+      const currentMinute = istTime.getMinutes();
 
       const colleges = await College.find({ isActive: true });
 
@@ -262,43 +266,42 @@ async function startSchedulerWorker() {
   setInterval(refillLowQueues, 30 * 60 * 1000);
 }
 // 🔥 TEST FUNCTION (2:20 PM MIET ONLY)
-function testPostAt220() {
-  const TARGET_HOUR = 14;
-  const TARGET_MINUTE = 26;
-  const collegeId = 'miet';
+// function testPostAt220() {
+//   const TARGET_HOUR = 14;
+//   const TARGET_MINUTE = 26;
+//   const collegeId = 'miet';
 
-  setInterval(async () => {
-    const now = new Date();
-    const istTime = new Date(
-      now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
-    );
+//   setInterval(async () => {
+//     const now = new Date();
+//     const istTime = new Date(
+//       now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
+//     );
 
-    const hour = istTime.getHours();
-    const minute = istTime.getMinutes();
+//     const hour = istTime.getHours();
+//     const minute = istTime.getMinutes();
 
-    console.log(`🧪 TEST CHECK: ${hour}:${minute}`);
+//     console.log(`🧪 TEST CHECK: ${hour}:${minute}`);
 
-    if (hour === TARGET_HOUR && minute === TARGET_MINUTE) {
-      console.log(`🚀 TEST TRIGGERED → ${collegeId}`);
+//     if (hour === TARGET_HOUR && minute === TARGET_MINUTE) {
+//       console.log(`🚀 TEST TRIGGERED → ${collegeId}`);
 
-      const confession = await getNextApprovedConfession(collegeId);
+//       const confession = await getNextApprovedConfession(collegeId);
 
-      if (!confession) {
-        console.log(`❌ No approved confession`);
-        return;
-      }
+//       if (!confession) {
+//         console.log(`❌ No approved confession`);
+//         return;
+//       }
 
-      console.log(`🔥 TEST FOUND: #${confession.confessionNo}`);
+//       console.log(`🔥 TEST FOUND: #${confession.confessionNo}`);
 
-      await processApprovedQueue(collegeId);
+//       await processApprovedQueue(collegeId);
 
-      console.log(`✅ TEST DONE`);
-    }
-  }, 10000);
-}
+//       console.log(`✅ TEST DONE`);
+//     }
+//   }, 10000);
+// }
 
 module.exports = {
   startSchedulerWorker,
   processApprovedQueue,
-  testPostAt220,
 };

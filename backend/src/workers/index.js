@@ -1,5 +1,5 @@
 const { startTelegramPoller } = require('./telegramPoller');
-const { testPostAt220 } = require('./schedulerWorker');
+//const { testPostAt220 } = require('./schedulerWorker');
 const {
   startEditQueueWorker,
 } = require('../modules/confession/workers/editQueueWorker');
@@ -33,7 +33,7 @@ async function startWorkers() {
   startTelegramPoller();
   startEditQueueWorker();
   startSchedulerWorker();
-  testPostAt220();
+ // testPostAt220();
   startRecoveryWorker();
 
   console.log('✅ WORKERS STARTED (SINGLE INSTANCE)');
