@@ -251,8 +251,17 @@ async function startSchedulerWorker() {
           `⏱️ Now: ${currentHour}:${currentMinute} | Target: ${currentHour}:${targetMinute}`,
         );
 
-        if (Math.abs(currentMinute - targetMinute) > 2) continue;
+        if (currentMinute < targetMinute) continue;
+
+        const postKey = `POSTED_${todayKey}_${currentHour}_${collegeId}`;
+
+        if (store.get(postKey)) {
+          console.log(`⛔ Already posted for ${collegeId} in this slot`);
+          continue;
+        }
         console.log(`🚀 MATCHED TIME → WILL POST NOW`);
+
+        store.set(postKey, 1);
 
         await processApprovedQueue(collegeId);
       }
