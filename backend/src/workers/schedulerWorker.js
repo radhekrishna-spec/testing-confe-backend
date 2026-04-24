@@ -264,13 +264,17 @@ async function startSchedulerWorker() {
 // 🔥 TEST FUNCTION (2:20 PM MIET ONLY)
 function testPostAt220() {
   const TARGET_HOUR = 14;
-  const TARGET_MINUTE = 22;
+  const TARGET_MINUTE = 26;
   const collegeId = 'miet';
 
   setInterval(async () => {
     const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
+    const istTime = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
+    );
+
+    const hour = istTime.getHours();
+    const minute = istTime.getMinutes();
 
     console.log(`🧪 TEST CHECK: ${hour}:${minute}`);
 
