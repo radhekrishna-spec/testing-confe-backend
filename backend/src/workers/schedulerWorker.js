@@ -32,17 +32,15 @@ function getRandomMinuteForHour(dateKey, hour) {
 // ======================
 // QUEUE COUNT
 // ======================
-async function getApprovedQueueCount() {
-  return await Confession.countDocuments({ status: 'APPROVED' });
-}
 
 // ======================
 // GET NEXT CONFESSION
 // ======================
-async function getNextApprovedConfession() {
+async function getNextApprovedConfession(collegeId) {
   return await Confession.findOne({
     status: 'APPROVED',
     retryCount: { $lt: 3 },
+    collegeId: collegeId, // 🔥 ADD THIS
   })
     .sort({ confessionNo: 1 })
     .lean();
@@ -54,8 +52,8 @@ async function getNextApprovedConfession() {
 // ======================
 // MAIN POST FLOW
 // ======================
-async function processApprovedQueue() {
-  const confession = await getNextApprovedConfession();
+async function processApprovedQueue(collegeId) {
+  const confession = await getNextApprovedConfession(collegeId);
 
   if (!confession) {
     console.log('❌ NO APPROVED CONFESSION');
@@ -65,7 +63,7 @@ async function processApprovedQueue() {
   const confessionNo = confession.confessionNo;
 
   // 🔥 NEW: GLOBAL LOCK (MULTI INSTANCE FIX)
-  const GLOBAL_LOCK = `GLOBAL_POST_LOCK_${confessionNo}`;
+  const GLOBAL_LOCK = `GLOBAL_POST_LOCK_${confession.collegeId}_${confessionNo}`;
   if (store.get(GLOBAL_LOCK)) {
     console.log('⚠️ GLOBAL LOCK ACTIVE, SKIP');
     return;
@@ -73,11 +71,15 @@ async function processApprovedQueue() {
   store.set(GLOBAL_LOCK, '1');
 
   // 🔥 EXISTING LOCK (UNCHANGED)
-  if (store.get(`posting_${confessionNo}`)) {
+  const POST_LOCK = `posting_${confession.collegeId}_${confessionNo}`;
+
+  if (store.get(POST_LOCK)) {
     console.log('⚠️ ALREADY POSTING, SKIP');
-    store.delete(GLOBAL_LOCK); // 🔥 unlock
+    store.delete(GLOBAL_LOCK);
     return;
   }
+
+  store.set(POST_LOCK, '1');
 
   const images = confession.images || [];
   const caption = confession.caption || '';
@@ -86,7 +88,7 @@ async function processApprovedQueue() {
 
   if (!images.length) {
     await Confession.updateOne(
-      { confessionNo },
+      { confessionNo, collegeId: confession.collegeId },
       {
         status: 'FAILED',
         failureReason: 'No images found',
@@ -98,10 +100,8 @@ async function processApprovedQueue() {
   }
 
   try {
-    store.set(`posting_${confessionNo}`, '1');
-
     const lock = await Confession.findOneAndUpdate(
-      { confessionNo, status: 'APPROVED' },
+      { confessionNo, collegeId: confession.collegeId, status: 'APPROVED' },
       { status: 'POSTING' },
       { returnDocument: 'after' },
     );
@@ -124,7 +124,7 @@ async function processApprovedQueue() {
     }
 
     await Confession.updateOne(
-      { confessionNo },
+      { confessionNo, collegeId: confession.collegeId },
       {
         status: 'POSTED',
         isPosted: true,
@@ -157,14 +157,14 @@ async function processApprovedQueue() {
     console.error('❌ POST FAILED:', error.message);
 
     await Confession.updateOne(
-      { confessionNo },
+      { confessionNo, collegeId: confession.collegeId },
       {
         status: 'FAILED',
         failureReason: error.message,
       },
     );
   } finally {
-    store.delete(`posting_${confessionNo}`);
+    store.delete(POST_LOCK);
     store.delete(GLOBAL_LOCK); // 🔥 NEW (MOST IMPORTANT)
   }
 }
@@ -215,18 +215,27 @@ async function startSchedulerWorker() {
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
 
-      const queueCount = await getApprovedQueueCount();
-      const postHours = getPostTimes(queueCount);
+      const colleges = await College.find({ isActive: true });
 
-      if (!postHours.includes(currentHour)) return;
+      for (const college of colleges) {
+        const collegeId = college.collegeId;
 
-      const todayKey = now.toISOString().split('T')[0];
-      const targetMinute = getRandomMinuteForHour(todayKey, currentHour);
+        const queueCount = await Confession.countDocuments({
+          status: 'APPROVED',
+          collegeId,
+        });
 
-      const next = await getNextApprovedConfession();
+        const postHours = getPostTimes(queueCount);
 
-      if (next && currentMinute === targetMinute) {
-        await processApprovedQueue();
+        if (!postHours.includes(currentHour)) continue;
+
+        const todayKey = now.toISOString().split('T')[0] + '_' + collegeId;
+
+        const targetMinute = getRandomMinuteForHour(todayKey, currentHour);
+
+        if (currentMinute !== targetMinute) continue;
+
+        await processApprovedQueue(collegeId);
       }
     } catch (error) {
       console.error('❌ SCHEDULER ERROR:', error.message);
