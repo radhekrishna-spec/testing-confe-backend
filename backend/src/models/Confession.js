@@ -1,0 +1,118 @@
+const mongoose = require('mongoose');
+
+const confessionSchema = new mongoose.Schema(
+  {
+    collegeId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+
+    confessionNo: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+
+    song: {
+      title: String,
+      artist: String,
+      source: {
+        type: String,
+        enum: ['manual', 'ai'],
+        default: 'manual',
+      },
+    },
+
+    message: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    nickname: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    extraFields: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+
+    images: {
+      type: [String],
+      default: [],
+    },
+
+    caption: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    adminComment: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
+
+    // 🔥 MAIN STATUS FLOW
+    status: {
+      type: String,
+      enum: ['PENDING', 'APPROVED', 'POSTING', 'POSTED', 'FAILED', 'REJECTED'],
+      default: 'PENDING',
+      index: true,
+    },
+
+    // 🔥 RETRY SYSTEM (NEW)
+    retryCount: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+
+    // 🔥 SAFE FLAG (extra protection)
+    isPosted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    postedTime: {
+      type: Date,
+      default: null,
+    },
+
+    telegramMessageId: {
+      type: String,
+      default: null,
+    },
+
+    failureReason: {
+      type: String,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+// 🔥 UNIQUE INDEX (VERY IMPORTANT)
+confessionSchema.index({ collegeId: 1, confessionNo: 1 }, { unique: true });
+
+// 🔥 FAST QUERY INDEX (QUEUE OPTIMIZATION)
+confessionSchema.index({
+  status: 1,
+  retryCount: 1,
+  confessionNo: 1,
+});
+
+module.exports = mongoose.model('Confession', confessionSchema);
